@@ -39,7 +39,7 @@ _install_requires= [
     # TODO (damb): check if valid version: "numpy==1.8.2",
     "numpy>=1.8.2",
     "PyQt5 >=5.8.2, <=5.10",
-    "sqlalchemy==0.8.4", ]
+    "sqlalchemy>=1.2", ]
 
 _extras_require = {'doc': [
     "epydoc==3.0.1",
