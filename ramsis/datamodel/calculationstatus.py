@@ -11,7 +11,8 @@ from datetime import datetime
 from sqlalchemy import Column, Integer, event, DateTime, String, PickleType,\
     ForeignKey
 from sqlalchemy.orm import relationship, Session
-from .ormbase import OrmBase
+
+from ramsis.datamodel.base import OrmBase
 
 
 @event.listens_for(Session, 'after_flush')
@@ -54,9 +55,6 @@ class CalculationStatus(OrmBase):
     ERROR = 'Error'
     COMPLETE = 'Complete'
 
-    # region ORM Declarations
-    __tablename__ = 'calculation_status'
-    id = Column(Integer, primary_key=True)
     calc_id = Column(PickleType(pickler=json))  # identifies the calculation
     state = Column(String)        # A defined state or None
     date = Column(DateTime)       # Date and time of the state

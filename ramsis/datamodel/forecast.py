@@ -15,10 +15,13 @@ from sqlalchemy import Column, Integer, Float, DateTime, String, \
 from sqlalchemy.orm import relationship, reconstructor
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.ext.mutable import MutableDict
-from .ormbase import OrmBase, JSONEncodedDict
+
 from .signal import Signal
 from .skilltest import SkillTest
 from .calculationstatus import CalculationStatus as CS
+
+from ramsis.datamode.base import OrmBase
+from ramsis.datamodel.type import JSONEncodedDict
 
 
 class ForecastSet(OrmBase):
@@ -26,9 +29,6 @@ class ForecastSet(OrmBase):
     Parent object for forecasts
 
     """
-    # region ORM Declarations
-    __tablename__ = 'forecast_sets'
-    id = Column(Integer, primary_key=True)
     # Project relation
     project_id = Column(Integer, ForeignKey('projects.id'))
     project = relationship('Project', back_populates='forecast_set')
@@ -60,9 +60,6 @@ class ForecastSet(OrmBase):
 
 class Forecast(OrmBase):
     """ Planned or completed forecast """
-    # region ORM Declarations
-    __tablename__ = 'forecasts'
-    id = Column(Integer, primary_key=True)
     name = Column(String)
     forecast_time = Column(DateTime)
     forecast_interval = Column(Float)
@@ -108,10 +105,6 @@ class Forecast(OrmBase):
 
 
 class ForecastInput(OrmBase):
-
-    # region ORM Declarations
-    __tablename__ = 'forecast_inputs'
-    id = Column(Integer, primary_key=True)
     # Forecast relation
     forecast_id = Column(Integer, ForeignKey('forecasts.id'))
     forecast = relationship('Forecast', back_populates='input')
@@ -135,10 +128,6 @@ class ForecastResult(OrmBase):
     execution of a `ForecastJob`.
 
     """
-
-    # region ORM declarations
-    __tablename__ = 'forecast_results'
-    id = Column(Integer, primary_key=True)
     # hazard stage
     hazard_result = relationship('HazardResult', uselist=False,
                                  back_populates='forecast_result',
@@ -176,9 +165,6 @@ class HazardResult(OrmBase):
     result_id under the respective key.
     
     """
-    # region ORM declarations
-    __tablename__ = 'hazard_results'
-    id = Column(Integer, primary_key=True)
     calc_id = Column(Integer)
     h_curves = Column(JSONEncodedDict)
     # relationships
@@ -195,9 +181,6 @@ class HazardResult(OrmBase):
 
 
 class RiskResult(OrmBase):
-    # region ORM declarations
-    __tablename__ = 'risk_results'
-    id = Column(Integer, primary_key=True)
     calc_id = Column(Integer)
     result_id = Column(Integer)
     # relationships
@@ -231,9 +214,6 @@ class Scenario(OrmBase):
     dict.
     
     """
-    # region ORM declarations
-    __tablename__ = 'scenarios'
-    id = Column(Integer, primary_key=True)
     name = Column(String)
     # Configuration as python dict
     config = Column(MutableDict.as_mutable(JSONEncodedDict))
@@ -353,10 +333,6 @@ class ModelResult(OrmBase):
         result has been evaluated against measured rates.
 
     """
-
-    # region ORM declarations
-    __tablename__ = 'model_results'
-    id = Column(Integer, primary_key=True)
     model_id = Column(String)
     status = relationship('CalculationStatus', uselist=False,
                           back_populates='model_result',
@@ -454,10 +430,6 @@ class RatePrediction(OrmBase):
         to.
 
     """
-
-    # region ORM declarations
-    __tablename__ = 'rate_predictions'
-    id = Column(Integer, primary_key=True)
     rate = Column(Float)
     b_val = Column(Float)
     prob = Column(Float)

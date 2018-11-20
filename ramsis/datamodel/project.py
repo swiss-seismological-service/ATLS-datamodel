@@ -11,8 +11,6 @@ from datetime import datetime, timedelta
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, \
     PickleType
 from sqlalchemy.orm import relationship, reconstructor
-from .ormbase import OrmBase
-
 from .signal import Signal
 from .settings import ProjectSettings
 from .seismics import SeismicCatalog
@@ -21,6 +19,7 @@ from .forecast import ForecastSet
 from .injectionwell import InjectionWell
 from .eqstats import SeismicRateHistory
 
+from ramsis.datamodel.base import OrmBase
 
 class Project(OrmBase):
     """
@@ -33,9 +32,6 @@ class Project(OrmBase):
     :ivar injection_history: The hydraulic history of the project
 
     """
-    # region ORM Declarations
-    __tablename__ = 'projects'
-    id = Column(Integer, primary_key=True)
     title = Column(String)
     description = Column(String)
     start_date = Column(DateTime)

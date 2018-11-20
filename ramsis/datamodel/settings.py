@@ -12,8 +12,9 @@ import logging
 from datetime import datetime
 from sqlalchemy import Column, orm
 from sqlalchemy import Integer, String, DateTime
-from .ormbase import OrmBase
 from .signal import Signal
+
+from ramsis.datamodel.base import OrmBase
 
 log = logging.getLogger(__name__)
 
@@ -46,9 +47,6 @@ class Settings(OrmBase):
     obsolete settings.
 
     """
-    # region ORM declarations
-    __tablename__ = 'settings'
-    id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
     date = Column(DateTime)
     data = Column(String)

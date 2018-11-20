@@ -10,10 +10,9 @@ from datetime import datetime
 from sqlalchemy import Column, event
 from sqlalchemy import Integer, Float, String, DateTime, ForeignKey
 from sqlalchemy.orm import relationship, reconstructor, Session
-from .ormbase import OrmBase
-
 from .signal import Signal
 
+from ramsis.datamodel.base import OrmBase
 from ramsis.datamodel.geometry import Point
 
 log = logging.getLogger(__name__)
@@ -46,10 +45,6 @@ class SeismicCatalog(OrmBase):
     from/to a persistent store. The class uses Qt signals to signal changes.
 
     """
-
-    # region ORM Declarations
-    __tablename__ = 'seismic_catalogs'
-    id = Column(Integer, primary_key=True)
     catalog_date = Column(DateTime)
     # SeismicEvent relation (we own them)
     seismic_events = relationship('SeismicEvent',
@@ -171,10 +166,6 @@ class SeismicEvent(OrmBase):
     origin respectively.
 
     """
-
-    # region ORM declarations
-    __tablename__ = 'seismic_events'
-    id = Column(Integer, primary_key=True)
     # Identifiers
     public_id = Column(String)
     public_origin_id = Column(String)

@@ -9,8 +9,9 @@ import traceback
 from datetime import datetime
 from sqlalchemy import Column, Integer, Float, DateTime, ForeignKey
 from sqlalchemy.orm import relationship, reconstructor
-from .ormbase import OrmBase
 from .signal import Signal
+
+from ramsis.datamodel.base import OrmBase
 
 log = logging.getLogger(__name__)
 
@@ -21,9 +22,6 @@ class InjectionHistory(OrmBase):
     from/to a persistent store. The class uses Qt signals to signal changes.
 
     """
-    # region ORM Declarations
-    __tablename__ = 'injection_histories'
-    id = Column(Integer, primary_key=True)
     # Project relation
     project_id = Column(Integer, ForeignKey('projects.id'))
     project = relationship('Project', back_populates='injection_history')
@@ -105,10 +103,6 @@ class InjectionHistory(OrmBase):
 
 
 class InjectionPlan(OrmBase):
-
-    # region ORM Declarations
-    __tablename__ = 'injection_plans'
-    id = Column(Integer, primary_key=True)
     # InjectionSample relation
     samples = relationship('InjectionSample',
                            back_populates='injection_plan')
@@ -129,10 +123,6 @@ class InjectionSample(OrmBase):
     :ivar float pr_xt: pressure @ x-mas tree (top hole) [bar]
 
     """
-
-    # region ORM declarations
-    __tablename__ = 'injection_samples'
-    id = Column(Integer, primary_key=True)
     date_time = Column(DateTime)
     flow_dh = Column(Float)
     flow_xt = Column(Float)

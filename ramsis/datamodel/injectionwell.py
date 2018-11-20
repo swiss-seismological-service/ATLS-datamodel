@@ -9,7 +9,8 @@ Injection well information
 
 from sqlalchemy import Column, Integer, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
-from .ormbase import OrmBase
+
+from ramsis.datamodel.base import OrmBase
 
 
 class InjectionWell(OrmBase):
@@ -21,10 +22,6 @@ class InjectionWell(OrmBase):
     :ivar float well_tip_z: Well tip depth [m] (positive downwards)
 
     """
-
-    # region ORM declarations
-    __tablename__ = 'injection_wells'
-    id = Column(Integer, primary_key=True)
     # Project relation
     project_id = Column(Integer, ForeignKey('projects.id'))
     project = relationship('Project', back_populates='injection_well')
@@ -53,10 +50,6 @@ class InjectionWell(OrmBase):
 
 
 class WellSection(OrmBase):
-
-    # region ORM Declarations
-    __tablename__ = 'well_sections'
-    id = Column(Integer, primary_key=True)
     cased = Column(Boolean)
     # TODO: add position
     # InjectionWell relation
