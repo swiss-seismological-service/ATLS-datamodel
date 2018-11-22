@@ -173,7 +173,7 @@ def Quantity(name, quantity_type, column_prefix=None):
 
     .. code::
 
-        # create a ORM mapping using the Quantity mixin factory
+        # define a ORM mapping using the Quantity mixin factory
         class FooBar(Quantity('foo', 'int'),
                      Quantity('bar', 'real'),
                      ORMBase):
@@ -238,14 +238,14 @@ def Quantity(name, quantity_type, column_prefix=None):
                  ('upperuncertainty', _upper_uncertainty),
                  ('confidencelevel', _confidence_level))
 
-    def __dict__(attr_prefix):
+    def __dict__(func_map, attr_prefix):
 
         return {'{}{}'.format(attr_prefix, attr_name): attr
-                for attr_name, attr in _func_map}
+                for attr_name, attr in func_map}
 
     # __dict__ ()
 
-    return type(name, (object,), __dict__(column_prefix))
+    return type(name, (object,), __dict__(_func_map, column_prefix))
 
 # Quantity ()
 
