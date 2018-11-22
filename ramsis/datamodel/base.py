@@ -16,7 +16,6 @@ from sqlalchemy import Column, Boolean, Integer, Float, String, DateTime
 from sqlalchemy.ext.declarative import declared_attr, declarative_base
 
 
-# Base class for objects that are to be persisted by sqlalchemy
 class Base(object):
 
     @declared_attr
