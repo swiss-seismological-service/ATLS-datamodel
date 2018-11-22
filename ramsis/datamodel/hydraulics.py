@@ -11,12 +11,12 @@ from sqlalchemy import Column, Integer, Float, DateTime, ForeignKey
 from sqlalchemy.orm import relationship, reconstructor
 from .signal import Signal
 
-from ramsis.datamodel.base import OrmBase
+from ramsis.datamodel.base import ORMBase
 
 log = logging.getLogger(__name__)
 
 
-class InjectionHistory(OrmBase):
+class InjectionHistory(ORMBase):
     """
     Provides a history of hydraulic events and functions to read and write them
     from/to a persistent store. The class uses Qt signals to signal changes.
@@ -102,7 +102,7 @@ class InjectionHistory(OrmBase):
         return self.samples[item] if self.samples else None
 
 
-class InjectionPlan(OrmBase):
+class InjectionPlan(ORMBase):
     # InjectionSample relation
     samples = relationship('InjectionSample',
                            back_populates='injection_plan')
@@ -112,7 +112,7 @@ class InjectionPlan(OrmBase):
     # endregion
 
 
-class InjectionSample(OrmBase):
+class InjectionSample(ORMBase):
     """
     Represents a hydraulic event (i.e. a flowrate and pressure)
 

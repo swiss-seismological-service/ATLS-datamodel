@@ -14,7 +14,7 @@ from sqlalchemy import Column, orm
 from sqlalchemy import Integer, String, DateTime
 from .signal import Signal
 
-from ramsis.datamodel.base import OrmBase
+from ramsis.datamodel.base import ORMBase
 
 log = logging.getLogger(__name__)
 
@@ -37,7 +37,7 @@ def datetime_decoder(dct):
     return dct
 
 
-class Settings(OrmBase):
+class Settings(ORMBase):
     """
     Collection of settings
 

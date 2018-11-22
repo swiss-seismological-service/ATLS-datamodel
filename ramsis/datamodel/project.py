@@ -19,9 +19,9 @@ from .forecast import ForecastSet
 from .injectionwell import InjectionWell
 from .eqstats import SeismicRateHistory
 
-from ramsis.datamodel.base import OrmBase
+from ramsis.datamodel.base import ORMBase
 
-class Project(OrmBase):
+class Project(ORMBase):
     """
     Manages persistent and non-persistent ramsis project data such as the
     seismic and hydraulic history, and project state information.

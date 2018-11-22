@@ -12,7 +12,7 @@ from sqlalchemy import Column, Integer, event, DateTime, String, PickleType,\
     ForeignKey
 from sqlalchemy.orm import relationship, Session
 
-from ramsis.datamodel.base import OrmBase
+from ramsis.datamodel.base import ORMBase
 
 
 @event.listens_for(Session, 'after_flush')
@@ -36,7 +36,7 @@ def delete_status_orphans(session, ctx):
             session.delete(orphan)
 
 
-class CalculationStatus(OrmBase):
+class CalculationStatus(ORMBase):
     """
     Calculation status of the hazard or risk stage of forecast models
     

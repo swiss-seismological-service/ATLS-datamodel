@@ -9,10 +9,10 @@ Copyright (C) 2015, SED (ETH Zurich)
 from sqlalchemy import Column, Integer, Float
 from sqlalchemy.orm import relationship
 
-from ramsis.datamodel.base import OrmBase
+from ramsis.datamodel.base import ORMBase
 
 
-class SkillTest(OrmBase):
+class SkillTest(ORMBase):
     skill_score = Column(Float)
     test_interval = Column(Float)
     spatial_extent = Column(Float)  # TODO: define

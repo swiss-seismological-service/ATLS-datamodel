@@ -28,7 +28,7 @@ class Base(object):
 # class Base
 
 
-OrmBase = declarative_base(cls=Base)
+ORMBase = declarative_base(cls=Base)
 
 
 # ----------------------------------------------------------------------------
@@ -77,7 +77,7 @@ def Quantity(name, quantity_type, column_prefix=None):
         # create a ORM mapping using the Quantity mixin factory
         class FooBar(Quantity('foo', 'int'),
                      Quantity('bar', 'real'),
-                     OrmBase):
+                     ORMBase):
 
             def __repr__(self):
                 return '<FooBar (foo_value=%d, bar_value=%f)>' % (

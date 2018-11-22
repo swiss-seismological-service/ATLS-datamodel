@@ -12,7 +12,7 @@ from sqlalchemy import Integer, Float, String, DateTime, ForeignKey
 from sqlalchemy.orm import relationship, reconstructor, Session
 from .signal import Signal
 
-from ramsis.datamodel.base import OrmBase
+from ramsis.datamodel.base import ORMBase
 from ramsis.datamodel.geometry import Point
 
 log = logging.getLogger(__name__)
@@ -39,7 +39,7 @@ def delete_catalog_orphans(session, ctx):
             session.delete(orphan)
 
 
-class SeismicCatalog(OrmBase):
+class SeismicCatalog(ORMBase):
     """
     Provides a history of seismic events and functions to read and write them
     from/to a persistent store. The class uses Qt signals to signal changes.
@@ -156,7 +156,7 @@ class SeismicCatalog(OrmBase):
         return self.seismic_events[item] if self.seismic_events else None
 
 
-class SeismicEvent(OrmBase):
+class SeismicEvent(ORMBase):
     """
     Represents a seismic event
 

@@ -20,11 +20,11 @@ from .signal import Signal
 from .skilltest import SkillTest
 from .calculationstatus import CalculationStatus as CS
 
-from ramsis.datamode.base import OrmBase
+from ramsis.datamode.base import ORMBase
 from ramsis.datamodel.type import JSONEncodedDict
 
 
-class ForecastSet(OrmBase):
+class ForecastSet(ORMBase):
     """
     Parent object for forecasts
 
@@ -58,7 +58,7 @@ class ForecastSet(OrmBase):
             return None
 
 
-class Forecast(OrmBase):
+class Forecast(ORMBase):
     """ Planned or completed forecast """
     name = Column(String)
     forecast_time = Column(DateTime)
@@ -104,7 +104,7 @@ class Forecast(OrmBase):
             raise e
 
 
-class ForecastInput(OrmBase):
+class ForecastInput(ORMBase):
     # Forecast relation
     forecast_id = Column(Integer, ForeignKey('forecasts.id'))
     forecast = relationship('Forecast', back_populates='input')
@@ -120,7 +120,7 @@ class ForecastInput(OrmBase):
     # endregion
 
 
-class ForecastResult(OrmBase):
+class ForecastResult(ORMBase):
     """
     Results of one forecast run
 
@@ -156,7 +156,7 @@ class ForecastResult(OrmBase):
         self.result_changed = Signal()
 
 
-class HazardResult(OrmBase):
+class HazardResult(ORMBase):
     """ 
     Result of the OQ hazard calculation 
     
@@ -180,7 +180,7 @@ class HazardResult(OrmBase):
         return self.status.state
 
 
-class RiskResult(OrmBase):
+class RiskResult(ORMBase):
     calc_id = Column(Integer)
     result_id = Column(Integer)
     # relationships
@@ -196,7 +196,7 @@ class RiskResult(OrmBase):
         return self.status.state
 
 
-class Scenario(OrmBase):
+class Scenario(ORMBase):
     """
     Each forecast scenario has a specific planned injection scenario and
     model / stages configuration.
@@ -312,7 +312,7 @@ def log_likelihood(forecast, observation):
     return ll
 
 
-class ModelResult(OrmBase):
+class ModelResult(ORMBase):
     """
     Result from a single forecast `Model`. The result either contains actual
     result values in `cum_result` and optionally `vol_results` or a reason
@@ -418,7 +418,7 @@ class ModelResult(OrmBase):
         return []
 
 
-class RatePrediction(OrmBase):
+class RatePrediction(ORMBase):
     """
     Result container for a single forecasted seismic rate
 

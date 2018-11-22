@@ -10,10 +10,10 @@ Injection well information
 from sqlalchemy import Column, Integer, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
 
-from ramsis.datamodel.base import OrmBase
+from ramsis.datamodel.base import ORMBase
 
 
-class InjectionWell(OrmBase):
+class InjectionWell(ORMBase):
     """
     Injection well information
 
@@ -49,7 +49,7 @@ class InjectionWell(OrmBase):
         return 4740.3, 270645.0, 611631.0
 
 
-class WellSection(OrmBase):
+class WellSection(ORMBase):
     cased = Column(Boolean)
     # TODO: add position
     # InjectionWell relation
