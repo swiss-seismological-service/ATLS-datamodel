@@ -11,6 +11,7 @@
 General purpose datamodel facilities.
 """
 import datetime
+import enum
 
 from sqlalchemy import Column, Boolean, Integer, Float, String, DateTime
 from sqlalchemy.ext.declarative import declared_attr, declarative_base
@@ -54,6 +55,105 @@ class CreationInfo(object):
     creationinfo_license = Column(String)
 
 # class CreationInfo
+
+
+def Epoch(name, epoch_type=None, column_prefix=None):
+    """
+    Mixin factory for common :code:`Epoch` types from
+    `QuakeML <https://quake.ethz.ch/quakeml/>`_.
+
+    :param str name: Name of the class returned
+    :param epoch_type: Type of the epoch to be returned. Valid values
+        are :code:`None` or :code:`default`, :code:`open` and :code:`finite`.
+    :type epoch_type: str or None
+    :param column_prefix: Prefix used for DB columns. If :code:`None`, then
+        :code:`name` with an appended underscore :code:`_` is used. Capital
+        letters are converted to lowercase.
+    :type column_prefix: str or None
+
+    The usage of :py:func:`Epoch` is illustrated bellow:
+
+    .. code::
+
+        import datetime
+
+        # define a ORM mapping using the "Epoch" mixin factory
+        class MyObject(Epoch('epoch'), ORMBase):
+
+            def __repr__(self):
+                return \
+                    '<MyObject(epoch_starttime={}, epoch_endtime={})>'.format(
+                        self.epoch_starttime, self.epoch_endtime)
+
+
+        # create instance of "MyObject"
+        my_obj = MyObject(epoch_starttime=datetime.datetime.utcnow())
+
+    """
+    if column_prefix is None:
+        column_prefix = '%s_' % name
+
+    column_prefix = column_prefix.lower()
+
+    class Boundery(enum.Enum):
+        LEFT = enum.auto()
+        RIGHT = enum.auto()
+
+    def create_datetime(boundery, column_prefix, **kwargs):
+
+        def _make_datetime(boundery, **kwargs):
+
+            if boundery is Boundery.LEFT:
+                name = 'starttime'
+            elif boundery is Boundery.RIGHT:
+                name = 'endtime'
+            else:
+                raise ValueError('Invalid boundery: {!r}.'.format(boundery))
+
+            @declared_attr
+            def _datetime(cls):
+                return Column('%s%s' % (column_prefix, name), DateTime,
+                              **kwargs)
+
+            return _datetime
+
+        # _make_datetime ()
+
+        return _make_datetime(boundery, **kwargs)
+
+    # create_datetime ()
+
+    if epoch_type is None or epoch_type == 'default':
+        _func_map = (('starttime', create_datetime(Boundery.LEFT,
+                                                   column_prefix,
+                                                   nullable=False)),
+                     ('endtime', create_datetime(Boundery.RIGHT,
+                                                 column_prefix)))
+    elif epoch_type == 'open':
+        _func_map = (('starttime', create_datetime(Boundery.LEFT,
+                                                   column_prefix)),
+                     ('endtime', create_datetime(Boundery.RIGHT,
+                                                 column_prefix)))
+    elif epoch_type == 'finite':
+        _func_map = (('starttime', create_datetime(Boundery.LEFT,
+                                                   column_prefix,
+                                                   nullable=False)),
+                     ('endtime', create_datetime(Boundery.RIGHT,
+                                                 column_prefix,
+                                                 nullable=False)))
+    else:
+        raise ValueError('Invalid epoch_type: {!r}.'.format(epoch_type))
+
+    def __dict__(func_map, attr_prefix):
+
+        return {'{}{}'.format(attr_prefix, attr_name): attr
+                for attr_name, attr in func_map}
+
+    # __dict__ ()
+
+    return type(name, (object,), __dict__(_func_map, column_prefix))
+
+# Epoch ()
 
 
 def Quantity(name, quantity_type, column_prefix=None):
