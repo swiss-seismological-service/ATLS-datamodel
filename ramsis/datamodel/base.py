@@ -35,7 +35,7 @@ ORMBase = declarative_base(cls=Base)
 # XXX(damb): Within the mixins below the QML type *ResourceReference* i.e. an
 # URI is implemented as sqlalchemy.String
 
-class CreationInfo(object):
+class CreationInfoMixin(object):
     """
     `SQLAlchemy <https://www.sqlalchemy.org/>`_ mixin emulating type
     :code:`CreationInfo` from `QuakeML <https://quake.ethz.ch/quakeml/>`_.
@@ -57,7 +57,17 @@ class CreationInfo(object):
 # class CreationInfo
 
 
-def Epoch(name, epoch_type=None, column_prefix=None):
+class NameMixin(object):
+    """
+    `SQLAlchemy <https://www.sqlalchemy.org/>`_ mixin providing a general
+    purpose :code:`name` attribute.
+    """
+    name = Column(String)
+
+# class NameMixin
+
+
+def EpochMixin(name, epoch_type=None, column_prefix=None):
     """
     Mixin factory for common :code:`Epoch` types from
     `QuakeML <https://quake.ethz.ch/quakeml/>`_.
@@ -71,14 +81,14 @@ def Epoch(name, epoch_type=None, column_prefix=None):
         letters are converted to lowercase.
     :type column_prefix: str or None
 
-    The usage of :py:func:`Epoch` is illustrated bellow:
+    The usage of :py:func:`EpochMixin` is illustrated bellow:
 
     .. code::
 
         import datetime
 
         # define a ORM mapping using the "Epoch" mixin factory
-        class MyObject(Epoch('epoch'), ORMBase):
+        class MyObject(EpochMixin('epoch'), ORMBase):
 
             def __repr__(self):
                 return \
@@ -153,10 +163,10 @@ def Epoch(name, epoch_type=None, column_prefix=None):
 
     return type(name, (object,), __dict__(_func_map, column_prefix))
 
-# Epoch ()
+# EpochMixin ()
 
 
-def Quantity(name, quantity_type, column_prefix=None):
+def QuantityMixin(name, quantity_type, column_prefix=None):
     """
     Mixin factory for common :code:`Quantity` types from
     `QuakeML <https://quake.ethz.ch/quakeml/>`_.
@@ -169,13 +179,13 @@ def Quantity(name, quantity_type, column_prefix=None):
         letters are converted to lowercase.
     :type column_prefix: str or None
 
-    The usage of :py:func:`Quantity` is illustrated bellow:
+    The usage of :py:func:`QuantityMixin` is illustrated bellow:
 
     .. code::
 
         # define a ORM mapping using the Quantity mixin factory
-        class FooBar(Quantity('foo', 'int'),
-                     Quantity('bar', 'real'),
+        class FooBar(QuantityMixin('foo', 'int'),
+                     QuantityMixin('bar', 'real'),
                      ORMBase):
 
             def __repr__(self):
@@ -247,7 +257,7 @@ def Quantity(name, quantity_type, column_prefix=None):
 
     return type(name, (object,), __dict__(_func_map, column_prefix))
 
-# Quantity ()
+# QuantityMixin ()
 
 
 # ----- END OF base.py -----
