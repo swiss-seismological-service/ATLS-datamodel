@@ -12,6 +12,7 @@ General purpose datamodel ORM facilities.
 """
 import datetime
 import enum
+import functools
 
 from sqlalchemy import Column, Boolean, Integer, Float, String, DateTime
 from sqlalchemy.ext.declarative import declared_attr, declarative_base
@@ -166,6 +167,9 @@ def EpochMixin(name, epoch_type=None, column_prefix=None):
 # EpochMixin ()
 
 
+UniqueEpochMixin = EpochMixin('Epoch', column_prefix='')
+
+
 def QuantityMixin(name, quantity_type, column_prefix=None):
     """
     Mixin factory for common :code:`Quantity` types from
@@ -258,6 +262,13 @@ def QuantityMixin(name, quantity_type, column_prefix=None):
     return type(name, (object,), __dict__(_func_map, column_prefix))
 
 # QuantityMixin ()
+
+
+UniqueQuantityMixin = QuantityMixin('Quantity', column_prefix='')
+FloatQuantityMixin = functools.partial(quantity_type='float')
+RealQunatityMixin = FloatQuantityMixin
+IntegerQuantityMixin = functools.partial(quantity_type='int')
+TimeQuantityMixin = functools.partial(quantity_type='time')
 
 
 # ----- END OF base.py -----
