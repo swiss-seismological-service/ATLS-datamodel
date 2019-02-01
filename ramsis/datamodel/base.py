@@ -8,7 +8,7 @@
 #
 # ============================================================================
 """
-General purpose datamodel facilities.
+General purpose datamodel ORM facilities.
 """
 import datetime
 import enum
@@ -176,7 +176,7 @@ def QuantityMixin(name, quantity_type, column_prefix=None):
         are :code:`int`, :code:`real` or rather :code:`float` and :code:`time`.
     :param column_prefix: Prefix used for DB columns. If :code:`None`, then
         :code:`name` with an appended underscore :code:`_` is used. Capital
-        letters are converted to lowercase.
+        Letters are converted to lowercase.
     :type column_prefix: str or None
 
     The usage of :py:func:`QuantityMixin` is illustrated bellow:
