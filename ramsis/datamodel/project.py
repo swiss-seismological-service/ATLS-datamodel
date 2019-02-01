@@ -156,6 +156,7 @@ class Project(ORMBase):
 
     # Project time
 
+    # TODO (damb): Use property-setter
     def update_project_time(self, t):
         self._project_time = t
         self.project_time_changed.emit(t)
