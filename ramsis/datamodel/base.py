@@ -1,7 +1,7 @@
 # This is <base.py>
 # ----------------------------------------------------------------------------
 #
-# Copyright (c) 2018 by Swiss Seismological Service (SED, ETHZ)
+# Copyright (c) 2018 by Daniel Armbruster (SED, ETHZ)
 #
 # REVISIONS and CHANGES
 #    2018/01/24   V1.0   Daniel Armbruster (damb)
