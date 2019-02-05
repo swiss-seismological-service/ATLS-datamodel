@@ -8,8 +8,8 @@ Copyright (C) 2013, ETH Zurich - Swiss Seismological Service SED
 
 import json
 from datetime import datetime
-from sqlalchemy import Column, Integer, event, DateTime, String, PickleType,\
-    ForeignKey
+from sqlalchemy import (Column, Integer, event, DateTime, String, PickleType,
+                        ForeignKey)
 from sqlalchemy.orm import relationship, Session
 
 from ramsis.datamodel.base import ORMBase
