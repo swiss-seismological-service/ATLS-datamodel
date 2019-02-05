@@ -4,8 +4,7 @@ Hydraulics related ORM facilities.
 
 # TODO(damb): Remove dependencies unrelated to a ORM.
 import logging
-import traceback
-from datetime import datetime
+
 from sqlalchemy import Column, Integer, ForeignKey
 from sqlalchemy.orm import relationship, reconstructor
 from .signal import Signal
