@@ -2,7 +2,7 @@
 Hydraulics related ORM facilities.
 """
 
-# TODO(damb): Remove dependencies unrelated to a ORM.
+# TODO(damb): Remove dependencies unrelated to ORM.
 import logging
 
 from sqlalchemy import Column, Integer, ForeignKey
