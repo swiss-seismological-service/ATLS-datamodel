@@ -240,6 +240,7 @@ class ForecastStage(ORMBase):
         paradigm.
     """
     config = Column(MutableDict.as_mutable(JSONEncodedDict))
+    enabled = Column(Boolean, default=True)
     _type = Column(Enum(EModel))
 
     # TODO(damb): Calculation status needs to be introduced for forecast

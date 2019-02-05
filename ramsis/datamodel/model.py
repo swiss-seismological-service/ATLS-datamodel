@@ -10,7 +10,7 @@
 
 import enum
 
-from sqlalchemy import Column, Enum
+from sqlalchemy import Column, Boolean, Enum
 from sqlalchemy.ext.mutable import MutableDict
 
 from ramsis.datamodel.base import ORMBase, NameMixin
@@ -39,6 +39,7 @@ class Model(NameMixin, ORMBase):
     """
     # XXX(damb): default model configuration parameters
     config = Column(MutableDict.as_mutable(JSONEncodedDict))
+    enabled = Column(Boolean, default=True)
     _type = Column(Enum(EModel))
 
     __mapper_args__ = {
@@ -62,6 +63,7 @@ class ModelRun(ORMBase):
     """
     # XXX(damb): seismicity model run specific configuration parameters
     config = Column(MutableDict.as_mutable(JSONEncodedDict))
+    enabled = Column(Boolean, default=True)
     _type = Column(Enum(EModel))
 
     __mapper_args__ = {
