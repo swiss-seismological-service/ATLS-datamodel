@@ -12,9 +12,9 @@ import logging
 from datetime import datetime
 from sqlalchemy import Column, orm
 from sqlalchemy import Integer, String, DateTime
-from .signal import Signal
 
 from ramsis.datamodel.base import ORMBase
+from ramsis.datamode.signal import Signal
 
 log = logging.getLogger(__name__)
 

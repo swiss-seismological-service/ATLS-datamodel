@@ -5,10 +5,10 @@ Seismics related ORM facilities.
 from sqlalchemy import Column, event
 from sqlalchemy import Integer, String, ForeignKey
 from sqlalchemy.orm import relationship, reconstructor, Session
-from .signal import Signal
 
 from ramsis.datamodel.base import (ORMBase, CreationInfoMixin,
                                    RealQuantityMixin, TimeQuantityMixin)
+from ramsis.datamodel.signal import Signal
 
 
 @event.listens_for(Session, 'after_flush')

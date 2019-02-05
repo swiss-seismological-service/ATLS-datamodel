@@ -7,10 +7,10 @@ import logging
 
 from sqlalchemy import Column, Integer, ForeignKey
 from sqlalchemy.orm import relationship, reconstructor
-from .signal import Signal
 
 from ramsis.datamodel.base import (ORMBase, CreationInfoMixin,
                                    RealQuantityMixin, TimeQuantityMixin)
+from ramsis.datamode.signal import Signal
 
 
 log = logging.getLogger(__name__)
