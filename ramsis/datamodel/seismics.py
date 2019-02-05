@@ -217,17 +217,20 @@ class SeismicEvent(ORMBase):
         return "<SeismicEvent('%s' @ '%s')>" % (self.magnitude, self.date_time)
 
     def __eq__(self, other):
+        # TODO(damb): SeismicEvent instances are only equal when comparing:
+        # * evemt public_id
+        # * origin public_id
+        # * magnitude public_id
+        # * focalmechanism public_id (might be optional, here)
+        # 
+        # Correct events according to this rules.
         if isinstance(other, SeismicEvent):
             if self.public_id and other.public_id:
                 return self.public_id == other.public_id
             else:
                 return all(getattr(self, a) == getattr(other, a)
                            for a in self.data_attrs)
-        return NotImplemented
+        raise NotImplementedError
 
     def __ne__(self, other):
-        result = self.__eq__(other)
-        if result is NotImplemented:
-            return result
-        else:
-            return not result
+        return not self.__eq__(other)
