@@ -120,8 +120,7 @@ class ReservoirSeismicityPrediction(QuantityMixin('rate'),
     # relation: SeismicityModelRun
     modelrun_id = Column(Integer, ForeignKey('seismicitymodelrun.id'))
     modelrun = relationship('SeismicityModelRun',
-                            back_populates='result',
-                            cascade='all, delete-orphan')
+                            back_populates='result')
     # reference: self (Adjacency List Relationships)
     parent_id = Column(Integer,
                        ForeignKey('reservoirseismicityprediction.id'))
