@@ -32,9 +32,9 @@ class ForecastSet(ORMBase):
     Implements a container for :py:class:`Forecast` objects.
     """
     project_id = Column(Integer, ForeignKey('project.id'))
-    project = relationship('Project', back_populates='forecast_set')
+    project = relationship('Project', back_populates='forecastset')
 
-    forecasts = relationship('Forecast', back_populates='forecast_set',
+    forecasts = relationship('Forecast', back_populates='forecastset',
                              cascade='all, delete-orphan',
                              order_by='Forecast.interval_starttime')
 
@@ -79,14 +79,14 @@ class Forecast(CreationInfoMixin,
     their corresponding results) and the real *input* data i.e. both a
     :py:class:`SeismicCatalog` and :py:class:`Hydraulics`.
     """
-    forecast_set_id = Column(Integer, ForeignKey('forecastset.id'))
-    forecast_set = relationship('ForecastSet', back_populates='forecasts')
+    forecastset_id = Column(Integer, ForeignKey('forecastset.id'))
+    forecastset = relationship('ForecastSet', back_populates='forecasts')
 
     # TODO(damb): delete-orphane to be handled manually?
-    seismic_catalog = relationship('SeismicCatalog',
-                                   uselist=False,
-                                   back_populates='forecast',
-                                   cascade='all, delete-orphan')
+    seismiccatalog = relationship('SeismicCatalog',
+                                  uselist=False,
+                                  back_populates='forecast',
+                                  cascade='all, delete-orphan')
 
     hydraulics = relationship('Hydraulics',
                               uselist=False,
