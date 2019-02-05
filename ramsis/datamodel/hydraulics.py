@@ -27,12 +27,16 @@ class Hydraulics(CreationInfoMixin, ORMBase):
     ORM representatio of a hydraulics time series.
     """
     # relation: Project
-    project_id = Column(Integer, ForeignKey('projects.id'))
+    project_id = Column(Integer, ForeignKey('project.id'))
     project = relationship('Project', back_populates='hydraulics')
     # relation: HydraulicsEvent
     samples = relationship('HydraulicsSample',
                            back_populates='hydraulics',
                            cascade='all')
+
+    # relation: InjectionWell
+    well_id = Column(Integer, ForeignKey('injectionwell.id'))
+    well = relationship('InjectionWell', back_populates='hydraulics')
 
     def __init__(self):
         self.history_changed = Signal()
@@ -133,6 +137,10 @@ class InjectionPlan(CreationInfoMixin, ORMBase):
     scenario = relationship('ForecastScenario',
                             back_populates='injectionplan')
 
+    # relation: InjectionWell
+    well_id = Column(Integer, ForeignKey('injectionwell.id'))
+    well = relationship('InjectionWell', back_populates='injectionplans')
+
     def __iter__(self):
         for s in self.samples:
             yield s
@@ -215,7 +223,7 @@ class HydraulicsEvent(TimeQuantityMixin('datetime'),
                 self.topholeflow_value == other.topholeflow_value and
                 self.downholepressure_value == other.downholepressure_value and
                 self.topholepressure_value == other.topholepressure_value)
-        raise NotImplementedError
+        raise TypeError
 
     def __ne__(self, other):
         return not self.__eq__(other)
