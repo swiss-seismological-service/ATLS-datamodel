@@ -13,6 +13,7 @@ from .signal import Signal
 from ramsis.datamodel.base import (ORMBase, CreationInfoMixin,
                                    RealQuantityMixin, TimeQuantityMixin)
 
+
 log = logging.getLogger(__name__)
 
 
@@ -41,65 +42,65 @@ class Hydraulics(CreationInfoMixin, ORMBase):
         self.history_changed = Signal()
 
     # FIXME(damb): Why is this method necessary if there is *hydws*
-    def import_events(self, importer):
-        """
-        Imports hydraulic events from a csv file by using an EventReporter
-
-        The EventReporter must return the following fields (which must thus
-        be present in the csv file). All imported events are simply added to
-        any existing one. If you want to overwrite existing events, call
-        :meth:`clear_events` first.
-
-        - ``flow_dh``: flow down hole [l/min]
-        - ``flow_xt``: flow @ x-mas tree (top hole) [l/min]
-        - ``pr_dh``: pressure down hole [bar]
-        - ``pr_xt``: pressure @ x-mas tree (top hole) [bar]
-
-        :param importer: an EventReporter object
-        :type importer: EventImporter
-
-        """
-        events = []
-        try:
-            for date, fields in importer:
-                event = HydraulicsEvent(date,
-                                        flow_dh=float(
-                                           fields.get('flow_dh') or 0),
-                                        flow_xt=float(
-                                           fields.get('flow_xt') or 0),
-                                        pr_dh=float(fields.get('pr_dh') or 0),
-                                        pr_xt=float(fields.get('pr_xt') or 0))
-                events.append(event)
-        except Exception:
-            log.error('Failed to import hydraulic events. Make sure '
-                      'the .csv file contains top and bottom hole '
-                      'flow and pressure fields and that the date '
-                      'field has the format dd.mm.yyyyTHH:MM:SS. The '
-                      'original error was ' + traceback.format_exc())
-        else:
-            self.samples.extend(events)
-            log.info('Imported {} hydraulic events.'.format(
-                len(events)))
-            self.history_changed.emit()
-
-    def clear_events(self, time_range=(None, None)):
-        """
-        Clear all hydraulic events from the database
-
-        If time_range is given, only the events that fall into the time range
-
-        """
-        time_range = (time_range[0] or datetime.min,
-                      time_range[1] or datetime.max)
-
-        to_delete = (s for s in self.samples
-                     if time_range[1] >= s.date_time >= time_range[0])
-        count = 0
-        for s in to_delete:
-            self.samples.remove(s)
-            count += 1
-        log.info('Cleared {} hydraulic events.'.format(count))
-        self.history_changed.emit()
+#    def import_events(self, importer):
+#        """
+#        Imports hydraulic events from a csv file by using an EventReporter
+#
+#        The EventReporter must return the following fields (which must thus
+#        be present in the csv file). All imported events are simply added to
+#        any existing one. If you want to overwrite existing events, call
+#        :meth:`clear_events` first.
+#
+#        - ``flow_dh``: flow down hole [l/min]
+#        - ``flow_xt``: flow @ x-mas tree (top hole) [l/min]
+#        - ``pr_dh``: pressure down hole [bar]
+#        - ``pr_xt``: pressure @ x-mas tree (top hole) [bar]
+#
+#        :param importer: an EventReporter object
+#        :type importer: EventImporter
+#
+#        """
+#        events = []
+#        try:
+#            for date, fields in importer:
+#                event = HydraulicsEvent(date,
+#                                        flow_dh=float(
+#                                           fields.get('flow_dh') or 0),
+#                                        flow_xt=float(
+#                                           fields.get('flow_xt') or 0),
+#                                        pr_dh=float(fields.get('pr_dh') or 0),
+#                                        pr_xt=float(fields.get('pr_xt') or 0))
+#                events.append(event)
+#        except Exception:
+#            log.error('Failed to import hydraulic events. Make sure '
+#                      'the .csv file contains top and bottom hole '
+#                      'flow and pressure fields and that the date '
+#                      'field has the format dd.mm.yyyyTHH:MM:SS. The '
+#                      'original error was ' + traceback.format_exc())
+#        else:
+#            self.samples.extend(events)
+#            log.info('Imported {} hydraulic events.'.format(
+#                len(events)))
+#            self.history_changed.emit()
+#
+#    def clear_events(self, time_range=(None, None)):
+#        """
+#        Clear all hydraulic events from the database
+#
+#        If time_range is given, only the events that fall into the time range
+#
+#        """
+#        time_range = (time_range[0] or datetime.min,
+#                      time_range[1] or datetime.max)
+#
+#        to_delete = (s for s in self.samples
+#                     if time_range[1] >= s.date_time >= time_range[0])
+#        count = 0
+#        for s in to_delete:
+#            self.samples.remove(s)
+#            count += 1
+#        log.info('Cleared {} hydraulic events.'.format(count))
+#        self.history_changed.emit()
 
     def __iter__(self):
         for s in self.samples:
