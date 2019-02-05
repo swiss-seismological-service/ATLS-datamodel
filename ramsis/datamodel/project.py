@@ -1,9 +1,7 @@
-# -*- encoding: utf-8 -*-
 # Copyright (C) 2013, ETH Zurich - Swiss Seismological Service SED
 
 """
 Provides a class to manage Ramsis project data
-
 """
 
 from datetime import datetime, timedelta
@@ -11,7 +9,6 @@ from datetime import datetime, timedelta
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, \
     PickleType
 from sqlalchemy.orm import relationship, reconstructor
-from .signal import Signal
 from .settings import ProjectSettings
 from .seismics import SeismicCatalog
 from .hydraulics import InjectionHistory
@@ -19,37 +16,50 @@ from .forecast import ForecastSet
 from .injectionwell import InjectionWell
 from .eqstats import SeismicRateHistory
 
-from ramsis.datamodel.base import ORMBase
+from ramsis.datamodel.base import (ORMBase, CreationInfoMixin, NameMixin)
+from ramsis.datamodel.signal import Signal
 
-class Project(ORMBase):
+
+class Project(CreationInfoMixin, NameMixin, ORMBase):
     """
-    Manages persistent and non-persistent ramsis project data such as the
-    seismic and hydraulic history, and project state information.
-
-    .. pyqt4:signal:project_time_changed: emitted when the project time changes
-
-    :ivar seismic_catalog: The seismic history of the project
-    :ivar injection_history: The hydraulic history of the project
-
+    RT-RAMSIS project ORM representation. :py:class:`Project` corresponds to
+    the root object of the RT-RAMSIS data model.
     """
-    title = Column(String)
     description = Column(String)
-    start_date = Column(DateTime)
+
+    # TODO(damb): Check the purpose of this property.
     end_date = Column(DateTime)
+
+    # XXX(damb): Reference point used when projecting data into a local CS.
+    # To be verified if PickleType suits the needs.
     reference_point = Column(PickleType)
-    args = {'uselist': False,  # we use one to one relationships for now
-            'back_populates': 'project',
-            'cascade': 'all, delete-orphan'}
-    injection_well = relationship('InjectionWell', **args)
-    injection_history = relationship('InjectionHistory', **args)
-    forecast_set = relationship('ForecastSet', **args)
-    # We handle delete-orphan manually for seismic catalogs
-    seismic_catalog = relationship('SeismicCatalog',
-                                   **dict(args, cascade='all'))
+
+    relationship_config = {'back_populates': 'project',
+                           'cascade': 'all, delete-orphan'}
+
+    injectionwell = relationship('InjectionWell',
+                                 **relationship_config)
+    hydraulics = relationship('Hydraulics',
+                              **relationship_config)
+    forecastset = relationship('ForecastSet',
+                               **relationship_config)
+    # XXX(heilukas): Handle delete-orphan manually for seismic catalogs
+    seismiccatalog = relationship('SeismicCatalog',
+                                  back_populates='project',
+                                  cascade='all')
+
+    # relation: Settings
     settings_id = Column(Integer, ForeignKey('settings.id'))
     settings = relationship('Settings')
-    # endregion
 
+
+    # TODO(damb):
+    # * Projects are saved within a store; hence it would be better style to
+    #   implement a utility function such as Project.save(store) instead of
+    #   passing the store parameter as a ctor arg.
+    # * Check reference point implementation. Verify if a POINT_Z would suit
+    #   better our needs.
+    # * 
     def __init__(self, store=None, title=''):
         super(Project, self).__init__()
         self.store = store
@@ -153,8 +163,6 @@ class Project(ORMBase):
             return es
         else:
             return eh if eh.date_time > es.date_time else es
-
-    # Project time
 
     # TODO (damb): Use property-setter
     def update_project_time(self, t):
