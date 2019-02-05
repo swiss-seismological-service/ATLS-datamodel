@@ -1,21 +1,14 @@
-# -*- encoding: utf-8 -*-
 """
-History of seismic events
-
+Seismics related ORM facilities.
 """
 
-import logging
-import traceback
-from datetime import datetime
 from sqlalchemy import Column, event
-from sqlalchemy import Integer, Float, String, DateTime, ForeignKey
+from sqlalchemy import Integer, String, ForeignKey
 from sqlalchemy.orm import relationship, reconstructor, Session
 from .signal import Signal
 
-from ramsis.datamodel.base import ORMBase
-from ramsis.datamodel.geometry import Point
-
-log = logging.getLogger(__name__)
+from ramsis.datamodel.base import (ORMBase, CreationInfoMixin,
+                                   RealQuantityMixin, TimeQuantityMixin)
 
 
 @event.listens_for(Session, 'after_flush')
@@ -23,47 +16,41 @@ def delete_catalog_orphans(session, ctx):
     """
     Seismic catalog orphan deletion
 
-    Seismic catalogs can have different kinds of parents, so a simple
-    'delete-orphan' statement on the relation doesn't work. Instead we check
-    after each flush to the db if there are any orphaned catalogs and delete
-    them if necessary.
+    Seismic catalogs can have different kinds of parents (i.e.
+    Project<->SeismicCatalog corresponds to a many to many relation), so a
+    simple 'delete-orphan' statement on the relation doesn't work. Instead we
+    check after each flush to the db if there are any orphaned catalogs and
+    delete them if necessary.
 
     :param Session session: The current session
 
     """
     if any(isinstance(i, SeismicCatalog) for i in session.dirty):
         query = session.query(SeismicCatalog).\
-                filter_by(project=None, forecast_input=None, skill_test=None)
+                filter_by(project=None)
         orphans = query.all()
         for orphan in orphans:
             session.delete(orphan)
 
+# delete_catalog_orphans ()
 
-class SeismicCatalog(ORMBase):
-    """
-    Provides a history of seismic events and functions to read and write them
-    from/to a persistent store. The class uses Qt signals to signal changes.
 
+class SeismicCatalog(CreationInfoMixin, ORMBase):
     """
-    catalog_date = Column(DateTime)
-    # SeismicEvent relation (we own them)
-    seismic_events = relationship('SeismicEvent',
-                                  order_by='SeismicEvent.date_time',
-                                  back_populates='seismic_catalog',
-                                  cascade='all, delete-orphan')
-    # Parents
-    # ...Project relation
-    project_id = Column(Integer, ForeignKey('projects.id'))
-    project = relationship('Project', back_populates='seismic_catalog')
-    # ...ForecastInput relation
-    forecast_input_id = Column(Integer, ForeignKey('forecast_inputs.id'))
-    forecast_input = relationship('ForecastInput',
-                                  back_populates='input_catalog')
-    # ...SkillTest relation
-    skill_test_id = Column(Integer, ForeignKey('skill_tests.id'))
-    skill_test = relationship('SkillTest',
-                              back_populates='reference_catalog')
-    # endregion
+    ORM representation of a seismic catalog.
+    """
+    # relation: Project
+    project_id = Column(Integer, ForeignKey('project.id'))
+    project = relationship('Project', back_populates='seismiccatalog')
+    # relation: Forecast
+    forecast_id = Column(Integer, ForeignKey('forecast.id'))
+    forecast = relationship('Forecast',
+                            back_populates='seismiccatalog')
+    # relation: SeismicEvent
+    events = relationship('SeismicEvent',
+                          back_populates='seismiccatalog',
+                          cascade='all, delete-orphan',
+                          order_by='SeismicEvent.datetime_value')
 
     def __init__(self):
         super(SeismicCatalog, self).__init__()
@@ -73,164 +60,168 @@ class SeismicCatalog(ORMBase):
     def init_on_load(self):
         self.history_changed = Signal()
 
-    def import_events(self, importer):
-        """
-        Imports seismic events from a data source by using an EventImporter
+    def __getitem__(self, item):
+        return self.events[item] if self.events else None
 
-        The EventImporter must return the following fields. All imported events
-        are simply added to any existing ones. If you want to overwrite
-        existing events, call :meth:`clear_events` first.
-
-        lat: latitude [degrees]
-        lon: longitude [degrees]
-        depth: depth [m], positive downwards
-        mag: magnitude
-
-        :param importer: an EventImporter object
-        :type importer: EventImporter
-
-        """
-        events = []
-        try:
-            for date, fields in importer:
-                location = (float(fields['lat']),
-                            float(fields['lon']),
-                            float(fields['depth']))
-                se = SeismicEvent(date, float(fields['mag']), location)
-                events.append(se)
-        except:
-            log.error('Failed to import seismic events. Make sure '
-                      'the data contains lat, lon, depth, and mag '
-                      'fields and that the date field has the format '
-                      'dd.mm.yyyyTHH:MM:SS. The original error was ' +
-                      traceback.format_exc())
-        else:
-            self.seismic_events.extend(events)
-            log.info('Imported {} seismic events.'.format(len(events)))
-            self.history_changed.emit()
-
-    def events_before(self, end_date, mc=0):
-        """ Returns all events >mc before *end_date* """
-        return [e for e in self.seismic_events
-                if e.date_time < end_date and e.magnitude > mc]
-
-    def clear_events(self, time_range=(None, None)):
-        """
-        Clear all seismic events from the database
-
-        If time_range is given, only the events that fall into the time range
-        are cleared.
-
-        """
-        time_range = (time_range[0] or datetime.min,
-                      time_range[1] or datetime.max)
-
-        to_delete = (s for s in self.seismic_events
-                     if time_range[1] >= s.date_time >= time_range[0])
-        count = 0
-        for s in to_delete:
-            self.seismic_events.remove(s)
-            count += 1
-        log.info('Cleared {} seismic events.'.format(count))
-        self.history_changed.emit()
-
-    def snapshot(self, t):
-        """
-        Create a snapshot of the catalog.
-
-        Deep copies the catalog with all events up to time t
-
-        :return SeismicCatalog: copy of the catalog
-
-        """
-        snapshot = SeismicCatalog()
-        snapshot.catalog_date = datetime.utcnow()
-        snapshot.seismic_events = [s.copy() for s in self.seismic_events
-                                   if s.date_time < t]
-        return snapshot
+    def __iter__(self):
+        for e in self.events:
+            yield e
 
     def __len__(self):
-        return len(self.seismic_events)
+        return len(self.events)
 
-    def __getitem__(self, item):
-        return self.seismic_events[item] if self.seismic_events else None
+#    def import_events(self, importer):
+#        """
+#        Imports seismic events from a data source by using an EventImporter
+#
+#        The EventImporter must return the following fields. All imported
+#        events are simply added to any existing ones. If you want to overwrite
+#        existing events, call :meth:`clear_events` first.
+#
+#        lat: latitude [degrees]
+#        lon: longitude [degrees]
+#        depth: depth [m], positive downwards
+#        mag: magnitude
+#
+#        :param importer: an EventImporter object
+#        :type importer: EventImporter
+#
+#        """
+#        events = []
+#        try:
+#            for date, fields in importer:
+#                location = (float(fields['lat']),
+#                            float(fields['lon']),
+#                            float(fields['depth']))
+#                se = SeismicEvent(date, float(fields['mag']), location)
+#                events.append(se)
+#        except:
+#            log.error('Failed to import seismic events. Make sure '
+#                      'the data contains lat, lon, depth, and mag '
+#                      'fields and that the date field has the format '
+#                      'dd.mm.yyyyTHH:MM:SS. The original error was ' +
+#                      traceback.format_exc())
+#        else:
+#            self.seismic_events.extend(events)
+#            log.info('Imported {} seismic events.'.format(len(events)))
+#            self.history_changed.emit()
+#
+#    def events_before(self, end_date, mc=0):
+#        """ Returns all events >mc before *end_date* """
+#        return [e for e in self.seismic_events
+#                if e.date_time < end_date and e.magnitude > mc]
+#
+#    def clear_events(self, time_range=(None, None)):
+#        """
+#        Clear all seismic events from the database
+#
+#        If time_range is given, only the events that fall into the time range
+#        are cleared.
+#
+#        """
+#        time_range = (time_range[0] or datetime.min,
+#                      time_range[1] or datetime.max)
+#
+#        to_delete = (s for s in self.seismic_events
+#                     if time_range[1] >= s.date_time >= time_range[0])
+#        count = 0
+#        for s in to_delete:
+#            self.seismic_events.remove(s)
+#            count += 1
+#        log.info('Cleared {} seismic events.'.format(count))
+#        self.history_changed.emit()
+#
+#    def snapshot(self, t):
+#        """
+#        Create a snapshot of the catalog.
+#
+#        Deep copies the catalog with all events up to time t
+#
+#        :return SeismicCatalog: copy of the catalog
+#
+#        """
+#        snapshot = SeismicCatalog()
+#        snapshot.catalog_date = datetime.utcnow()
+#        snapshot.seismic_events = [s.copy() for s in self.seismic_events
+#                                   if s.date_time < t]
+#        return snapshot
+
+# class SeismicCatalog
 
 
-class SeismicEvent(ORMBase):
+class SeismicEvent(TimeQuantityMixin('datetime'),
+                   RealQuantityMixin('x'),
+                   RealQuantityMixin('y'),
+                   RealQuantityMixin('z'),
+                   RealQuantityMixin('magnitude'),
+                   ORMBase):
     """
-    Represents a seismic event
-
-    A seismic event consists of at least one magnitude and one origin. Multiple
-    magnitudes and origins can be present for a single event. In that case, the
-    members *magnitude* and *origin* will point to the preferred magnitude and
-    origin respectively.
-
+    ORM representation of a seismic event. The definition is based on the
+    `QuakeML <https://quake.ethz.ch/quakeml/QuakeML>`_ standard.
     """
     # Identifiers
-    public_id = Column(String)
-    public_origin_id = Column(String)
-    public_magnitude_id = Column(String)
-    # Origin
-    date_time = Column(DateTime)
-    lat = Column(Float)
-    lon = Column(Float)
-    depth = Column(Float)
-    # Magnitude
-    magnitude = Column(Float)
-    # SeismicCatalog relation
-    seismic_catalog_id = Column(Integer, ForeignKey('seismic_catalogs.id'))
-    seismic_catalog = relationship('SeismicCatalog',
-                                   back_populates='seismic_events')
-    # endregion
+    publicid = Column(String)
+    originpublicid = Column(String)
+    magnitudepublicid = Column(String)
 
-    # Data attributes (required for copying, serialization to matlab)
-    copy_attrs = ['public_id', 'public_origin_id', 'public_magnitude_id']
+    # relation: SeismicCatalog
+    seismiccatalog_id = Column(Integer, ForeignKey('seismiccatalog.id'))
+    seismiccatalog = relationship('SeismicCatalog',
+                                  back_populates='events')
+
     data_attrs = ['magnitude', 'date_time', 'lat', 'lon', 'depth']
-
-    def in_region(self, region):
-        """
-        Tests if the event is located inside **region**
-
-        :param Cube region: Region to test (cube)
-        :return: True if the event is inside the region, false otherwise
-
-        """
-        return Point(self.x, self.y, self.z).in_cube(region)
-
-    def copy(self):
-        """ Return a copy of this event """
-        copy = SeismicEvent(self.date_time, self.magnitude,
-                            (self.lat, self.lon, self.depth))
-        for attr in SeismicEvent.copy_attrs:
-            setattr(copy, attr, getattr(self, attr))
-        return copy
-
-    def __init__(self, date_time, magnitude, location):
-        self.date_time = date_time
-        self.magnitude = magnitude
-        self.lat, self.lon, self.depth = location
-
-    def __str__(self):
-        return "M%.1f @ %s" % (self.magnitude, self.date_time.ctime())
-
-    def __repr__(self):
-        return "<SeismicEvent('%s' @ '%s')>" % (self.magnitude, self.date_time)
 
     def __eq__(self, other):
         # TODO(damb): SeismicEvent instances are only equal when comparing:
-        # * evemt public_id
+        # * event public_id
         # * origin public_id
         # * magnitude public_id
         # * focalmechanism public_id (might be optional, here)
-        # 
+        #
         # Correct events according to this rules.
         if isinstance(other, SeismicEvent):
-            if self.public_id and other.public_id:
-                return self.public_id == other.public_id
+            if self.publicid and other.publicid:
+                return self.publicid == other.publicid
             else:
                 return all(getattr(self, a) == getattr(other, a)
                            for a in self.data_attrs)
-        raise NotImplementedError
+        raise TypeError
 
     def __ne__(self, other):
         return not self.__eq__(other)
+
+    def __str__(self):
+        return "M%.1f @ %s" % (self.magnitude_value,
+                               self.datetime_value.ctime())
+
+    def __repr__(self):
+        return "<{}(datetime={!r}, magnitude={!r})>".format(
+            type(self).__name__, self.datetime_value, self.magnitude_value)
+#
+    # Data attributes (required for copying, serialization to matlab)
+#    copy_attrs = ['public_id', 'public_origin_id', 'public_magnitude_id']
+
+#    def in_region(self, region):
+#        """
+#        Tests if the event is located inside **region**
+#
+#        :param Cube region: Region to test (cube)
+#        :return: True if the event is inside the region, false otherwise
+#
+#        """
+#        return Point(self.x, self.y, self.z).in_cube(region)
+#
+#    def copy(self):
+#        """ Return a copy of this event """
+#        copy = SeismicEvent(self.date_time, self.magnitude,
+#                            (self.lat, self.lon, self.depth))
+#        for attr in SeismicEvent.copy_attrs:
+#            setattr(copy, attr, getattr(self, attr))
+#        return copy
+#
+#    def __init__(self, date_time, magnitude, location):
+#        self.date_time = date_time
+#        self.magnitude = magnitude
+#        self.lat, self.lon, self.depth = location
+
+# class SeismicEvent
