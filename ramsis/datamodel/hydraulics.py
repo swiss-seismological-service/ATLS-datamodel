@@ -210,9 +210,8 @@ class HydraulicsEvent(TimeQuantityMixin('datetime'),
                                     self.datetime_value.ctime())
 
     def __repr__(self):
-        return "<{}('{}' @ {!r})>".format(
-            type(self).__name__, self.downholeflow_value,
-            self.datetime_value)
+        return "<{}(datetime={!r}, downholeflow={!r})>".format(
+            type(self).__name__, self.datetime_value, self.downholeflow_value)
 
     # TODO(damb): Is using functools.total_ordering an option?
     def __eq__(self, other):
