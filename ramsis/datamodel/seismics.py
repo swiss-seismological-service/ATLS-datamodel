@@ -159,7 +159,6 @@ class SeismicEvent(TimeQuantityMixin('datetime'),
     ORM representation of a seismic event. The definition is based on the
     `QuakeML <https://quake.ethz.ch/quakeml/QuakeML>`_ standard.
     """
-    # Identifiers
     publicid = Column(String)
     originpublicid = Column(String)
     magnitudepublicid = Column(String)
