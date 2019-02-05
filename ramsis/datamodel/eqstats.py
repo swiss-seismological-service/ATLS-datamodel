@@ -6,6 +6,9 @@ Copyright (C) 2013, ETH Zurich - Swiss Seismological Service SED
 
 """
 
+# TODO(damb): Legacy code actually not related to ramsis.datamodel. Should move
+# to the RAMSIS core repo.
+
 import collections
 import numpy as np
 from math import log, log10, sqrt, exp
