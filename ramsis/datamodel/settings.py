@@ -50,8 +50,8 @@ class Settings(ORMBase):
     name = Column(String, nullable=False)
     date = Column(DateTime)
     data = Column(String)
+
     __mapper_args__ = {'polymorphic_on': name}
-    # endregion
 
     def __init__(self):
         super(Settings, self).__init__()
