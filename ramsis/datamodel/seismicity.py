@@ -14,12 +14,10 @@ Seismicity prediction related ORM facilities.
 from geoalchemy import Geometry
 
 from sqlalchemy import Column, String, Integer, ForeignKey
-from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import relationship, backref
 
 from ramsis.datamodel.base import ORMBase, QuantityMixin
 from ramsis.datamodel.model import Model, ModelRun, EModel
-from ramsis.datamodel.type import JSONEncodedDict
 
 
 # FIXME(damb): Maintaining both a SeismicityModel, a SeismicityModelRun and on
@@ -68,9 +66,6 @@ class SeismicityModelRun(ModelRun):
     """
     __tablename__ = 'seismicitymodelrun'
     id = Column(Integer, ForeignKey('modelrun.id'), primary_key=True)
-
-    # XXX(damb): seismicity model run specific configuration parameters
-    config = Column(MutableDict.as_mutable(JSONEncodedDict))
 
     # relation: SeismicityModel
     model_id = Column(Integer, ForeignKey('seismicitymodel.id'))
