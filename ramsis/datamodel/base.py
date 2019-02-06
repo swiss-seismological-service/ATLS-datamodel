@@ -73,6 +73,9 @@ def EpochMixin(name, epoch_type=None, column_prefix=None):
     Mixin factory for common :code:`Epoch` types from
     `QuakeML <https://quake.ethz.ch/quakeml/>`_.
 
+    Epoch types provide the fields `starttime` and `endtime`. Note, that a
+    `column_prefix` may be prepended.
+
     :param str name: Name of the class returned
     :param epoch_type: Type of the epoch to be returned. Valid values
         are :code:`None` or :code:`default`, :code:`open` and :code:`finite`.
@@ -174,6 +177,15 @@ def QuantityMixin(name, quantity_type, column_prefix=None):
     """
     Mixin factory for common :code:`Quantity` types from
     `QuakeML <https://quake.ethz.ch/quakeml/>`_.
+
+    Quantity types provide the fields:
+        - `value`
+        - `uncertainty`
+        - `loweruncertainty`
+        - `upperuncertainty`
+        - `confidencelevel`.
+
+    Note, that a `column_prefix` may be prepended.
 
     :param str name: Name of the class returned
     :param str quantity_type: Type of the quantity to be returned. Valid values
