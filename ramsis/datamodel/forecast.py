@@ -14,7 +14,7 @@ Forecast related ORM facilities.
 
 from math import log, factorial
 
-from sqlalchemy import Column, Enum, Integer, ForeignKey
+from sqlalchemy import Column, Boolean, Enum, Integer, ForeignKey
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship

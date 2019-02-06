@@ -7,14 +7,15 @@ that will be stored in the project database.
 
 """
 
+import datetime
 import json
 import logging
-from datetime import datetime
+
 from sqlalchemy import Column, orm
-from sqlalchemy import Integer, String, DateTime
+from sqlalchemy import String, DateTime
 
 from ramsis.datamodel.base import ORMBase
-from ramsis.datamode.signal import Signal
+from ramsis.datamodel.signal import Signal
 
 log = logging.getLogger(__name__)
 
@@ -22,7 +23,7 @@ DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
 
 
 def datetime_encoder(x):
-    if isinstance(x, datetime):
+    if isinstance(x, datetime.datetime):
         return x.strftime(DATE_FORMAT)
     raise TypeError('Don''t know how to encode {}'.format(x))
 
@@ -31,7 +32,7 @@ def datetime_decoder(dct):
     for k, v in dct.items():
         if isinstance(v, str):
             try:
-                dct[k] = datetime.strptime(v, DATE_FORMAT)
+                dct[k] = datetime.datetime.strptime(v, DATE_FORMAT)
             except ValueError:
                 pass
     return dct
@@ -56,14 +57,15 @@ class Settings(ORMBase):
     def __init__(self):
         super(Settings, self).__init__()
         self.settings_changed = Signal()
-        self.date = datetime.utcnow()
+        self.date = datetime.datetime.utcnow()
         self._dict = {}
 
     @orm.reconstructor
     def init_on_load(self):
         self.settings_changed = Signal()
-        self._dict = json.loads(self.data, object_hook=datetime_decoder) \
-            if self.data else {}
+        self._dict = (json.loads(self.data,
+                                 object_hook=datetime.datetime_decoder)
+                      if self.data else {})
 
     def add(self, name, value=None, default=None):
         """

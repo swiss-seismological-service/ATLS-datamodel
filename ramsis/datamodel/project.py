@@ -3,21 +3,22 @@
 """
 Provides a class to manage Ramsis project data
 """
+import datetime
 
-from datetime import datetime, timedelta
-
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, \
-    PickleType
+from sqlalchemy import (Column, Integer, String, DateTime, ForeignKey,
+                        PickleType)
 from sqlalchemy.orm import relationship, reconstructor
-from .settings import ProjectSettings
-from .seismics import SeismicCatalog
-from .hydraulics import InjectionHistory
-from .forecast import ForecastSet
+
+
 from .eqstats import SeismicRateHistory
 
 from ramsis.datamodel.base import (ORMBase, CreationInfoMixin, NameMixin)
-from ramsis.datamodel.well import InjectionWell
+from ramsis.datamodel.forecast import ForecastSet
+from ramsis.datamodel.hydraulics import Hydraulics
+from ramsis.datamodel.seismics import SeismicCatalog
+from ramsis.datamodel.settings import ProjectSettings
 from ramsis.datamodel.signal import Signal
+from ramsis.datamodel.well import InjectionWell
 
 
 class Project(CreationInfoMixin, NameMixin, ORMBase):
@@ -61,12 +62,14 @@ class Project(CreationInfoMixin, NameMixin, ORMBase):
         super(Project, self).__init__()
         self.store = store
         self.seismic_catalog = SeismicCatalog()
-        self.injection_history = InjectionHistory()
+        self.injection_history = Hydraulics()
         self.rate_history = SeismicRateHistory()
         self.forecast_set = ForecastSet()
         self.title = title
-        self.start_date = datetime.utcnow().replace(second=0, microsecond=0)
-        self.end_date = self.start_date + timedelta(days=365)
+        self.start_date = datetime.datetime.utcnow().replace(
+            second=0, microsecond=0)
+
+        self.end_date = self.start_date + datetime.timedelta(days=365)
         self.reference_point = {'lat': 47.379, 'lon': 8.547, 'h': 450.0}
         self.settings = ProjectSettings()
 
