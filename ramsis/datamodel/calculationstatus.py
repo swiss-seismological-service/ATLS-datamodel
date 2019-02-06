@@ -70,7 +70,7 @@ class CalculationStatus(ORMBase):
 
     @property
     def finished(self):
-        return True if self.state in (self.ERROR, self.COMPLETE) else False
+        return self.state in (self.ERROR, self.COMPLETE)
 
     def __init__(self, calc_id, state=None, info=None):
         self.calc_id = calc_id
