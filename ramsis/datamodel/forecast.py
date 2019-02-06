@@ -14,6 +14,7 @@ Forecast related ORM facilities.
 
 from math import log, factorial
 
+from geoalchemy2 import Geometry
 from sqlalchemy import Column, Boolean, Enum, Integer, ForeignKey
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -143,10 +144,15 @@ class ForecastScenario(NameMixin, ORMBase):
     is configurable by the end-user.
 
     In general, a :py:class:`ForecastScenario` provides a container for:
-        * an :py:class:`InjectionPlan`
-        * a set of :py:class:`ForecastStage` objects.
+        * scenario specific end-user configuration,
+        * an :py:class:`InjectionPlan`,
+        * a set of :py:class:`ForecastStage` objects,
+        * geometric description of a reservoir.
     """
     config = Column(MutableDict.as_mutable(JSONEncodedDict))
+
+    reservoirgeom = Column(Geometry(geometry_type='GEOMETRYZ', dimension=3),
+                           nullable=False)
 
     # relation: Forecast
     forecast = Column(Integer, ForeignKey('forecast.id'))
