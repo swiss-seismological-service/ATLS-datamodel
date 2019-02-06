@@ -140,7 +140,7 @@ class ForecastScenario(NameMixin, ORMBase):
     # TODO(damb): to be refactored
     """
     A :py:class:`ForecastScenario` describes the forecast input data which
-    configurable by the end-user.
+    is configurable by the end-user.
 
     In general, a :py:class:`ForecastScenario` provides a container for:
         * an :py:class:`InjectionPlan`
