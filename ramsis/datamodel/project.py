@@ -9,9 +9,6 @@ from sqlalchemy import (Column, Integer, String, DateTime, ForeignKey,
                         PickleType, event)
 from sqlalchemy.orm import relationship, reconstructor, Session
 
-
-from .eqstats import SeismicRateHistory
-
 from ramsis.datamodel.base import (ORMBase, CreationInfoMixin, NameMixin)
 from ramsis.datamodel.forecast import ForecastSet
 from ramsis.datamodel.hydraulics import Hydraulics
@@ -89,21 +86,16 @@ class Project(CreationInfoMixin, NameMixin, ORMBase):
     settings = relationship('Settings')
 
     # TODO(damb):
-    # * Projects are saved within a store; hence it would be better style to
-    #   implement a utility function such as Project.save(store) instead of
-    #   passing the store parameter as a ctor arg.
     # * Check reference point implementation. Verify if a POINT_Z would suit
     #   better our needs.
-    # * Check the purpose of SeismicRateHistory
+    # * Implement a project factory instead of using/abusing the constructor
 
-    def __init__(self, store=None, title=''):
+    def __init__(self, name=''):
         super(Project, self).__init__()
-        self.store = store
         self.seismic_catalog = SeismicCatalog()
         self.injection_history = Hydraulics()
-        self.rate_history = SeismicRateHistory()
         self.forecast_set = ForecastSet()
-        self.title = title
+        self.name = name
         self.start_date = datetime.datetime.utcnow().replace(
             second=0, microsecond=0)
 
@@ -124,8 +116,6 @@ class Project(CreationInfoMixin, NameMixin, ORMBase):
         self._project_time = self.start_date
         self.settings['forecast_start'] = self.start_date
         self.settings.commit()
-        if self.store:
-            self.store.session.add(self)
 
     @reconstructor
     def init_on_load(self):
@@ -141,10 +131,6 @@ class Project(CreationInfoMixin, NameMixin, ORMBase):
 
         """
         self.will_close.emit(self)
-
-    def save(self):
-        if self.store:
-            self.store.commit()
 
     @property
     def project_time(self):
