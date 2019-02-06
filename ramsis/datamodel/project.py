@@ -92,14 +92,17 @@ class Project(CreationInfoMixin, NameMixin, ORMBase):
 
     def __init__(self, name=''):
         super(Project, self).__init__()
-        self.seismic_catalog = SeismicCatalog()
-        self.injection_history = Hydraulics()
-        self.forecast_set = ForecastSet()
         self.name = name
+
+        self.forecastset = ForecastSet()
+        self.hydraulics = Hydraulics()
+        self.seismiccatalog = SeismicCatalog()
+        self.well = InjectionWell()
+
         self.start_date = datetime.datetime.utcnow().replace(
             second=0, microsecond=0)
-
         self.end_date = self.start_date + datetime.timedelta(days=365)
+
         self.reference_point = {'lat': 47.379, 'lon': 8.547, 'h': 450.0}
         self.settings = ProjectSettings()
 
