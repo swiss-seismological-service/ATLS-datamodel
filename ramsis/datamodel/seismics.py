@@ -2,37 +2,13 @@
 Seismics related ORM facilities.
 """
 
-from sqlalchemy import Column, event
+from sqlalchemy import Column
 from sqlalchemy import Integer, String, ForeignKey
-from sqlalchemy.orm import relationship, reconstructor, Session
+from sqlalchemy.orm import relationship, reconstructor
 
 from ramsis.datamodel.base import (ORMBase, CreationInfoMixin,
                                    RealQuantityMixin, TimeQuantityMixin)
 from ramsis.datamodel.signal import Signal
-
-
-@event.listens_for(Session, 'after_flush')
-def delete_catalog_orphans(session, ctx):
-    """
-    Seismic catalog orphan deletion
-
-    Seismic catalogs can have different kinds of parents (i.e.
-    Project<->SeismicCatalog corresponds to a many to many relation), so a
-    simple 'delete-orphan' statement on the relation doesn't work. Instead we
-    check after each flush to the db if there are any orphaned catalogs and
-    delete them if necessary.
-
-    :param Session session: The current session
-
-    """
-    if any(isinstance(i, SeismicCatalog) for i in session.dirty):
-        query = session.query(SeismicCatalog).\
-                filter_by(project=None)
-        orphans = query.all()
-        for orphan in orphans:
-            session.delete(orphan)
-
-# delete_catalog_orphans ()
 
 
 class SeismicCatalog(CreationInfoMixin, ORMBase):

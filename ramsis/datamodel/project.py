@@ -6,8 +6,8 @@ Provides a class to manage Ramsis project data
 import datetime
 
 from sqlalchemy import (Column, Integer, String, DateTime, ForeignKey,
-                        PickleType)
-from sqlalchemy.orm import relationship, reconstructor
+                        PickleType, event)
+from sqlalchemy.orm import relationship, reconstructor, Session
 
 
 from .eqstats import SeismicRateHistory
@@ -19,6 +19,44 @@ from ramsis.datamodel.seismics import SeismicCatalog
 from ramsis.datamodel.settings import ProjectSettings
 from ramsis.datamodel.signal import Signal
 from ramsis.datamodel.well import InjectionWell
+
+
+def _delete_orphans(entity):
+    """
+    Factory function returning an `SQLAlchemy
+    event handler <https://docs.sqlalchemy.org/en/latest/core/event.html>`_
+    deleting orphaned child entities from projects.
+
+    :param entity: Child entity of project
+    """
+
+    @event.listens_for(Session, 'after_flush')
+    def delete(session, ctx):
+        """
+        Seismic catalogs can have different kinds of parents (i.e.
+        Project<->SeismicCatalog corresponds to a many to many relation), so a
+        simple 'delete-orphan' statement on the relation doesn't work. Instead
+        we check after each flush to the db if there are any orphaned catalogs
+        and delete them if necessary.
+
+        :param Session session: The current session
+        """
+        if any(isinstance(i, entity) for i in session.dirty):
+            query = session.query(entity).\
+                    filter_by(project=None)
+            for orphan in query.all():
+                session.delete(orphan)
+
+    # delete ()
+
+# _delete_orphans ()
+
+
+_ENTITIES = (SeismicCatalog, InjectionWell)
+
+
+for e in _ENTITIES:
+    _delete_orphans(e)
 
 
 class Project(CreationInfoMixin, NameMixin, ORMBase):
@@ -50,14 +88,14 @@ class Project(CreationInfoMixin, NameMixin, ORMBase):
     settings_id = Column(Integer, ForeignKey('settings.id'))
     settings = relationship('Settings')
 
-
     # TODO(damb):
     # * Projects are saved within a store; hence it would be better style to
     #   implement a utility function such as Project.save(store) instead of
     #   passing the store parameter as a ctor arg.
     # * Check reference point implementation. Verify if a POINT_Z would suit
     #   better our needs.
-    # * 
+    # * Check the purpose of SeismicRateHistory
+
     def __init__(self, store=None, title=''):
         super(Project, self).__init__()
         self.store = store
