@@ -12,6 +12,7 @@ import enum
 
 from sqlalchemy import Column, Boolean, Enum
 from sqlalchemy.ext.mutable import MutableDict
+from sqlalchemy.orm import relationship
 
 from ramsis.datamodel.base import ORMBase, NameMixin
 from ramsis.datamodel.type import JSONEncodedDict
@@ -65,6 +66,11 @@ class ModelRun(ORMBase):
     config = Column(MutableDict.as_mutable(JSONEncodedDict))
     enabled = Column(Boolean, default=True)
     _type = Column(Enum(EModel))
+
+    status = relationship('Status',
+                          back_populates='run',
+                          uselist=False,
+                          cascade='all, delete-orphan')
 
     __mapper_args__ = {
         'polymorphic_identity': 'model_run',
