@@ -13,10 +13,10 @@ from .settings import ProjectSettings
 from .seismics import SeismicCatalog
 from .hydraulics import InjectionHistory
 from .forecast import ForecastSet
-from .injectionwell import InjectionWell
 from .eqstats import SeismicRateHistory
 
 from ramsis.datamodel.base import (ORMBase, CreationInfoMixin, NameMixin)
+from ramsis.datamodel.well import InjectionWell
 from ramsis.datamodel.signal import Signal
 
 
@@ -37,12 +37,9 @@ class Project(CreationInfoMixin, NameMixin, ORMBase):
     relationship_config = {'back_populates': 'project',
                            'cascade': 'all, delete-orphan'}
 
-    injectionwell = relationship('InjectionWell',
-                                 **relationship_config)
-    hydraulics = relationship('Hydraulics',
-                              **relationship_config)
-    forecastset = relationship('ForecastSet',
-                               **relationship_config)
+    well = relationship('InjectionWell', **relationship_config)
+    hydraulics = relationship('Hydraulics', **relationship_config)
+    forecastset = relationship('ForecastSet', **relationship_config)
     # XXX(heilukas): Handle delete-orphan manually for seismic catalogs
     seismiccatalog = relationship('SeismicCatalog',
                                   back_populates='project',

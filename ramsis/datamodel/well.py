@@ -30,19 +30,21 @@ class InjectionWell(CreationInfoMixin,
     """
     # relation: Project
     project_id = Column(Integer, ForeignKey('project.id'))
-    project = relationship('Project', back_populates='injectionwell')
+    project = relationship('Project', back_populates='well')
 
     # relation: Hydraulics
-    hydraulics = relationship('Hydraulics', back_populates='injectionwell',
+    hydraulics = relationship('Hydraulics',
+                              back_populates='well',
                               cascade='all, delete-orphan')
     # relation: InjectionPlan
     injectionplans = relationship('InjectionPlan',
-                                  back_populates='injectionwell',
+                                  back_populates='well',
                                   cascade='all, delete-orphan')
 
     # TODO(damb): WellSection is still a dummy implementation.
     # relation: WellSection
-    sections = relationship('WellSection', back_populates='injectionwell',
+    sections = relationship('WellSection',
+                            back_populates='well',
                             cascade='all, delete-orphan')
 
     @property
@@ -60,7 +62,7 @@ class WellSection(ORMBase):
     # TODO(damb): E.g. add positional information
     cased = Column(Boolean)
     # relation: InjectionWell
-    injectionwell_id = Column(Integer, ForeignKey('injectionwell.id'))
-    injectionwell = relationship('InjectionWell', back_populates='sections')
+    well_id = Column(Integer, ForeignKey('injectionwell.id'))
+    well = relationship('InjectionWell', back_populates='sections')
 
 # class WellSection
