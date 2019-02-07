@@ -46,42 +46,6 @@ class SeismicCatalog(CreationInfoMixin, ORMBase):
     def __len__(self):
         return len(self.events)
 
-#    def import_events(self, importer):
-#        """
-#        Imports seismic events from a data source by using an EventImporter
-#
-#        The EventImporter must return the following fields. All imported
-#        events are simply added to any existing ones. If you want to overwrite
-#        existing events, call :meth:`clear_events` first.
-#
-#        lat: latitude [degrees]
-#        lon: longitude [degrees]
-#        depth: depth [m], positive downwards
-#        mag: magnitude
-#
-#        :param importer: an EventImporter object
-#        :type importer: EventImporter
-#
-#        """
-#        events = []
-#        try:
-#            for date, fields in importer:
-#                location = (float(fields['lat']),
-#                            float(fields['lon']),
-#                            float(fields['depth']))
-#                se = SeismicEvent(date, float(fields['mag']), location)
-#                events.append(se)
-#        except:
-#            log.error('Failed to import seismic events. Make sure '
-#                      'the data contains lat, lon, depth, and mag '
-#                      'fields and that the date field has the format '
-#                      'dd.mm.yyyyTHH:MM:SS. The original error was ' +
-#                      traceback.format_exc())
-#        else:
-#            self.seismic_events.extend(events)
-#            log.info('Imported {} seismic events.'.format(len(events)))
-#            self.history_changed.emit()
-#
 #    def events_before(self, end_date, mc=0):
 #        """ Returns all events >mc before *end_date* """
 #        return [e for e in self.seismic_events
