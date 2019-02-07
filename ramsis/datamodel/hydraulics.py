@@ -191,22 +191,6 @@ class HydraulicsEvent(TimeQuantityMixin('datetime'),
     injectionplan = relationship('InjectionPlan',
                                  back_populates='samples')
 
-    def __init__(self, date_time, flow_dh, flow_xt, pr_dh, pr_xt):
-        # TODO(damb): Check why this ctor is required.
-        self.datetime_value = date_time
-        self.topholeflow_value = flow_dh
-        self.topholepressure_value = pr_xt
-        self.downholeflow_value = flow_dh
-        self.downholepressure_value = pr_xt
-
-    def __str__(self):
-        return "Flow: %.1f @ %s" % (self.downholeflow_value,
-                                    self.datetime_value.ctime())
-
-    def __repr__(self):
-        return "<{}(datetime={!r}, downholeflow={!r})>".format(
-            type(self).__name__, self.datetime_value, self.downholeflow_value)
-
     # TODO(damb): Is using functools.total_ordering an option?
     def __eq__(self, other):
         if isinstance(other, HydraulicsEvent):
@@ -220,6 +204,14 @@ class HydraulicsEvent(TimeQuantityMixin('datetime'),
 
     def __ne__(self, other):
         return not self.__eq__(other)
+
+    def __str__(self):
+        return "Flow: %.1f @ %s" % (self.downholeflow_value,
+                                    self.datetime_value.ctime())
+
+    def __repr__(self):
+        return "<{}(datetime={!r}, downholeflow={!r})>".format(
+            type(self).__name__, self.datetime_value, self.downholeflow_value)
 
     # TODO(damb)
     # https://docs.python.org/3/reference/datamodel.html#object.__hash__
