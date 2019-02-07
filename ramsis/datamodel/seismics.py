@@ -4,7 +4,7 @@ Seismics related ORM facilities.
 
 from sqlalchemy import Column
 from sqlalchemy import Integer, String, ForeignKey
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, class_mapper
 
 from ramsis.datamodel.base import (ORMBase, CreationInfoMixin,
                                    RealQuantityMixin, TimeQuantityMixin)
@@ -100,6 +100,38 @@ class SeismicEvent(TimeQuantityMixin('datetime'),
     seismiccatalog = relationship('SeismicCatalog',
                                   back_populates='events')
 
+    def copy(self, with_foreignkeys=False):
+        """
+        Copy a seismic event omitting primary keys.
+
+        :param bool with_foreignkeys: Include foreign keys while copying
+
+        :returns: Copy of seismic event
+        :rtype: :py:class:`SeismicEvent`
+        """
+        mapper = class_mapper(type(self))
+        new = type(self)()
+
+        pk_keys = set([c.key for c in mapper.primary_key])
+        rel_keys = set([c.key for c in mapper.relationships])
+        omit = pk_keys | rel_keys
+
+        if with_foreignkeys:
+            fk_keys = set([c.key for c in mapper.columns if c.foreign_keys])
+            omit = omit | fk_keys
+
+        for attr in [p.key for p in mapper.iterate_properties
+                  if p.key not in omit]:
+            try:
+                value = getattr(self, attr)
+                setattr(new, attr, value)
+            except AttributeError:
+                pass
+
+        return new
+
+    # copy ()
+
     def __eq__(self, other):
         if isinstance(other, SeismicEvent):
             return (
@@ -120,19 +152,6 @@ class SeismicEvent(TimeQuantityMixin('datetime'),
         return "<{}(datetime={!r}, magnitude={!r})>".format(
             type(self).__name__, self.datetime_value, self.magnitude_value)
 #
-    # Data attributes (required for copying, serialization to matlab)
-#    copy_attrs = ['public_id', 'public_origin_id', 'public_magnitude_id']
-
-#    def in_region(self, region):
-#        """
-#        Tests if the event is located inside **region**
-#
-#        :param Cube region: Region to test (cube)
-#        :return: True if the event is inside the region, false otherwise
-#
-#        """
-#        return Point(self.x, self.y, self.z).in_cube(region)
-#
 #    def copy(self):
 #        """ Return a copy of this event """
 #        copy = SeismicEvent(self.date_time, self.magnitude,
@@ -141,9 +160,4 @@ class SeismicEvent(TimeQuantityMixin('datetime'),
 #            setattr(copy, attr, getattr(self, attr))
 #        return copy
 #
-#    def __init__(self, date_time, magnitude, location):
-#        self.date_time = date_time
-#        self.magnitude = magnitude
-#        self.lat, self.lon, self.depth = location
-
 # class SeismicEvent
