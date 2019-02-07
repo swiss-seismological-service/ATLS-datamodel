@@ -88,7 +88,8 @@ class Project(CreationInfoMixin, NameMixin, ORMBase):
     # TODO(damb):
     # * Check reference point implementation. Verify if a POINT_Z would suit
     #   better our needs.
-    # * Implement a project factory instead of using/abusing the constructor
+    # * Implement a project factory/builder instead of using/abusing the
+    #   constructor
 
     def __init__(self, name=''):
         super(Project, self).__init__()
