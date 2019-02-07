@@ -191,11 +191,6 @@ class HydraulicsEvent(TimeQuantityMixin('datetime'),
     injectionplan = relationship('InjectionPlan',
                                  back_populates='samples')
 
-    # Data attributes (required for flattening)
-    # FIXME(damb): Use SQLAlchemy facilities instead; alternatively rename to
-    # _fields (see collections.namedtuple)
-    data_attrs = ['date_time', 'flow_dh', 'flow_xt', 'pr_dh', 'pr_xt']
-
     def __init__(self, date_time, flow_dh, flow_xt, pr_dh, pr_xt):
         # TODO(damb): Check why this ctor is required.
         self.datetime_value = date_time
