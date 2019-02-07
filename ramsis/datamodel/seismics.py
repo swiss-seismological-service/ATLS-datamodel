@@ -90,10 +90,12 @@ class SeismicEvent(TimeQuantityMixin('datetime'),
     ORM representation of a seismic event. The definition is based on the
     `QuakeML <https://quake.ethz.ch/quakeml/QuakeML>`_ standard.
     """
-    publicid = Column(String, nullable=False)
-    originpublicid = Column(String, nullable=False)
-    magnitudepublicid = Column(String, nullable=False)
-    focalmechanismpublicid = Column(String, nullable=False)
+    # FIXME(damb): Is it necessary to store public identifiers when using them
+    # may lead to integrity mismatches.
+    publicid = Column(String)
+    originpublicid = Column(String)
+    magnitudepublicid = Column(String)
+    focalmechanismpublicid = Column(String)
 
     # relation: SeismicCatalog
     seismiccatalog_id = Column(Integer, ForeignKey('seismiccatalog.id'))
@@ -121,7 +123,7 @@ class SeismicEvent(TimeQuantityMixin('datetime'),
             omit = omit | fk_keys
 
         for attr in [p.key for p in mapper.iterate_properties
-                  if p.key not in omit]:
+                     if p.key not in omit]:
             try:
                 value = getattr(self, attr)
                 setattr(new, attr, value)
@@ -134,12 +136,21 @@ class SeismicEvent(TimeQuantityMixin('datetime'),
 
     def __eq__(self, other):
         if isinstance(other, SeismicEvent):
-            return (
-                self.publicid == other.publicid and
-                self.originpublicid == other.originpublicid and
-                self.magnitudepublicid == other.magnitudepublicid and
-                self.focalmechanismpublicid == other.focalmechanismpublicid)
+            mapper = class_mapper(type(self))
+
+            pk_keys = set([c.key for c in mapper.primary_key])
+            rel_keys = set([c.key for c in mapper.relationships])
+            fk_keys = set([c.key for c in mapper.columns if c.foreign_keys])
+
+            omit = pk_keys | rel_keys | fk_keys
+
+            return all(getattr(self, attr) == getattr(other, attr)
+                       for attr in [p.key for p in mapper.iterate_properties
+                                    if p.key not in omit])
+
         raise TypeError
+
+    # __eq__ ()
 
     def __ne__(self, other):
         return not self.__eq__(other)
