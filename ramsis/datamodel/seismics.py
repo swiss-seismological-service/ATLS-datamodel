@@ -4,11 +4,10 @@ Seismics related ORM facilities.
 
 from sqlalchemy import Column
 from sqlalchemy import Integer, String, ForeignKey
-from sqlalchemy.orm import relationship, reconstructor
+from sqlalchemy.orm import relationship
 
 from ramsis.datamodel.base import (ORMBase, CreationInfoMixin,
                                    RealQuantityMixin, TimeQuantityMixin)
-from ramsis.datamodel.signal import Signal
 
 
 class SeismicCatalog(CreationInfoMixin, ORMBase):
@@ -27,14 +26,6 @@ class SeismicCatalog(CreationInfoMixin, ORMBase):
                           back_populates='seismiccatalog',
                           cascade='all, delete-orphan',
                           order_by='SeismicEvent.datetime_value')
-
-    def __init__(self):
-        super(SeismicCatalog, self).__init__()
-        self.history_changed = Signal()
-
-    @reconstructor
-    def init_on_load(self):
-        self.history_changed = Signal()
 
     def __getitem__(self, item):
         return self.events[item] if self.events else None
@@ -116,7 +107,6 @@ class SeismicEvent(TimeQuantityMixin('datetime'),
                 self.originpublicid == other.originpublicid and
                 self.magnitudepublicid == other.magnitudepublicid and
                 self.focalmechanismpublicid == other.focalmechanismpublicid)
-
         raise TypeError
 
     def __ne__(self, other):
