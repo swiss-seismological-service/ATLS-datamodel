@@ -99,31 +99,24 @@ class SeismicEvent(TimeQuantityMixin('datetime'),
     ORM representation of a seismic event. The definition is based on the
     `QuakeML <https://quake.ethz.ch/quakeml/QuakeML>`_ standard.
     """
-    publicid = Column(String)
-    originpublicid = Column(String)
-    magnitudepublicid = Column(String)
+    publicid = Column(String, nullable=False)
+    originpublicid = Column(String, nullable=False)
+    magnitudepublicid = Column(String, nullable=False)
+    focalmechanismpublicid = Column(String, nullable=False)
 
     # relation: SeismicCatalog
     seismiccatalog_id = Column(Integer, ForeignKey('seismiccatalog.id'))
     seismiccatalog = relationship('SeismicCatalog',
                                   back_populates='events')
 
-    data_attrs = ['magnitude', 'date_time', 'lat', 'lon', 'depth']
-
     def __eq__(self, other):
-        # TODO(damb): SeismicEvent instances are only equal when comparing:
-        # * event public_id
-        # * origin public_id
-        # * magnitude public_id
-        # * focalmechanism public_id (might be optional, here)
-        #
-        # Correct events according to this rules.
         if isinstance(other, SeismicEvent):
-            if self.publicid and other.publicid:
-                return self.publicid == other.publicid
-            else:
-                return all(getattr(self, a) == getattr(other, a)
-                           for a in self.data_attrs)
+            return (
+                self.publicid == other.publicid and
+                self.originpublicid == other.originpublicid and
+                self.magnitudepublicid == other.magnitudepublicid and
+                self.focalmechanismpublicid == other.focalmechanismpublicid)
+
         raise TypeError
 
     def __ne__(self, other):
