@@ -64,21 +64,17 @@ class Project(CreationInfoMixin, NameMixin, ORMBase):
         # These are the basel well tip coordinates (in CH-1903)
         self.injection_well = InjectionWell(4740.3, 270645.0, 611631.0)
 
-        self._project_time = self.start_date
         self.settings['forecast_start'] = self.creationinfo_creationtime
         self.settings.commit()
 
         # Signals
         self.will_close = Signal()
-        self.project_time_changed = Signal()
 
     # __init__ ()
 
     @reconstructor
     def init_on_load(self):
         self.will_close = Signal()
-        self.project_time_changed = Signal()
-        self._project_time = self.start_date
 
     def close(self):
         """
@@ -88,12 +84,6 @@ class Project(CreationInfoMixin, NameMixin, ORMBase):
 
         """
         self.will_close.emit(self)
-
-    @property
-    def project_time(self):
-        return self._project_time
-
-    # Event information
 
     def event_time_range(self):
         """
@@ -145,7 +135,4 @@ class Project(CreationInfoMixin, NameMixin, ORMBase):
         else:
             return eh if eh.date_time > es.date_time else es
 
-    # TODO (damb): Use property-setter
-    def update_project_time(self, t):
-        self._project_time = t
-        self.project_time_changed.emit(t)
+# class Project
