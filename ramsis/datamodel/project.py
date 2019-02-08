@@ -1,8 +1,8 @@
 # Copyright (C) 2013, ETH Zurich - Swiss Seismological Service SED
+"""
+Project related ORM facilities.
+"""
 
-"""
-Provides a class to manage Ramsis project data
-"""
 import datetime
 
 from geoalchemy2 import Geometry
@@ -20,8 +20,8 @@ from ramsis.datamodel.well import InjectionWell
 
 class Project(CreationInfoMixin, NameMixin, UniqueOpenEpochMixin, ORMBase):
     """
-    RT-RAMSIS project ORM representation. :py:class:`Project` corresponds to
-    the root object of the RT-RAMSIS data model.
+    RT-RAMSIS project ORM representation. :py:class:`Project` is the root
+    object of the RT-RAMSIS data model.
     """
     description = Column(String)
     referencepoint = Column(Geometry(geometry_type='POINT_ZM',
