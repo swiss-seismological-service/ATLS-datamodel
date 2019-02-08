@@ -97,7 +97,7 @@ class SeismicEvent(TimeQuantityMixin('datetime'),
     the XML, if necessary converted, and kept alongside using a flat
     representation.
     """
-    quakeml = Column(PickleType)
+    quakeml = Column(PickleType, nullable=False)
 
     # relation: SeismicCatalog
     seismiccatalog_id = Column(Integer, ForeignKey('seismiccatalog.id'))
@@ -164,13 +164,5 @@ class SeismicEvent(TimeQuantityMixin('datetime'),
     def __repr__(self):
         return "<{}(datetime={!r}, magnitude={!r})>".format(
             type(self).__name__, self.datetime_value, self.magnitude_value)
-#
-#    def copy(self):
-#        """ Return a copy of this event """
-#        copy = SeismicEvent(self.date_time, self.magnitude,
-#                            (self.lat, self.lon, self.depth))
-#        for attr in SeismicEvent.copy_attrs:
-#            setattr(copy, attr, getattr(self, attr))
-#        return copy
-#
+
 # class SeismicEvent
