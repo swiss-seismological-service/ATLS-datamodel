@@ -36,7 +36,6 @@ class Project(CreationInfoMixin, NameMixin, ORMBase):
     relationship_config = {'back_populates': 'project',
                            'cascade': 'all, delete-orphan'}
     well = relationship('InjectionWell', **relationship_config)
-    hydraulics = relationship('Hydraulics', **relationship_config)
     forecastset = relationship('ForecastSet', **relationship_config)
     seismiccatalog = relationship('SeismicCatalog', **relationship_config)
     # relation: Settings
@@ -54,7 +53,6 @@ class Project(CreationInfoMixin, NameMixin, ORMBase):
             second=0, microsecond=0)
 
         self.forecastset = ForecastSet()
-        self.hydraulics = Hydraulics()
         self.seismiccatalog = SeismicCatalog()
         self.well = InjectionWell()
 
@@ -104,7 +102,7 @@ class Project(CreationInfoMixin, NameMixin, ORMBase):
         """
         try:
             es = self.seismic_catalog[0]
-            eh = self.injection_history[0]
+            eh = self.well.hydraulics[0]
         except IndexError:
             return None
         if es is None and eh is None:
@@ -123,7 +121,7 @@ class Project(CreationInfoMixin, NameMixin, ORMBase):
         """
         try:
             es = self.seismic_catalog[-1]
-            eh = self.injection_history[-1]
+            eh = self.well.hydraulics[-1]
         except IndexError:
             return None
         if es is None and eh is None:
