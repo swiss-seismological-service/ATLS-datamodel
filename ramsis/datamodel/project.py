@@ -63,9 +63,6 @@ class Project(CreationInfoMixin, NameMixin, ORMBase):
     """
     description = Column(String)
 
-    # TODO(damb): Check the purpose of this property.
-    end_date = Column(DateTime)
-
     # XXX(damb): Reference point used when projecting data into a local CS.
     # To be verified if PickleType suits the needs.
     reference_point = Column(PickleType)
@@ -102,7 +99,6 @@ class Project(CreationInfoMixin, NameMixin, ORMBase):
 
         self.start_date = datetime.datetime.utcnow().replace(
             second=0, microsecond=0)
-        self.end_date = self.start_date + datetime.timedelta(days=365)
 
         self.reference_point = {'lat': 47.379, 'lon': 8.547, 'h': 450.0}
         self.settings = ProjectSettings()
