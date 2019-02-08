@@ -22,9 +22,6 @@ from ramsis.datamodel.base import (ORMBase, NameMixin, CreationInfoMixin,
                                    EpochMixin)
 from ramsis.datamodel.model import EModel
 from ramsis.datamodel.type import JSONEncodedDict
-from ramsis.datamodel.signal import Signal
-
-# TODO(damb): Add facilities from calculationstatus.py
 
 
 class ForecastSet(ORMBase):
