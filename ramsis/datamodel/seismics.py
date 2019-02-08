@@ -3,7 +3,7 @@ Seismics related ORM facilities.
 """
 
 from sqlalchemy import Column
-from sqlalchemy import Integer, String, ForeignKey
+from sqlalchemy import Integer, ForeignKey, PickleType
 from sqlalchemy.orm import relationship, class_mapper
 
 from ramsis.datamodel.base import (ORMBase, CreationInfoMixin,
@@ -89,7 +89,16 @@ class SeismicEvent(TimeQuantityMixin('datetime'),
     """
     ORM representation of a seismic event. The definition is based on the
     `QuakeML <https://quake.ethz.ch/quakeml/QuakeML>`_ standard.
+
+    Due to integrity issues with `fdsnws-event
+    <https://www.fdsn.org/webservices/>`_ :py:class:`SeismicEvent` is designed
+    to store the original `QuakeML <https://quake.ethz.ch/quakeml/QuakeML>`_
+    XML representation. Besides, data relevant for RT-RAMSIS is extracted from
+    the XML, if necessary converted, and kept alongside using a flat
+    representation.
     """
+    quakeml = Column(PickleType)
+
     # relation: SeismicCatalog
     seismiccatalog_id = Column(Integer, ForeignKey('seismiccatalog.id'))
     seismiccatalog = relationship('SeismicCatalog',
