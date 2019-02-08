@@ -39,7 +39,6 @@ class Project(CreationInfoMixin, NameMixin, ORMBase):
     hydraulics = relationship('Hydraulics', **relationship_config)
     forecastset = relationship('ForecastSet', **relationship_config)
     seismiccatalog = relationship('SeismicCatalog', **relationship_config)
-
     # relation: Settings
     settings_id = Column(Integer, ForeignKey('settings.id'))
     settings = relationship('Settings')
