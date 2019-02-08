@@ -74,7 +74,7 @@ class Forecast(CreationInfoMixin,
 
     A forecast maps a collection of :py:class:`Scenario` instances (including
     their corresponding results) and the real *input* data i.e. both a
-    :py:class:`SeismicCatalog` and :py:class:`Hydraulics`.
+    :py:class:`SeismicCatalog` and :py:class:`InjectionWell`.
     """
     forecastset_id = Column(Integer, ForeignKey('forecastset.id'))
     forecastset = relationship('ForecastSet', back_populates='forecasts')
@@ -84,14 +84,11 @@ class Forecast(CreationInfoMixin,
                                   uselist=False,
                                   back_populates='forecast',
                                   cascade='all, delete-orphan')
-
-    hydraulics = relationship('Hydraulics',
-                              uselist=False,
-                              back_populates='forecast',
-                              cascade='all, delete-orphan')
-
-    # relation: Scenario
-    scenarios = relationship('ForecastScenario', back_populates='forecast',
+    well = relationship('InjectionWell',
+                        uselist=False,
+                        back_populates='forecast')
+    scenarios = relationship('ForecastScenario',
+                             back_populates='forecast',
                              cascade='all, delete-orphan')
 
     @hybrid_property
