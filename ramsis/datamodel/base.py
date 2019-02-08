@@ -278,11 +278,13 @@ def QuantityMixin(name, quantity_type, column_prefix=None):
 # QuantityMixin ()
 
 
-UniqueQuantityMixin = QuantityMixin('Quantity', column_prefix='')
-FloatQuantityMixin = functools.partial(quantity_type='float')
-RealQunatityMixin = FloatQuantityMixin
-IntegerQuantityMixin = functools.partial(quantity_type='int')
-TimeQuantityMixin = functools.partial(quantity_type='time')
+FloatQuantityMixin = functools.partial(QuantityMixin, 
+                                       quantity_type='float')
+RealQuantityMixin = FloatQuantityMixin
+IntegerQuantityMixin = functools.partial(QuantityMixin,
+                                         quantity_type='int')
+TimeQuantityMixin = functools.partial(QuantityMixin,
+                                      quantity_type='time')
 
 
 # ----- END OF base.py -----
