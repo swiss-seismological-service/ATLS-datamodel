@@ -82,18 +82,14 @@ class SeismicityModelRun(ModelRun):
                           uselist=False,
                           cascade='all, delete-orphan')
 
-    # TODO(damb): calculationstate to be added
-    # TODO TODO TODO
-
     __mapper_args__ = {
         'polymorphic_identity': EModel.SEISMICITY,
     }
 
-    # TODO(damb): calculationstate to be added
     def __repr__(self):
         return '<%s(name=%s, url=%s)>' % (type(self).__name__, self.model.name,
                                           self.model.url)
-# SeismicityModelRun
+# class SeismicityModelRun
 
 
 class ReservoirSeismicityPrediction(QuantityMixin('rate'),
@@ -112,8 +108,8 @@ class ReservoirSeismicityPrediction(QuantityMixin('rate'),
     #                                   |
     #               IntegratedReservoirSeismicityPrediction
     #
-    # XXX(damb): The attribute rate_uncertainty is used to express the concept
-    # of a rate_propability.
+    # XXX(damb): The attribute rate_uncertainty should be used to express the
+    # concept of a rate_propability.
     geom = Column(Geometry(geometry_type='GEOMETRYZ', dimension=3),
                   nullable=False)
 
@@ -130,6 +126,7 @@ class ReservoirSeismicityPrediction(QuantityMixin('rate'),
         cascade="all, delete-orphan")
 
     def __iter__(self):
+        # TODO(damb): Implement recursively
         for c in self.children:
             yield c
 
