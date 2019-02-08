@@ -5,9 +5,9 @@ Provides a class to manage Ramsis project data
 """
 import datetime
 
-from sqlalchemy import (Column, Integer, String, DateTime, ForeignKey,
-                        PickleType, event)
-from sqlalchemy.orm import relationship, reconstructor, Session
+from geoalchemy2 import Geometry
+from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy.orm import relationship, reconstructor
 
 from ramsis.datamodel.base import (ORMBase, CreationInfoMixin, NameMixin)
 from ramsis.datamodel.forecast import ForecastSet
@@ -24,10 +24,13 @@ class Project(CreationInfoMixin, NameMixin, ORMBase):
     the root object of the RT-RAMSIS data model.
     """
     description = Column(String)
-
-    # XXX(damb): Reference point used when projecting data into a local CS.
-    # To be verified if PickleType suits the needs.
-    reference_point = Column(PickleType)
+    referencepoint = Column(Geometry(geometry_type='POINT_ZM',
+                                     dimension=4,
+                                     srid=4326), nullable=False)
+    # XXX(damb): Spatial reference system in Proj4 notation representing the
+    # local coordinate system;
+    # see also: https://www.gdal.org/classOGRSpatialReference.html
+    spatialreference = Column(String, nullable=False)
 
     # relationships
     relationship_config = {'back_populates': 'project',
@@ -42,8 +45,6 @@ class Project(CreationInfoMixin, NameMixin, ORMBase):
     settings = relationship('Settings')
 
     # TODO(damb):
-    # * Check reference point implementation. Verify if a POINT_Z would suit
-    #   better our needs.
     # * Implement a project factory/builder instead of using/abusing the
     #   constructor
 
@@ -59,7 +60,6 @@ class Project(CreationInfoMixin, NameMixin, ORMBase):
         self.start_date = datetime.datetime.utcnow().replace(
             second=0, microsecond=0)
 
-        self.reference_point = {'lat': 47.379, 'lon': 8.547, 'h': 450.0}
         self.settings = ProjectSettings()
 
         # Signals
