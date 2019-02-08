@@ -93,7 +93,7 @@ class SeismicityModelRun(ModelRun):
 
 
 class ReservoirSeismicityPrediction(QuantityMixin('rate'),
-                                    QuantityMixin('b_value'), ORMBase):
+                                    QuantityMixin('bvalue'), ORMBase):
     """
     ORM represenation for a :py:class:`SeismicityModelRun` result.
     """
