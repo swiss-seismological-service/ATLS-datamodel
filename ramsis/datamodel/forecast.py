@@ -12,8 +12,6 @@
 Forecast related ORM facilities.
 """
 
-from math import log, factorial
-
 from geoalchemy2 import Geometry
 from sqlalchemy import Column, Boolean, Enum, Integer, ForeignKey
 from sqlalchemy.ext.mutable import MutableDict
@@ -278,23 +276,6 @@ class SeismicityForecastStage(ForecastStage):
     }
 
 # class SeismicityForecastStage
-
-
-def log_likelihood(forecast, observation):
-    """
-    Computes the log likelihood of an observed rate given a forecast
-
-    The forecast value is interpreted as expected value of a poisson
-    distribution. The function expects scalars or numpy arrays as input. In the
-    latter case it computes the LL for each element.
-
-    :param float forecast: forecasted rate
-    :param float observation: observed rate
-    :return: log likelihood for each element of the input
-
-    """
-    ll = -forecast + observation * log(forecast) - log(factorial(observation))
-    return ll
 
 
 # ----- END OF forecast.py -----
