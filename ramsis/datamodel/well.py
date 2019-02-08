@@ -10,6 +10,8 @@ from ramsis.datamodel.base import (ORMBase, CreationInfoMixin,
                                    RealQuantityMixin)
 
 
+# FIXME(damb): Caution, this is a dummy implementation.
+
 class InjectionWell(CreationInfoMixin,
                     RealQuantityMixin('welltipx'),
                     RealQuantityMixin('welltipy'),
