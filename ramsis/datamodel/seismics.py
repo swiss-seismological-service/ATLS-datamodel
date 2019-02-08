@@ -90,13 +90,6 @@ class SeismicEvent(TimeQuantityMixin('datetime'),
     ORM representation of a seismic event. The definition is based on the
     `QuakeML <https://quake.ethz.ch/quakeml/QuakeML>`_ standard.
     """
-    # FIXME(damb): Is it necessary to store public identifiers when using them
-    # may lead to integrity mismatches.
-    publicid = Column(String)
-    originpublicid = Column(String)
-    magnitudepublicid = Column(String)
-    focalmechanismpublicid = Column(String)
-
     # relation: SeismicCatalog
     seismiccatalog_id = Column(Integer, ForeignKey('seismiccatalog.id'))
     seismiccatalog = relationship('SeismicCatalog',
