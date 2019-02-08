@@ -18,44 +18,6 @@ from ramsis.datamodel.signal import Signal
 from ramsis.datamodel.well import InjectionWell
 
 
-def _delete_orphans(entity):
-    """
-    Factory function returning an `SQLAlchemy
-    event handler <https://docs.sqlalchemy.org/en/latest/core/event.html>`_
-    deleting orphaned child entities from projects.
-
-    :param entity: Child entity of project
-    """
-
-    @event.listens_for(Session, 'after_flush')
-    def delete(session, ctx):
-        """
-        Seismic catalogs can have different kinds of parents (i.e.
-        Project<->SeismicCatalog corresponds to a many to many relation), so a
-        simple 'delete-orphan' statement on the relation doesn't work. Instead
-        we check after each flush to the db if there are any orphaned catalogs
-        and delete them if necessary.
-
-        :param Session session: The current session
-        """
-        if any(isinstance(i, entity) for i in session.dirty):
-            query = session.query(entity).\
-                    filter_by(project=None)
-            for orphan in query.all():
-                session.delete(orphan)
-
-    # delete ()
-
-# _delete_orphans ()
-
-
-_ENTITIES = (SeismicCatalog, InjectionWell)
-
-
-for e in _ENTITIES:
-    _delete_orphans(e)
-
-
 class Project(CreationInfoMixin, NameMixin, ORMBase):
     """
     RT-RAMSIS project ORM representation. :py:class:`Project` corresponds to
@@ -67,16 +29,13 @@ class Project(CreationInfoMixin, NameMixin, ORMBase):
     # To be verified if PickleType suits the needs.
     reference_point = Column(PickleType)
 
+    # relationships
     relationship_config = {'back_populates': 'project',
                            'cascade': 'all, delete-orphan'}
-
     well = relationship('InjectionWell', **relationship_config)
     hydraulics = relationship('Hydraulics', **relationship_config)
     forecastset = relationship('ForecastSet', **relationship_config)
-    # XXX(heilukas): Handle delete-orphan manually for seismic catalogs
-    seismiccatalog = relationship('SeismicCatalog',
-                                  back_populates='project',
-                                  cascade='all')
+    seismiccatalog = relationship('SeismicCatalog', **relationship_config)
 
     # relation: Settings
     settings_id = Column(Integer, ForeignKey('settings.id'))
