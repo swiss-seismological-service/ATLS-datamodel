@@ -45,6 +45,21 @@ class Hydraulics(CreationInfoMixin, ORMBase):
     def init_on_load(self):
         self.history_changed = Signal()
 
+    def __iter__(self):
+        for s in self.samples:
+            yield s
+
+    # __iter__ ()
+
+    def __getitem__(self, item):
+        return self.samples[item] if self.samples else None
+
+    def __repr__(self):
+        return '<%s(creationtime=%s, samples=%d)>' % (
+            type(self).__name__, self.creationinfo_creationtime,
+            len(self.samples))
+
+    # __repr__ ()
     # FIXME(damb): Why is this method necessary if there is *hydws*
 #    def import_events(self, importer):
 #        """
@@ -86,41 +101,6 @@ class Hydraulics(CreationInfoMixin, ORMBase):
 #            log.info('Imported {} hydraulic events.'.format(
 #                len(events)))
 #            self.history_changed.emit()
-#
-#    def clear_events(self, time_range=(None, None)):
-#        """
-#        Clear all hydraulic events from the database
-#
-#        If time_range is given, only the events that fall into the time range
-#
-#        """
-#        time_range = (time_range[0] or datetime.min,
-#                      time_range[1] or datetime.max)
-#
-#        to_delete = (s for s in self.samples
-#                     if time_range[1] >= s.date_time >= time_range[0])
-#        count = 0
-#        for s in to_delete:
-#            self.samples.remove(s)
-#            count += 1
-#        log.info('Cleared {} hydraulic events.'.format(count))
-#        self.history_changed.emit()
-
-    def __iter__(self):
-        for s in self.samples:
-            yield s
-
-    # __iter__ ()
-
-    def __getitem__(self, item):
-        return self.samples[item] if self.samples else None
-
-    def __repr__(self):
-        return '<%s(creationtime=%s, samples=%d)>' % (
-            type(self).__name__, self.creationinfo_creationtime,
-            len(self.samples))
-
-    # __repr__ ()
 
 # class Hydraulics
 
