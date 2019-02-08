@@ -11,7 +11,7 @@
 Seismicity prediction related ORM facilities.
 """
 
-from geoalchemy import Geometry
+from geoalchemy2 import Geometry
 
 from sqlalchemy import Column, String, Integer, ForeignKey
 from sqlalchemy.orm import relationship, backref
