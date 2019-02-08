@@ -140,6 +140,11 @@ class ForecastScenario(NameMixin, ORMBase):
         * an :py:class:`InjectionPlan`,
         * a set of :py:class:`ForecastStage` objects,
         * geometric description of a reservoir.
+
+    .. note::
+
+        Currently, a scenario does only allow a single injection plan.
+
     """
     config = Column(MutableDict.as_mutable(JSONEncodedDict))
 
