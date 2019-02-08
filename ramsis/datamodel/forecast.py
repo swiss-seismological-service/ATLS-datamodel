@@ -79,7 +79,8 @@ class Forecast(CreationInfoMixin,
     forecastset_id = Column(Integer, ForeignKey('forecastset.id'))
     forecastset = relationship('ForecastSet', back_populates='forecasts')
 
-    # TODO(damb): delete-orphane to be handled manually?
+    # XXX(damb): Catalogs used for a forecast are snapshots. Thus, a
+    # delete-orphan is appropriate.
     seismiccatalog = relationship('SeismicCatalog',
                                   uselist=False,
                                   back_populates='forecast',
@@ -130,7 +131,6 @@ class Forecast(CreationInfoMixin,
 
 
 class ForecastScenario(NameMixin, ORMBase):
-    # TODO(damb): to be refactored
     """
     A :py:class:`ForecastScenario` describes the forecast input data which
     is configurable by the end-user.
@@ -150,10 +150,10 @@ class ForecastScenario(NameMixin, ORMBase):
     forecast = Column(Integer, ForeignKey('forecast.id'))
     forecast = relationship('Forecast', back_populates='scenarios')
     # relation: InjectionPlan
-    injection_plan = relationship('InjectionPlan',
-                                  back_populates='scenario',
-                                  cascade='all, delete-orphan',
-                                  uselist=False)
+    injectionplan = relationship('InjectionPlan',
+                                 uselist=False,
+                                 back_populates='scenario',
+                                 cascade='all, delete-orphan')
 
     """
     # ForecastResult relation
