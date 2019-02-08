@@ -27,6 +27,41 @@ class SeismicCatalog(CreationInfoMixin, ORMBase):
                           cascade='all, delete-orphan',
                           order_by='SeismicEvent.datetime_value')
 
+    def snapshot(self, filter_cond=None):
+        """
+        Create a snapshot of the catalog.
+
+        :param filter_cond: Callable applied on catalog events when creating
+            the snapshot
+        :type filter_cond: callable or None
+
+        :returns: Snapshot of the catalog
+        :rtype: :py:class:`SeismicCatalog`
+        """
+        snap = type(self)()
+        snap.events = filter(filter_cond, self.events)
+
+        return snap
+
+    # snapshot ()
+
+    def reduce(self, filter_cond=None):
+        """
+        Remove events from the catalog.
+
+        :param filter_cond: Callable applied on catalog events when removing
+            events. Events matching the condition are removed. If `filter_cond`
+            is `None` all events are removed.
+        :type filter_cond: callable or None
+        """
+        try:
+            self.events = filter(lambda e: not filter_cond(e), self.events)
+        except TypeError:
+            if filter_cond is None:
+                self.events = []
+
+    # reduce ()
+
     def __getitem__(self, item):
         return self.events[item] if self.events else None
 
@@ -36,46 +71,6 @@ class SeismicCatalog(CreationInfoMixin, ORMBase):
 
     def __len__(self):
         return len(self.events)
-
-#    def events_before(self, end_date, mc=0):
-#        """ Returns all events >mc before *end_date* """
-#        return [e for e in self.seismic_events
-#                if e.date_time < end_date and e.magnitude > mc]
-#
-#    def clear_events(self, time_range=(None, None)):
-#        """
-#        Clear all seismic events from the database
-#
-#        If time_range is given, only the events that fall into the time range
-#        are cleared.
-#
-#        """
-#        time_range = (time_range[0] or datetime.min,
-#                      time_range[1] or datetime.max)
-#
-#        to_delete = (s for s in self.seismic_events
-#                     if time_range[1] >= s.date_time >= time_range[0])
-#        count = 0
-#        for s in to_delete:
-#            self.seismic_events.remove(s)
-#            count += 1
-#        log.info('Cleared {} seismic events.'.format(count))
-#        self.history_changed.emit()
-#
-#    def snapshot(self, t):
-#        """
-#        Create a snapshot of the catalog.
-#
-#        Deep copies the catalog with all events up to time t
-#
-#        :return SeismicCatalog: copy of the catalog
-#
-#        """
-#        snapshot = SeismicCatalog()
-#        snapshot.catalog_date = datetime.utcnow()
-#        snapshot.seismic_events = [s.copy() for s in self.seismic_events
-#                                   if s.date_time < t]
-#        return snapshot
 
 # class SeismicCatalog
 
