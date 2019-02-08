@@ -171,6 +171,8 @@ def EpochMixin(name, epoch_type=None, column_prefix=None):
 
 
 UniqueEpochMixin = EpochMixin('Epoch', column_prefix='')
+UniqueOpenEpochMixin = EpochMixin('Epoch', epoch_type='open',
+                                  column_prefix='')
 
 
 def QuantityMixin(name, quantity_type, column_prefix=None):

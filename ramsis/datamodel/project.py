@@ -9,16 +9,16 @@ from geoalchemy2 import Geometry
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship, reconstructor
 
-from ramsis.datamodel.base import (ORMBase, CreationInfoMixin, NameMixin)
+from ramsis.datamodel.base import (ORMBase, CreationInfoMixin, NameMixin,
+                                   UniqueOpenEpochMixin)
 from ramsis.datamodel.forecast import ForecastSet
-from ramsis.datamodel.hydraulics import Hydraulics
 from ramsis.datamodel.seismics import SeismicCatalog
 from ramsis.datamodel.settings import ProjectSettings
 from ramsis.datamodel.signal import Signal
 from ramsis.datamodel.well import InjectionWell
 
 
-class Project(CreationInfoMixin, NameMixin, ORMBase):
+class Project(CreationInfoMixin, NameMixin, UniqueOpenEpochMixin, ORMBase):
     """
     RT-RAMSIS project ORM representation. :py:class:`Project` corresponds to
     the root object of the RT-RAMSIS data model.
