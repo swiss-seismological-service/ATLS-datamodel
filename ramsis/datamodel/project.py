@@ -57,11 +57,6 @@ class Project(CreationInfoMixin, NameMixin, UniqueOpenEpochMixin, ORMBase):
         self.well = InjectionWell()
 
         self.settings = ProjectSettings()
-
-        # FIXME: hardcoded for testing purposes
-        # These are the basel well tip coordinates (in CH-1903)
-        self.injection_well = InjectionWell(4740.3, 270645.0, 611631.0)
-
         self.settings['forecast_start'] = self.creationinfo_creationtime
         self.settings.commit()
 
