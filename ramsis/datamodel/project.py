@@ -50,30 +50,29 @@ class Project(CreationInfoMixin, NameMixin, ORMBase):
     def __init__(self, name=''):
         super(Project, self).__init__()
         self.name = name
+        self.creationinfo_creationtime = datetime.datetime.utcnow().replace(
+            second=0, microsecond=0)
 
         self.forecastset = ForecastSet()
         self.hydraulics = Hydraulics()
         self.seismiccatalog = SeismicCatalog()
         self.well = InjectionWell()
 
-        self.start_date = datetime.datetime.utcnow().replace(
-            second=0, microsecond=0)
-
         self.settings = ProjectSettings()
-
-        # Signals
-        self.will_close = Signal()
-        self.project_time_changed = Signal()
-
-        # These inform us when new IS forecasts become available
 
         # FIXME: hardcoded for testing purposes
         # These are the basel well tip coordinates (in CH-1903)
         self.injection_well = InjectionWell(4740.3, 270645.0, 611631.0)
 
         self._project_time = self.start_date
-        self.settings['forecast_start'] = self.start_date
+        self.settings['forecast_start'] = self.creationinfo_creationtime
         self.settings.commit()
+
+        # Signals
+        self.will_close = Signal()
+        self.project_time_changed = Signal()
+
+    # __init__ ()
 
     @reconstructor
     def init_on_load(self):
