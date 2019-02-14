@@ -55,7 +55,8 @@ class Settings(NameMixin, ORMBase):
         <https://docs.sqlalchemy.org/en/latest/orm/inheritance.html#single-table-inheritance>`_.
 
     """
-    date = Column(DateTime)
+    datetime = Column(DateTime, default=datetime.datetime.utcnow(),
+                      onupdate=datetime.datetime.utcnow())
     data = Column(String)
     _type = Column(String, nullable=False)
 
@@ -67,7 +68,6 @@ class Settings(NameMixin, ORMBase):
     def __init__(self):
         super(Settings, self).__init__()
         self.settings_changed = Signal()
-        self.date = datetime.datetime.utcnow()
         self._dict = {}
 
     @reconstructor
@@ -120,7 +120,6 @@ class Settings(NameMixin, ORMBase):
         Emits the settings_changed signal
 
         """
-        self.date = datetime.datetime.utcnow()
         self.data = json.dumps(self._dict, indent=4, default=datetime_encoder)
         self.settings_changed.emit(self)
 
