@@ -3,19 +3,13 @@
 Project related ORM facilities.
 """
 
-import datetime
-
 from geoalchemy2 import Geometry
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship, reconstructor
 
 from ramsis.datamodel.base import (ORMBase, CreationInfoMixin, NameMixin,
                                    UniqueOpenEpochMixin)
-from ramsis.datamodel.forecast import ForecastSet
-from ramsis.datamodel.seismics import SeismicCatalog
-from ramsis.datamodel.settings import ProjectSettings
 from ramsis.datamodel.signal import Signal
-from ramsis.datamodel.well import InjectionWell
 
 
 class Project(CreationInfoMixin, NameMixin, UniqueOpenEpochMixin, ORMBase):
@@ -36,7 +30,7 @@ class Project(CreationInfoMixin, NameMixin, UniqueOpenEpochMixin, ORMBase):
     relationship_config = {'back_populates': 'project',
                            'cascade': 'all, delete-orphan'}
     well = relationship('InjectionWell', **relationship_config)
-    forecastset = relationship('ForecastSet', **relationship_config)
+    forecasts = relationship('Forecast', **relationship_config)
     seismiccatalog = relationship('SeismicCatalog', **relationship_config)
     # relation: Settings
     settings_id = Column(Integer, ForeignKey('settings.id'))
@@ -45,29 +39,12 @@ class Project(CreationInfoMixin, NameMixin, UniqueOpenEpochMixin, ORMBase):
     # TODO(damb):
     # * Implement a project factory/builder instead of using/abusing the
     #   constructor
-
-    def __init__(self, name=''):
-        super(Project, self).__init__()
-        self.name = name
-        self.creationinfo_creationtime = datetime.datetime.utcnow().replace(
-            second=0, microsecond=0)
-
-        self.forecastset = ForecastSet()
-        self.seismiccatalog = SeismicCatalog()
-        self.well = InjectionWell()
-
-        self.settings = ProjectSettings()
-        self.settings['forecast_start'] = self.creationinfo_creationtime
-        self.settings.commit()
-
-        # Signals
+    def __init__(self):
         self.will_close = Signal()
-
-    # __init__ ()
 
     @reconstructor
     def init_on_load(self):
-        self.will_close = Signal()
+        self.__init__()
 
     def close(self):
         """

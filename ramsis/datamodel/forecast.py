@@ -24,26 +24,6 @@ from ramsis.datamodel.model import EModel
 from ramsis.datamodel.type import JSONEncodedDict
 
 
-class ForecastSet(ORMBase):
-    """
-    Implements a container for :py:class:`Forecast` objects.
-    """
-    project_id = Column(Integer, ForeignKey('project.id'))
-    project = relationship('Project', back_populates='forecastset')
-
-    forecasts = relationship('Forecast', back_populates='forecastset',
-                             cascade='all, delete-orphan',
-                             order_by='Forecast.interval_starttime')
-
-    def __iter__(self):
-        for f in self.forecasts:
-            yield f
-
-    # __iter__ ()
-
-# class ForecastSet
-
-
 class Forecast(CreationInfoMixin,
                EpochMixin('interval', epoch_type='finite', column_prefix=''),
                NameMixin, ORMBase):
@@ -55,9 +35,8 @@ class Forecast(CreationInfoMixin,
     their corresponding results) and the real *input* data i.e. both a
     :py:class:`SeismicCatalog` and :py:class:`InjectionWell`.
     """
-    forecastset_id = Column(Integer, ForeignKey('forecastset.id'))
-    forecastset = relationship('ForecastSet', back_populates='forecasts')
-
+    project_id = Column(Integer, ForeignKey('project.id'))
+    project = relationship('Project', back_populates='forecasts')
     # XXX(damb): Catalogs used for a forecast are snapshots. Thus, a
     # delete-orphan is appropriate.
     seismiccatalog = relationship('SeismicCatalog',
