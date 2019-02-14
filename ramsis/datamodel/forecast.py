@@ -157,7 +157,7 @@ class SeismicityForecastStage(ForecastStage):
 
     runs = relationship('SeismicityModelRun',
                         back_populates='forecast_stage',
-                        cascades='all, delete-orphan')
+                        cascade='all, delete-orphan')
 
     __mapper_args__ = {
         'polymorphic_identity': EModel.SEISMICITY,
