@@ -41,27 +41,6 @@ class ForecastSet(ORMBase):
 
     # __iter__ ()
 
-    """
-    def __init__(self):
-        self.forecasts_changed = Signal()
-
-    @reconstructor
-    def init_on_load(self):
-        self.forecasts_changed = Signal()
-
-    def add_forecast(self, forecast):
-        # Appends a new forecast and fires the changed signal
-        self.forecasts.append(forecast)
-        self.forecasts_changed.emit()
-
-    def forecast_at(self, t):
-        # Return the forecast scheduled for t
-        try:
-            return next(f for f in self.forecasts if f.forecast_time == t)
-        except StopIteration:
-            return None
-    """
-
 # class ForecastSet
 
 
@@ -102,31 +81,6 @@ class Forecast(CreationInfoMixin,
 
     # __iter__ ()
 
-    """
-    @property
-    def complete(self):
-        # FIXME: also check all stages are complete
-        if len(self.input.scenarios) == len(self.results):
-            return True
-        else:
-            return False
-
-    @property
-    def project(self):
-        # Shortcut to the project
-        return self.forecast_set.project
-
-    def add_scenario(self, scenario):
-        # Appends a new scenario and fires the changed signal
-        self.input.scenarios.append(scenario)
-        self.input.forecast.forecast_set.forecasts_changed.emit()
-
-    def remove_scenario(self, scenario):
-        # Removes a scenario and fires the changed signal
-        self.input.scenarios.remove(scenario)
-        self.input.forecast.forecast_set.forecasts_changed.emit()
-    """
-
 # class Forecast
 
 
@@ -159,71 +113,6 @@ class ForecastScenario(NameMixin, ORMBase):
                                  uselist=False,
                                  back_populates='scenario',
                                  cascade='all, delete-orphan')
-
-    """
-    # ForecastResult relation
-    forecast_result_id = Column(Integer, ForeignKey('forecast_results.id'))
-    forecast_result = relationship('ForecastResult',
-                                   back_populates='scenario')
-    # Summary status
-    # These are only informational only (for the user) and are computed from
-    # individual calculation statuses and stage configurations.
-    PENDING = 'Pending'  # Nothing has been computed yet
-    COMPLETE = 'Complete'  # All calculations complete
-    INCOMPLETE = 'Incomplete'  # Some pending calculations
-    RUNNING = 'Running'  # Currently computing
-
-    def __init__(self):
-        super().__init__()
-        self.config = {
-            'run_is_forecast': True,
-            'run_hazard': True,
-            'run_risk': True,
-            'disabled_models': []
-        }
-        self.scenario_changed = Signal()
-
-    @property
-    def summary_status(self):
-        fr = self.forecast_result
-        if fr is None:
-            return self.PENDING
-        all_results = list(fr.model_results.values()) + \
-                      [fr.hazard_result, fr.risk_result]
-        if all(r.state == CS.PENDING for r in all_results if r):
-            return self.PENDING
-        if any(r.state == CS.RUNNING for r in all_results if r):
-            return self.RUNNING
-        if self.config['run_risk'] and not fr.risk_result.status.finished:
-            return self.INCOMPLETE
-        if self.config['run_hazard'] and not fr.hazard_result.status.finished:
-            return self.INCOMPLETE
-        if self.config['run_is_forecast']:
-            expected = []
-            scenario_disabled = self.config['disabled_models']
-            for id, conf in self.project.settings['forecast_models'].items():
-                if conf['enabled'] and id not in scenario_disabled:
-                    expected.append(id)
-            if any(id not in fr.model_results for id in expected):
-                return self.INCOMPLETE
-            if any(fr.model_results[id].status.finished is False
-                   for id in expected):
-                return self.INCOMPLETE
-        return self.COMPLETE
-
-    def has_errors(self):
-        fr = self.forecast_result
-        if fr is None:
-            return False
-        all_results = list(fr.model_results.values()) + \
-                      [fr.hazard_result, fr.risk_result]
-        return any(r.state == CS.ERROR for r in all_results if r)
-
-    @reconstructor
-    def init_on_load(self):
-        self.scenario_changed = Signal()
-    """
-
 
 # class ForecastScenario
 
