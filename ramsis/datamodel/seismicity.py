@@ -16,7 +16,7 @@ from geoalchemy2 import Geometry
 from sqlalchemy import Column, String, Integer, ForeignKey
 from sqlalchemy.orm import relationship, backref
 
-from ramsis.datamodel.base import ORMBase, QuantityMixin
+from ramsis.datamodel.base import ORMBase, RealQuantityMixin
 from ramsis.datamodel.model import Model, ModelRun, EModel
 
 
@@ -92,8 +92,8 @@ class SeismicityModelRun(ModelRun):
 # class SeismicityModelRun
 
 
-class ReservoirSeismicityPrediction(QuantityMixin('rate'),
-                                    QuantityMixin('bvalue'), ORMBase):
+class ReservoirSeismicityPrediction(RealQuantityMixin('rate'),
+                                    RealQuantityMixin('bvalue'), ORMBase):
     """
     ORM represenation for a :py:class:`SeismicityModelRun` result.
     """
