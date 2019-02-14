@@ -32,9 +32,7 @@ class Project(CreationInfoMixin, NameMixin, UniqueOpenEpochMixin, ORMBase):
     well = relationship('InjectionWell', **relationship_config)
     forecasts = relationship('Forecast', **relationship_config)
     seismiccatalog = relationship('SeismicCatalog', **relationship_config)
-    # relation: Settings
-    settings_id = Column(Integer, ForeignKey('settings.id'))
-    settings = relationship('Settings')
+    settings = relationship('ProjectSettings')
 
     # TODO(damb):
     # * Implement a project factory/builder instead of using/abusing the

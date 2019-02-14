@@ -12,9 +12,9 @@ import datetime
 import json
 import logging
 
-from sqlalchemy import Column, String, DateTime
+from sqlalchemy import Column, String, DateTime, ForeignKey
 from sqlalchemy.ext.declarative.api import DeclarativeMeta
-from sqlalchemy.orm import reconstructor
+from sqlalchemy.orm import reconstructor, relationship
 
 from ramsis.datamodel.base import ORMBase, NameMixin
 from ramsis.datamodel.signal import Signal
@@ -103,6 +103,10 @@ class Settings(collections.UserDict, NameMixin, ORMBase,
 
 class ProjectSettings(Settings):
     __tablename__ = 'settings'
+
+    # relation: Project
+    project_id = Column(ForeignKey('project.id'))
+    project = relationship('Project', back_populates='settings')
 
     __mapper_args__ = {'polymorphic_identity': 'project'}
     __table_args__ = { 'extend_existing': True }
