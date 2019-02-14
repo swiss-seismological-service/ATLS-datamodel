@@ -66,7 +66,7 @@ class Settings(NameMixin, ORMBase):
     }
 
     def __init__(self):
-        super(Settings, self).__init__()
+        super().__init__()
         self.settings_changed = Signal()
         self._dict = {}
 
@@ -146,7 +146,7 @@ class ProjectSettings(Settings):
     }
 
     def __init__(self):
-        super(ProjectSettings, self).__init__()
+        super().__init__()
 
         for key, default_value in self.DEFAULTS.items():
             self.add(key, default=default_value)
