@@ -18,6 +18,9 @@ from ramsis.datamodel.signal import Signal
 
 log = logging.getLogger(__name__)
 
+# TODO(damb): Better make use of a ISO8601 conform date format. With
+# https://docs.obspy.org/packages/autogen/obspy.core.utcdatetime.UTCDateTime.html
+# e.g. obspy implements already the according infrastructure.
 DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
 
 
