@@ -10,8 +10,8 @@ import datetime
 import json
 import logging
 
-from sqlalchemy import Column, orm
-from sqlalchemy import String, DateTime
+from sqlalchemy import Column, String, DateTime
+from sqlalchemy.orm import reconstructor
 
 from ramsis.datamodel.base import ORMBase, NameMixin
 from ramsis.datamodel.signal import Signal
@@ -70,7 +70,7 @@ class Settings(NameMixin, ORMBase):
         self.date = datetime.datetime.utcnow()
         self._dict = {}
 
-    @orm.reconstructor
+    @reconstructor
     def init_on_load(self):
         self.settings_changed = Signal()
         self._dict = (json.loads(self.data,
