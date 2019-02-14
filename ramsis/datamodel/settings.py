@@ -6,11 +6,14 @@ that will be stored in the project database.
 
 """
 
+import abc
+import collections
 import datetime
 import json
 import logging
 
 from sqlalchemy import Column, String, DateTime
+from sqlalchemy.ext.declarative.api import DeclarativeMeta
 from sqlalchemy.orm import reconstructor
 
 from ramsis.datamodel.base import ORMBase, NameMixin
@@ -40,7 +43,12 @@ def datetime_decoder(dct):
     return dct
 
 
-class Settings(NameMixin, ORMBase):
+class SettingsMeta(DeclarativeMeta, abc.ABCMeta):
+    pass
+
+
+class Settings(collections.UserDict, NameMixin, ORMBase,
+               metaclass=SettingsMeta):
     """
     Collection of settings
 
@@ -57,7 +65,7 @@ class Settings(NameMixin, ORMBase):
     """
     datetime = Column(DateTime, default=datetime.datetime.utcnow(),
                       onupdate=datetime.datetime.utcnow())
-    data = Column(String)
+    config = Column(String)
     _type = Column(String, nullable=False)
 
     __mapper_args__ = {
@@ -68,47 +76,13 @@ class Settings(NameMixin, ORMBase):
     def __init__(self):
         super().__init__()
         self.settings_changed = Signal()
-        self._dict = {}
 
     @reconstructor
     def init_on_load(self):
         self.settings_changed = Signal()
-        self._dict = (json.loads(self.data,
-                                 object_hook=datetime.datetime_decoder)
-                      if self.data else {})
-
-    def add(self, name, value=None, default=None):
-        """
-        Add a new setting
-
-        :param name: name to retrieve the setting later
-        :param value: value, if None the default will be returned on access
-        :param default: default value
-
-        """
-        s = {'default': default}
-        if value:
-            s['value'] = value
-        self._dict[name] = s
-
-    def __contains__(self, name):
-        """ Check if setting is present """
-        return name in self._dict
-
-    def __getitem__(self, name):
-        """ Return the value for a setting """
-        s = self._dict[name]
-        if 'value' in s:
-            return s['value']
-        else:
-            return s['default']
-
-    def __setitem__(self, key, value):
-        self._dict[key]['value'] = value
-
-    def keys(self):
-        """ Return all keys """
-        return self._dict.keys()
+        self.data = (json.loads(self.config,
+                                object_hook=datetime.datetime_decoder)
+                     if self.config else {})
 
     def commit(self):
         """
@@ -120,8 +94,10 @@ class Settings(NameMixin, ORMBase):
         Emits the settings_changed signal
 
         """
-        self.data = json.dumps(self._dict, indent=4, default=datetime_encoder)
+        self.config = json.dumps(self.data, indent=4, default=datetime_encoder)
         self.settings_changed.emit(self)
+
+# class Settings
 
 
 class ProjectSettings(Settings):
@@ -149,5 +125,7 @@ class ProjectSettings(Settings):
         super().__init__()
 
         for key, default_value in self.DEFAULTS.items():
-            self.add(key, default=default_value)
+            self.setdefault(key, default=default_value)
         self.commit()
+
+# class ProjectSettings
