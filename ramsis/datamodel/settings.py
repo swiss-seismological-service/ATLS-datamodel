@@ -105,6 +105,7 @@ class ProjectSettings(Settings):
     __tablename__ = 'settings'
 
     __mapper_args__ = {'polymorphic_identity': 'project'}
+    __table_args__ = { 'extend_existing': True }
 
     DEFAULTS = {
         'fdsnws_enable': False,
