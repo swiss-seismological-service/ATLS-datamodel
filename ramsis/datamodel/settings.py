@@ -112,7 +112,7 @@ class Settings(ORMBase):
         Emits the settings_changed signal
 
         """
-        self.date = datetime.utcnow()
+        self.date = datetime.datetime.utcnow()
         self.data = json.dumps(self._dict, indent=4, default=datetime_encoder)
         self.settings_changed.emit(self)
 
@@ -132,7 +132,7 @@ class ProjectSettings(Settings):
         'auto_schedule_enable': True,
         'forecast_interval': 6.0,  # hours
         'forecast_length': 6.0,  # hours
-        'forecast_start': datetime(1970, 1, 1, 0, 0, 0),
+        'forecast_start': datetime.datetime(1970, 1, 1, 0, 0, 0),
         'seismic_rate_interval': 1.0,  # minutes
         'forecast_models': {
             'rj': {
