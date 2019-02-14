@@ -130,7 +130,7 @@ class ProjectSettings(Settings):
 
     __mapper_args__ = {'polymorphic_identity': 'project'}
 
-    _DEFAULTS = {
+    DEFAULTS = {
         'fdsnws_enable': False,
         'fdsnws_url': None,
         'fdsnws_interval': 5.0,  # minutes
@@ -176,6 +176,6 @@ class ProjectSettings(Settings):
     def __init__(self):
         super(ProjectSettings, self).__init__()
 
-        for key, default_value in self._DEFAULTS.items():
+        for key, default_value in self.DEFAULTS.items():
             self.add(key, default=default_value)
         self.commit()
