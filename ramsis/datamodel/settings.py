@@ -1,4 +1,3 @@
-# -*- encoding: utf-8 -*-
 """
 Settings access and storage
 
