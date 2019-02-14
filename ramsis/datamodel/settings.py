@@ -13,7 +13,7 @@ import logging
 from sqlalchemy import Column, orm
 from sqlalchemy import String, DateTime
 
-from ramsis.datamodel.base import ORMBase
+from ramsis.datamodel.base import ORMBase, NameMixin
 from ramsis.datamodel.signal import Signal
 
 log = logging.getLogger(__name__)
@@ -40,7 +40,7 @@ def datetime_decoder(dct):
     return dct
 
 
-class Settings(ORMBase):
+class Settings(NameMixin, ORMBase):
     """
     Collection of settings
 
@@ -49,12 +49,20 @@ class Settings(ORMBase):
     persisted as a json string. This makes it easy to add new and remove
     obsolete settings.
 
+    .. note::
+
+        Settings make use of SQLAlchemy's `Single Table Inheritance
+        <https://docs.sqlalchemy.org/en/latest/orm/inheritance.html#single-table-inheritance>`_.
+
     """
-    name = Column(String, nullable=False)
     date = Column(DateTime)
     data = Column(String)
+    _type = Column(String, nullable=False)
 
-    __mapper_args__ = {'polymorphic_on': name}
+    __mapper_args__ = {
+        'polymorphic_on': _type,
+        'polymorphic_identity': 'settings'
+    }
 
     def __init__(self):
         super(Settings, self).__init__()
@@ -118,10 +126,11 @@ class Settings(ORMBase):
 
 
 class ProjectSettings(Settings):
+    __tablename__ = 'settings'
 
     __mapper_args__ = {'polymorphic_identity': 'project'}
 
-    default_settings = {
+    _DEFAULTS = {
         'fdsnws_enable': False,
         'fdsnws_url': None,
         'fdsnws_interval': 5.0,  # minutes
@@ -167,6 +176,6 @@ class ProjectSettings(Settings):
     def __init__(self):
         super(ProjectSettings, self).__init__()
 
-        for key, default_value in self.default_settings.items():
+        for key, default_value in self._DEFAULTS.items():
             self.add(key, default=default_value)
         self.commit()
