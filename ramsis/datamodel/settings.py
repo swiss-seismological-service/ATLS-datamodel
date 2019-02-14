@@ -65,6 +65,7 @@ class Settings(collections.UserDict, NameMixin, ORMBase,
     """
     datetime = Column(DateTime, default=datetime.datetime.utcnow(),
                       onupdate=datetime.datetime.utcnow())
+    # TODO(damb): Check if sqlalchemy.type.JSON would be an option.
     config = Column(String)
     _type = Column(String, nullable=False)
 
