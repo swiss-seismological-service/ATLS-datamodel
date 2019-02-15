@@ -5,8 +5,8 @@ Hydraulics related ORM facilities.
 # TODO(damb): Remove dependencies unrelated to ORM.
 import logging
 
-from sqlalchemy import Column, Integer, ForeignKey
-from sqlalchemy.orm import relationship, reconstructor
+from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy.orm import relationship, reconstructor, class_mapper
 
 from ramsis.datamodel.base import (ORMBase, CreationInfoMixin,
                                    RealQuantityMixin, TimeQuantityMixin)
@@ -100,26 +100,27 @@ class InjectionPlan(CreationInfoMixin, ORMBase):
 
 
 class HydraulicsEvent(TimeQuantityMixin('datetime'),
+                      RealQuantityMixin('downholetemperature'),
                       RealQuantityMixin('downholeflow'),
                       RealQuantityMixin('downholepressure'),
+                      RealQuantityMixin('topholetemperature'),
                       RealQuantityMixin('topholeflow'),
                       RealQuantityMixin('topholepressure'),
+                      RealQuantityMixin('fuiddensity'),
+                      RealQuantityMixin('fluidviscosity'),
+                      RealQuantityMixin('fluidph'),
                       ORMBase):
     """
-    Represents a hydraulics event (i.e. a flowrate and pressure)
-
-    :param datetime_value: Datetime when the event occurred
-    :type datetime_value: :py:class:`datetime.datetime`
-    :param float downholeflow_value: Flow downhole :code:`[l/min]`
-    :param float downholepressure_value: Pressure downhole :code:`[bar]`
-    :param float topholeflow_value: Flow tophole :code:`[l/min]`
-    :param float topholepressure_value: Pressure tophole :code:`[bar]`
+    Represents a hydraulics event. The definition is based on `QuakeML
+    <https://quake.ethz.ch/quakeml/QuakeML2.0/Hydraulic>`_.
 
     .. note::
 
         *Quantities* are implemented as `QuakeML
         <https://quake.ethz.ch/quakeml>`_ quantities.
     """
+    fluidcomposition = Column(String)
+
     # relation: Hydraulics
     hydraulics_id = Column(Integer,
                            ForeignKey('hydraulics.id'))
@@ -134,13 +135,19 @@ class HydraulicsEvent(TimeQuantityMixin('datetime'),
     # TODO(damb): Is using functools.total_ordering an option?
     def __eq__(self, other):
         if isinstance(other, HydraulicsEvent):
-            return (
-                self.datetime_value == other.datetime_value and
-                self.downholeflow_value == other.downholeflow_value and
-                self.topholeflow_value == other.topholeflow_value and
-                self.downholepressure_value == other.downholepressure_value and
-                self.topholepressure_value == other.topholepressure_value)
-        raise TypeError
+            mapper = class_mapper(type(self))
+
+            pk_keys = set([c.key for c in mapper.primary_key])
+            rel_keys = set([c.key for c in mapper.relationships])
+            fk_keys = set([c.key for c in mapper.columns if c.foreign_keys])
+
+            omit = pk_keys | rel_keys | fk_keys
+
+            return all(getattr(self, attr) == getattr(other, attr)
+                       for attr in [p.key for p in mapper.iterate_properties
+                                    if p.key not in omit])
+
+        raise ValueError
 
     def __ne__(self, other):
         return not self.__eq__(other)
