@@ -80,6 +80,7 @@ setup(
     packages=['ramsis.' + pkg for pkg in find_packages(where='ramsis')],
     install_requires=_install_requires,
     extras_require=_extras_require,
+    setup_requires=['pytest-runner',],
     tests_require=_tests_require,
     include_package_data=True,
     zip_safe=False,
