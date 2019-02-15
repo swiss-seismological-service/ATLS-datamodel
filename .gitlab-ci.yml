@@ -17,7 +17,7 @@ variables:
 cache:
   paths:
     - .cache/pip
-    - venv/
+    - venv3/
 
 before_script:
   - python -V               
