@@ -20,7 +20,10 @@ class Project(CreationInfoMixin, NameMixin, UniqueOpenEpochMixin, ORMBase):
     description = Column(String)
     referencepoint = Column(Geometry(geometry_type='POINTZM',
                                      dimension=4,
-                                     srid=4326), nullable=False)
+                                     srid=4326,
+                                     management=True,
+                                     use_st_prefix=False),
+                            nullable=False)
     # XXX(damb): Spatial reference system in Proj4 notation representing the
     # local coordinate system;
     # see also: https://www.gdal.org/classOGRSpatialReference.html

@@ -81,7 +81,10 @@ class ForecastScenario(NameMixin, ORMBase):
     """
     config = Column(MutableDict.as_mutable(JSONEncodedDict))
 
-    reservoirgeom = Column(Geometry(geometry_type='GEOMETRYZ', dimension=3),
+    reservoirgeom = Column(Geometry(geometry_type='GEOMETRYZ',
+                                    dimension=3,
+                                    management=True,
+                                    use_st_prefix=False),
                            nullable=False)
 
     # relation: Forecast
