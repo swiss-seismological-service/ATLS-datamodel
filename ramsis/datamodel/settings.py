@@ -109,7 +109,7 @@ class ProjectSettings(Settings):
     project = relationship('Project', back_populates='settings')
 
     __mapper_args__ = {'polymorphic_identity': 'project'}
-    __table_args__ = { 'extend_existing': True }
+    __table_args__ = {'extend_existing': True}
 
     DEFAULTS = {
         'fdsnws_enable': False,

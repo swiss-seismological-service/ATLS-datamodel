@@ -55,6 +55,3 @@ else:
 
         def disconnect(self, slot):
             self._proxy.sig.disconnect(slot)
-
-
-

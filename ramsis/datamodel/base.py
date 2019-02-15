@@ -278,7 +278,7 @@ def QuantityMixin(name, quantity_type, column_prefix=None):
 # QuantityMixin ()
 
 
-FloatQuantityMixin = functools.partial(QuantityMixin, 
+FloatQuantityMixin = functools.partial(QuantityMixin,
                                        quantity_type='float')
 RealQuantityMixin = FloatQuantityMixin
 IntegerQuantityMixin = functools.partial(QuantityMixin,
