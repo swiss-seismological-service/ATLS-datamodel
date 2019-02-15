@@ -4,7 +4,7 @@ Project related ORM facilities.
 """
 
 from geoalchemy2 import Geometry
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, String
 from sqlalchemy.orm import relationship, reconstructor
 
 from ramsis.datamodel.base import (ORMBase, CreationInfoMixin, NameMixin,
