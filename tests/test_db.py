@@ -31,6 +31,11 @@ def load_spatialite(dbapi_conn, connection_record):
 # load_spatialite ()
 
 
+# XXX(damb): Enable GISDB test cases with:
+# $ export RAMSIS_TEST_GISDB="True"; python setup.py test --addopts="-r s"
+@unittest.skipUnless(
+    os.getenv('RAMSIS_TEST_GISDB', 'False') == 'True',
+    "'RAMSIS_TEST_GISDB' envvar not 'True'")
 class GISDBTestCase(unittest.TestCase):
 
     def setUp(self):
