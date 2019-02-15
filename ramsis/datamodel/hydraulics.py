@@ -2,18 +2,12 @@
 Hydraulics related ORM facilities.
 """
 
-# TODO(damb): Remove dependencies unrelated to ORM.
-import logging
-
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship, reconstructor, class_mapper
 
 from ramsis.datamodel.base import (ORMBase, CreationInfoMixin,
                                    RealQuantityMixin, TimeQuantityMixin)
 from ramsis.datamode.signal import Signal
-
-
-log = logging.getLogger(__name__)
 
 
 # NOTE(damb): Currently, basically both Hydraulics and InjectionPlan implement
