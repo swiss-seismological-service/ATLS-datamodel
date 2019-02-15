@@ -145,7 +145,7 @@ class SeismicEvent(TimeQuantityMixin('datetime'),
                        for attr in [p.key for p in mapper.iterate_properties
                                     if p.key not in omit])
 
-        raise TypeError
+        raise ValueError
 
     # __eq__ ()
 
