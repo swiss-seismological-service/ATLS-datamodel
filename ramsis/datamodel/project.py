@@ -1,93 +1,51 @@
-# -*- encoding: utf-8 -*-
 # Copyright (C) 2013, ETH Zurich - Swiss Seismological Service SED
-
 """
-Provides a class to manage Ramsis project data
-
+Project related ORM facilities.
 """
 
-from datetime import datetime, timedelta
-
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, \
-    PickleType
+from geoalchemy2 import Geometry
+from sqlalchemy import Column, String
 from sqlalchemy.orm import relationship, reconstructor
-from .ormbase import OrmBase
 
-from .signal import Signal
-from .settings import ProjectSettings
-from .seismics import SeismicCatalog
-from .hydraulics import InjectionHistory
-from .forecast import ForecastSet
-from .injectionwell import InjectionWell
-from .eqstats import SeismicRateHistory
+from ramsis.datamodel.base import (ORMBase, CreationInfoMixin, NameMixin,
+                                   UniqueOpenEpochMixin)
+from ramsis.datamodel.signal import Signal
 
 
-class Project(OrmBase):
+class Project(CreationInfoMixin, NameMixin, UniqueOpenEpochMixin, ORMBase):
     """
-    Manages persistent and non-persistent ramsis project data such as the
-    seismic and hydraulic history, and project state information.
-
-    .. pyqt4:signal:project_time_changed: emitted when the project time changes
-
-    :ivar seismic_catalog: The seismic history of the project
-    :ivar injection_history: The hydraulic history of the project
-
+    RT-RAMSIS project ORM representation. :py:class:`Project` is the root
+    object of the RT-RAMSIS data model.
     """
-    # region ORM Declarations
-    __tablename__ = 'projects'
-    id = Column(Integer, primary_key=True)
-    title = Column(String)
     description = Column(String)
-    start_date = Column(DateTime)
-    end_date = Column(DateTime)
-    reference_point = Column(PickleType)
-    args = {'uselist': False,  # we use one to one relationships for now
-            'back_populates': 'project',
-            'cascade': 'all, delete-orphan'}
-    injection_well = relationship('InjectionWell', **args)
-    injection_history = relationship('InjectionHistory', **args)
-    forecast_set = relationship('ForecastSet', **args)
-    # We handle delete-orphan manually for seismic catalogs
-    seismic_catalog = relationship('SeismicCatalog',
-                                   **dict(args, cascade='all'))
-    settings_id = Column(Integer, ForeignKey('settings.id'))
-    settings = relationship('Settings')
-    # endregion
+    referencepoint = Column(Geometry(geometry_type='POINTZM',
+                                     dimension=4,
+                                     srid=4326,
+                                     management=True,
+                                     use_st_prefix=False),
+                            nullable=False)
+    # XXX(damb): Spatial reference system in Proj4 notation representing the
+    # local coordinate system;
+    # see also: https://www.gdal.org/classOGRSpatialReference.html
+    spatialreference = Column(String, nullable=False)
 
-    def __init__(self, store=None, title=''):
-        super(Project, self).__init__()
-        self.store = store
-        self.seismic_catalog = SeismicCatalog()
-        self.injection_history = InjectionHistory()
-        self.rate_history = SeismicRateHistory()
-        self.forecast_set = ForecastSet()
-        self.title = title
-        self.start_date = datetime.utcnow().replace(second=0, microsecond=0)
-        self.end_date = self.start_date + timedelta(days=365)
-        self.reference_point = {'lat': 47.379, 'lon': 8.547, 'h': 450.0}
-        self.settings = ProjectSettings()
+    # relationships
+    relationship_config = {'back_populates': 'project',
+                           'cascade': 'all, delete-orphan'}
+    well = relationship('InjectionWell', **relationship_config)
+    forecasts = relationship('Forecast', **relationship_config)
+    seismiccatalog = relationship('SeismicCatalog', **relationship_config)
+    settings = relationship('ProjectSettings')
 
-        # Signals
+    # TODO(damb):
+    # * Implement a project factory/builder instead of using/abusing the
+    #   constructor
+    def __init__(self):
         self.will_close = Signal()
-        self.project_time_changed = Signal()
-
-        # These inform us when new IS forecasts become available
-
-        # FIXME: hardcoded for testing purposes
-        # These are the basel well tip coordinates (in CH-1903)
-        self.injection_well = InjectionWell(4740.3, 270645.0, 611631.0)
-
-        self._project_time = self.start_date
-        self.settings['forecast_start'] = self.start_date
-        self.settings.commit()
-        if self.store:
-            self.store.session.add(self)
 
     @reconstructor
     def init_on_load(self):
-        self.will_close = Signal()
-        self.project_time_changed = Signal()
-        self._project_time = self.start_date
+        self.__init__()
 
     def close(self):
         """
@@ -97,16 +55,6 @@ class Project(OrmBase):
 
         """
         self.will_close.emit(self)
-
-    def save(self):
-        if self.store:
-            self.store.commit()
-
-    @property
-    def project_time(self):
-        return self._project_time
-
-    # Event information
 
     def event_time_range(self):
         """
@@ -127,7 +75,7 @@ class Project(OrmBase):
         """
         try:
             es = self.seismic_catalog[0]
-            eh = self.injection_history[0]
+            eh = self.well.hydraulics[0]
         except IndexError:
             return None
         if es is None and eh is None:
@@ -146,7 +94,7 @@ class Project(OrmBase):
         """
         try:
             es = self.seismic_catalog[-1]
-            eh = self.injection_history[-1]
+            eh = self.well.hydraulics[-1]
         except IndexError:
             return None
         if es is None and eh is None:
@@ -158,8 +106,4 @@ class Project(OrmBase):
         else:
             return eh if eh.date_time > es.date_time else es
 
-    # Project time
-
-    def update_project_time(self, t):
-        self._project_time = t
-        self.project_time_changed.emit(t)
+# class Project

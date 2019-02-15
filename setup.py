@@ -34,25 +34,16 @@ _authors_email = [
     'lukas.heiniger@sed.ethz.ch',
     'daniel.armbruster@sed.ethz.ch']
 
-_install_requires= [
-    # TODO(damb): marshmallow version update due to dependency conflicts.
-    # However, the implementation is not updated yet such that it is quite
-    # probable that the package ramsis.datamodel will break.
-
-    #"marshmallow==2.10.3",
-    "marshmallow==3.0.0b13",
-    # TODO (damb): check if valid version: "numpy==1.8.2",
-    "numpy>=1.8.2",
-    "PyQt5 >=5.8.2, <=5.10",
-    "sqlalchemy>=1.2", ]
+_install_requires = [
+    "sqlalchemy>=1.2",
+    "geoalchemy2>=0.5", ]
 
 _extras_require = {'doc': [
-    "epydoc==3.0.1",
     "sphinx==1.4.1",
     "sphinx-rtd-theme==0.1.9", ]}
 
-_tests_require = []
-
+_tests_require = [
+    'pytest>=3.4', ]
 
 
 setup(
@@ -88,6 +79,7 @@ setup(
     packages=['ramsis.' + pkg for pkg in find_packages(where='ramsis')],
     install_requires=_install_requires,
     extras_require=_extras_require,
+    setup_requires=['pytest-runner', ],
     tests_require=_tests_require,
     include_package_data=True,
     zip_safe=False,

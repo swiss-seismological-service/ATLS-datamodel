@@ -1,4 +1,3 @@
-# -*- encoding: utf-8 -*-
 """
 Settings access and storage
 
@@ -7,21 +6,29 @@ that will be stored in the project database.
 
 """
 
+import abc
+import collections
+import datetime
 import json
 import logging
-from datetime import datetime
-from sqlalchemy import Column, orm
-from sqlalchemy import Integer, String, DateTime
-from .ormbase import OrmBase
-from .signal import Signal
+
+from sqlalchemy import Column, String, DateTime, ForeignKey
+from sqlalchemy.ext.declarative.api import DeclarativeMeta
+from sqlalchemy.orm import reconstructor, relationship
+
+from ramsis.datamodel.base import ORMBase, NameMixin
+from ramsis.datamodel.signal import Signal
 
 log = logging.getLogger(__name__)
 
+# TODO(damb): Better make use of a ISO8601 conform date format. With
+# https://docs.obspy.org/packages/autogen/obspy.core.utcdatetime.UTCDateTime.html
+# e.g. obspy implements already the according infrastructure.
 DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
 
 
 def datetime_encoder(x):
-    if isinstance(x, datetime):
+    if isinstance(x, datetime.datetime):
         return x.strftime(DATE_FORMAT)
     raise TypeError('Don''t know how to encode {}'.format(x))
 
@@ -30,13 +37,18 @@ def datetime_decoder(dct):
     for k, v in dct.items():
         if isinstance(v, str):
             try:
-                dct[k] = datetime.strptime(v, DATE_FORMAT)
+                dct[k] = datetime.datetime.strptime(v, DATE_FORMAT)
             except ValueError:
                 pass
     return dct
 
 
-class Settings(OrmBase):
+class SettingsMeta(DeclarativeMeta, abc.ABCMeta):
+    pass
+
+
+class Settings(collections.UserDict, NameMixin, ORMBase,
+               metaclass=SettingsMeta):
     """
     Collection of settings
 
@@ -45,60 +57,33 @@ class Settings(OrmBase):
     persisted as a json string. This makes it easy to add new and remove
     obsolete settings.
 
+    .. note::
+
+        Settings make use of SQLAlchemy's `Single Table Inheritance
+        <https://docs.sqlalchemy.org/en/latest/orm/inheritance.html#single-table-inheritance>`_.
+
     """
-    # region ORM declarations
-    __tablename__ = 'settings'
-    id = Column(Integer, primary_key=True)
-    name = Column(String, nullable=False)
-    date = Column(DateTime)
-    data = Column(String)
-    __mapper_args__ = {'polymorphic_on': name}
-    # endregion
+    datetime = Column(DateTime, default=datetime.datetime.utcnow(),
+                      onupdate=datetime.datetime.utcnow())
+    # TODO(damb): Check if sqlalchemy.type.JSON would be an option.
+    config = Column(String)
+    _type = Column(String, nullable=False)
+
+    __mapper_args__ = {
+        'polymorphic_on': _type,
+        'polymorphic_identity': 'settings'
+    }
 
     def __init__(self):
-        super(Settings, self).__init__()
+        super().__init__()
         self.settings_changed = Signal()
-        self.date = datetime.utcnow()
-        self._dict = {}
 
-    @orm.reconstructor
+    @reconstructor
     def init_on_load(self):
         self.settings_changed = Signal()
-        self._dict = json.loads(self.data, object_hook=datetime_decoder) \
-            if self.data else {}
-
-    def add(self, name, value=None, default=None):
-        """
-        Add a new setting
-
-        :param name: name to retrieve the setting later
-        :param value: value, if None the default will be returned on access
-        :param default: default value
-
-        """
-        s = {'default': default}
-        if value:
-            s['value'] = value
-        self._dict[name] = s
-
-    def __contains__(self, name):
-        """ Check if setting is present """
-        return name in self._dict
-
-    def __getitem__(self, name):
-        """ Return the value for a setting """
-        s = self._dict[name]
-        if 'value' in s:
-            return s['value']
-        else:
-            return s['default']
-
-    def __setitem__(self, key, value):
-        self._dict[key]['value'] = value
-
-    def keys(self):
-        """ Return all keys """
-        return self._dict.keys()
+        self.data = (json.loads(self.config,
+                                object_hook=datetime.datetime_decoder)
+                     if self.config else {})
 
     def commit(self):
         """
@@ -110,16 +95,23 @@ class Settings(OrmBase):
         Emits the settings_changed signal
 
         """
-        self.date = datetime.utcnow()
-        self.data = json.dumps(self._dict, indent=4, default=datetime_encoder)
+        self.config = json.dumps(self.data, indent=4, default=datetime_encoder)
         self.settings_changed.emit(self)
+
+# class Settings
 
 
 class ProjectSettings(Settings):
+    __tablename__ = 'settings'
+
+    # relation: Project
+    project_id = Column(ForeignKey('project.id'))
+    project = relationship('Project', back_populates='settings')
 
     __mapper_args__ = {'polymorphic_identity': 'project'}
+    __table_args__ = {'extend_existing': True}
 
-    default_settings = {
+    DEFAULTS = {
         'fdsnws_enable': False,
         'fdsnws_url': None,
         'fdsnws_interval': 5.0,  # minutes
@@ -130,41 +122,16 @@ class ProjectSettings(Settings):
         'auto_schedule_enable': True,
         'forecast_interval': 6.0,  # hours
         'forecast_length': 6.0,  # hours
-        'forecast_start': datetime(1970, 1, 1, 0, 0, 0),
+        'forecast_start': datetime.datetime(1970, 1, 1, 0, 0, 0),
         'seismic_rate_interval': 1.0,  # minutes
-        'forecast_models': {
-            'rj': {
-                'enabled': True,
-                'url': 'http://localhost:5000',
-                'title': 'Reasenberg-Jones',
-                'parameters': {'a': -1.6, 'b': 1.58, 'p': 1.2, 'c': 0.05}
-            },
-            'etas': {
-                'enabled': True,
-                'url': 'http://localhost:5001',
-                'title': 'ETAS',
-                'parameters': {'alpha': 0.8, 'k': 8.66, 'p': 1.2, 'c': 0.01,
-                               'mu': 12.7, 'cf': 1.98}
-            },
-            'shapiro': {
-                'enabled': False,
-                'url': 'http://localhost:5002',
-                'title': 'Shapiro (spatial)',
-                'parameters': None
-            },
-            'ollinger': {
-                'enabled': True,
-                'url': 'http://ramsiswin.ethz.ch:8080/run',
-                'title': 'Ollinger',
-                'parameters': None
-            },
-        },
         'write_fc_results_to_disk': False,
     }
 
     def __init__(self):
-        super(ProjectSettings, self).__init__()
+        super().__init__()
 
-        for key, default_value in self.default_settings.items():
-            self.add(key, default=default_value)
+        for key, default_value in self.DEFAULTS.items():
+            self.setdefault(key, default=default_value)
         self.commit()
+
+# class ProjectSettings

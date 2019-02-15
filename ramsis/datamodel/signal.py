@@ -10,7 +10,7 @@ try:
     from PyQt5.QtCore import QObject, pyqtSignal
 except ImportError:
 
-    class Signal:
+    class Signal(object):
         """
         Fake signal implementation
 
@@ -37,7 +37,7 @@ else:
     class Proxy(QObject):
         sig = pyqtSignal(object)
 
-    class Signal:
+    class Signal(object):
         """
         Uses a proxy to emit a pyqtSignal if PyQt is available
 
@@ -55,6 +55,3 @@ else:
 
         def disconnect(self, slot):
             self._proxy.sig.disconnect(slot)
-
-
-

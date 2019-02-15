@@ -1,37 +1,36 @@
-# -*- encoding: utf-8 -*-
 """
-History of hydraulic events, i.e changes in flow or pressure
-
+Hydraulics related ORM facilities.
 """
 
-import logging
-import traceback
-from datetime import datetime
-from sqlalchemy import Column, Integer, Float, DateTime, ForeignKey
-from sqlalchemy.orm import relationship, reconstructor
-from .ormbase import OrmBase
-from .signal import Signal
+from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy.orm import relationship, reconstructor, class_mapper
 
-log = logging.getLogger(__name__)
+from ramsis.datamodel.base import (ORMBase, CreationInfoMixin,
+                                   RealQuantityMixin, TimeQuantityMixin)
+from ramsis.datamode.signal import Signal
 
 
-class InjectionHistory(OrmBase):
+# NOTE(damb): Currently, basically both Hydraulics and InjectionPlan implement
+# the same facilities i.e. a timeseries of hydraulics data shipping some
+# metadata. That is why, I propose that they inherit from a common base class.
+# Perhaps a mixin approach should be considered, too.
+
+class Hydraulics(CreationInfoMixin, ORMBase):
     """
-    Provides a history of hydraulic events and functions to read and write them
-    from/to a persistent store. The class uses Qt signals to signal changes.
-
+    ORM representatio of a hydraulics time series.
     """
-    # region ORM Declarations
-    __tablename__ = 'injection_histories'
-    id = Column(Integer, primary_key=True)
-    # Project relation
-    project_id = Column(Integer, ForeignKey('projects.id'))
-    project = relationship('Project', back_populates='injection_history')
-    # InjectionSample relation
-    samples = relationship('InjectionSample',
-                           back_populates='injection_history',
-                           cascade='all')
-    # endregion
+    # relation: Project
+    project_id = Column(Integer, ForeignKey('project.id'))
+    project = relationship('Project', back_populates='hydraulics')
+    # relation: HydraulicsEvent
+    samples = relationship('HydraulicsEvent',
+                           back_populates='hydraulics',
+                           single_parent=True,
+                           cascade='all, delete-orphan')
+
+    # relation: InjectionWell
+    well_id = Column(Integer, ForeignKey('injectionwell.id'))
+    well = relationship('InjectionWell', back_populates='hydraulics')
 
     def __init__(self):
         self.history_changed = Signal()
@@ -40,154 +39,130 @@ class InjectionHistory(OrmBase):
     def init_on_load(self):
         self.history_changed = Signal()
 
-    def import_events(self, importer):
-        """
-        Imports hydraulic events from a csv file by using an EventReporter
+    def __iter__(self):
+        for s in self.samples:
+            yield s
 
-        The EventReporter must return the following fields (which must thus
-        be present in the csv file). All imported events are simply added to
-        any existing one. If you want to overwrite existing events, call
-        :meth:`clear_events` first.
-
-        - ``flow_dh``: flow down hole [l/min]
-        - ``flow_xt``: flow @ x-mas tree (top hole) [l/min]
-        - ``pr_dh``: pressure down hole [bar]
-        - ``pr_xt``: pressure @ x-mas tree (top hole) [bar]
-
-        :param importer: an EventReporter object
-        :type importer: EventImporter
-
-        """
-        events = []
-        try:
-            for date, fields in importer:
-                event = InjectionSample(date,
-                                        flow_dh=float(
-                                            fields.get('flow_dh') or 0),
-                                        flow_xt=float(
-                                            fields.get('flow_xt') or 0),
-                                        pr_dh=float(fields.get('pr_dh') or 0),
-                                        pr_xt=float(fields.get('pr_xt') or 0))
-                events.append(event)
-        except:
-            log.error('Failed to import hydraulic events. Make sure '
-                      'the .csv file contains top and bottom hole '
-                      'flow and pressure fields and that the date '
-                      'field has the format dd.mm.yyyyTHH:MM:SS. The '
-                      'original error was ' + traceback.format_exc())
-        else:
-            self.samples.extend(events)
-            log.info('Imported {} hydraulic events.'.format(
-                len(events)))
-            self.history_changed.emit()
-
-    def clear_events(self, time_range=(None, None)):
-        """
-        Clear all hydraulic events from the database
-
-        If time_range is given, only the events that fall into the time range
-
-        """
-        time_range = (time_range[0] or datetime.min,
-                      time_range[1] or datetime.max)
-
-        to_delete = (s for s in self.samples
-                     if time_range[1] >= s.date_time >= time_range[0])
-        count = 0
-        for s in to_delete:
-            self.samples.remove(s)
-            count += 1
-        log.info('Cleared {} hydraulic events.'.format(count))
-        self.history_changed.emit()
+    # __iter__ ()
 
     def __getitem__(self, item):
         return self.samples[item] if self.samples else None
 
+    def __repr__(self):
+        return '<%s(creationtime=%s, samples=%d)>' % (
+            type(self).__name__, self.creationinfo_creationtime,
+            len(self.samples))
 
-class InjectionPlan(OrmBase):
-
-    # region ORM Declarations
-    __tablename__ = 'injection_plans'
-    id = Column(Integer, primary_key=True)
-    # InjectionSample relation
-    samples = relationship('InjectionSample',
-                           back_populates='injection_plan')
-    # Scenario relation
-    scenario_id = Column(Integer, ForeignKey('scenarios.id'))
-    scenario = relationship('Scenario', back_populates='injection_plan')
-    # endregion
+# class Hydraulics
 
 
-class InjectionSample(OrmBase):
+class InjectionPlan(CreationInfoMixin, ORMBase):
     """
-    Represents a hydraulic event (i.e. a flowrate and pressure)
-
-    :ivar datetime.datetime date_time: Date and time when the event occurred
-    :ivar float flow_dh: Flow downhole [l/min]
-    :ivar float float flow_xt: Flow @ x-mas tree (top hole) [l/min]
-    :ivar float pr_dh: pressure downhole [bar]
-    :ivar float pr_xt: pressure @ x-mas tree (top hole) [bar]
-
+    ORM representation of a planned injection.
     """
+    # relation: HydraulicsEvent
+    samples = relationship('HydraulicsEvent',
+                           back_populates='injectionplan',
+                           single_parent=True,
+                           cascade='all, delete-orphan')
+    # relation: Scenario
+    scenario_id = Column(Integer, ForeignKey('forecastscenario.id'))
+    scenario = relationship('ForecastScenario',
+                            back_populates='injectionplan')
 
-    # region ORM declarations
-    __tablename__ = 'injection_samples'
-    id = Column(Integer, primary_key=True)
-    date_time = Column(DateTime)
-    flow_dh = Column(Float)
-    flow_xt = Column(Float)
-    pr_dh = Column(Float)
-    pr_xt = Column(Float)
-    # InjectionHistory relation
-    injection_history_id = Column(Integer,
-                                  ForeignKey('injection_histories.id'))
-    injection_history = relationship('InjectionHistory',
-                                     back_populates='samples')
-    # InjectionPlan relation
-    injection_plan_id = Column(Integer,
-                               ForeignKey('injection_plans.id'))
-    injection_plan = relationship('InjectionPlan',
-                                  back_populates='samples')
-    # endregion
+    # relation: InjectionWell
+    well_id = Column(Integer, ForeignKey('injectionwell.id'))
+    well = relationship('InjectionWell', back_populates='injectionplan')
 
-    # Data attributes (required for flattening)
-    data_attrs = ['date_time', 'flow_dh', 'flow_xt', 'pr_dh', 'pr_xt']
+    def __iter__(self):
+        for s in self.samples:
+            yield s
 
-    def __init__(self, date_time, flow_dh, flow_xt, pr_dh, pr_xt):
-        """
-        The initialisation parameters are the same as the member variables.
-        See class description for details.
+    # __iter__ ()
 
-        """
-        self.date_time = date_time
-        self.flow_dh = flow_dh
-        self.flow_xt = flow_xt
-        self.pr_dh = pr_dh
-        self.pr_xt = pr_xt
-
-    def __str__(self):
-        return "Flow: %.1f @ %s" % (self.flow_dh, self.date_time.ctime())
+    def __getitem__(self, item):
+        return self.samples[item] if self.samples else None
 
     def __repr__(self):
-        return "<InjectionSample('{}' @ '{}')>"\
-            .format(self.flow_dh, self.date_time)
+        return '<%s(creationtime=%s, samples=%d)>' % (
+            type(self).__name__, self.creationinfo_creationtime,
+            len(self.samples))
 
+    # __repr__ ()
+
+# class InjectionPlan
+
+
+class HydraulicsEvent(TimeQuantityMixin('datetime'),
+                      RealQuantityMixin('downholetemperature'),
+                      RealQuantityMixin('downholeflow'),
+                      RealQuantityMixin('downholepressure'),
+                      RealQuantityMixin('topholetemperature'),
+                      RealQuantityMixin('topholeflow'),
+                      RealQuantityMixin('topholepressure'),
+                      RealQuantityMixin('fuiddensity'),
+                      RealQuantityMixin('fluidviscosity'),
+                      RealQuantityMixin('fluidph'),
+                      ORMBase):
+    """
+    Represents a hydraulics event. The definition is based on `QuakeML
+    <https://quake.ethz.ch/quakeml/QuakeML2.0/Hydraulic>`_.
+
+    .. note::
+
+        *Quantities* are implemented as `QuakeML
+        <https://quake.ethz.ch/quakeml>`_ quantities.
+    """
+    fluidcomposition = Column(String)
+
+    # relation: Hydraulics
+    hydraulics_id = Column(Integer,
+                           ForeignKey('hydraulics.id'))
+    hydraulics = relationship('Hydraulics',
+                              back_populates='samples')
+    # relation: InjectionPlan
+    injectionplan_id = Column(Integer,
+                              ForeignKey('injectionplan.id'))
+    injectionplan = relationship('InjectionPlan',
+                                 back_populates='samples')
+
+    # TODO(damb): Is using functools.total_ordering an option?
     def __eq__(self, other):
-        if isinstance(other, InjectionSample):
-            same = (self.date_time == other.date_time and
-                    self.flow_dh == other.flow_dh and
-                    self.flow_xt == other.flow_xt and
-                    self.pr_dh == other.pr_dh and
-                    self.pr_xt == other.pr_xt)
-            return same
-        return NotImplemented
+        if isinstance(other, HydraulicsEvent):
+            mapper = class_mapper(type(self))
+
+            pk_keys = set([c.key for c in mapper.primary_key])
+            rel_keys = set([c.key for c in mapper.relationships])
+            fk_keys = set([c.key for c in mapper.columns if c.foreign_keys])
+
+            omit = pk_keys | rel_keys | fk_keys
+
+            return all(getattr(self, attr) == getattr(other, attr)
+                       for attr in [p.key for p in mapper.iterate_properties
+                                    if p.key not in omit])
+
+        raise ValueError
 
     def __ne__(self, other):
-        result = self.__eq__(other)
-        if result is NotImplemented:
-            return result
-        else:
-            return not result
+        return not self.__eq__(other)
 
+    def __str__(self):
+        return "Flow: %.1f @ %s" % (self.downholeflow_value,
+                                    self.datetime_value.ctime())
+
+    def __repr__(self):
+        return "<{}(datetime={!r}, downholeflow={!r})>".format(
+            type(self).__name__, self.datetime_value, self.downholeflow_value)
+
+    # TODO(damb)
+    # https://docs.python.org/3/reference/datamodel.html#object.__hash__
+    # recommends to mix together the hash values of the components of the
+    # object that also play a part in comparison of objects by packing them
+    # into a tuple and hashing the tuple
     def __hash__(self):
         return id(self)
+
+# class HydraulicsEvent
+
+
+# ----- END OF hydraulics.py -----
