@@ -19,9 +19,6 @@ class Hydraulics(CreationInfoMixin, ORMBase):
     """
     ORM representatio of a hydraulics time series.
     """
-    # relation: Project
-    project_id = Column(Integer, ForeignKey('project.id'))
-    project = relationship('Project', back_populates='hydraulics')
     # relation: HydraulicsEvent
     samples = relationship('HydraulicsEvent',
                            back_populates='hydraulics',
