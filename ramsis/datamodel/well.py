@@ -4,6 +4,7 @@ Injection well ORM facilities.
 """
 
 from sqlalchemy import Column, Integer, Boolean, ForeignKey
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 
 from ramsis.datamodel.base import (ORMBase, CreationInfoMixin,
@@ -49,10 +50,9 @@ class InjectionWell(CreationInfoMixin,
                             back_populates='well',
                             cascade='all, delete-orphan')
 
-    @property
-    def injection_point(self):
-        # TODO(damb): To be implemented.
-        return 4740.3, 270645.0, 611631.0
+    @hybrid_property
+    def injectionpoint(self):
+        return self.welltipx_value, self.welltipy_value, self.welltipz_value
 
 # class InjectionWell
 
