@@ -7,7 +7,7 @@ from sqlalchemy.orm import relationship, reconstructor, class_mapper
 
 from ramsis.datamodel.base import (ORMBase, CreationInfoMixin,
                                    RealQuantityMixin, TimeQuantityMixin)
-from ramsis.datamode.signal import Signal
+from ramsis.datamodel.signal import Signal
 
 
 # NOTE(damb): Currently, basically both Hydraulics and InjectionPlan implement
