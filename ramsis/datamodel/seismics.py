@@ -194,6 +194,9 @@ class SeismicEvent(TimeQuantityMixin('datetime'),
     def __ne__(self, other):
         return not self.__eq__(other)
 
+    def __hash__(self):
+        return hash(self.quakeml)
+
     def __str__(self):
         return "M%.1f @ %s" % (self.magnitude_value,
                                self.datetime_value.ctime())
