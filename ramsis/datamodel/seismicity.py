@@ -110,6 +110,7 @@ class ReservoirSeismicityPrediction(RealQuantityMixin('rate'),
     #
     # XXX(damb): The attribute rate_uncertainty should be used to express the
     # concept of a rate_propability.
+    id = Column(Integer, primary_key=True)
     geom = Column(Geometry(geometry_type='GEOMETRYZ',
                            dimension=3,
                            management=True,
