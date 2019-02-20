@@ -9,6 +9,8 @@ ramsis/external/shapiro_spatial
 # Python Files
 *.py[cod]
 *.egg-info
+.eggs/
+.pytest_cache/
 
 # PyCharm IDE
 .idea/
