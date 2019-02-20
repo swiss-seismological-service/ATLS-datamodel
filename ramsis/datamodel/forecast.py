@@ -89,7 +89,7 @@ class ForecastScenario(NameMixin, ORMBase):
                            nullable=False)
 
     # relation: Forecast
-    forecast = Column(Integer, ForeignKey('forecast.id'))
+    forecast_id = Column(Integer, ForeignKey('forecast.id'))
     forecast = relationship('Forecast', back_populates='scenarios')
     # relation: InjectionPlan
     injectionplan = relationship('InjectionPlan',
@@ -139,7 +139,7 @@ class SeismicityForecastStage(ForecastStage):
     id = Column(Integer, ForeignKey('forecaststage.id'), primary_key=True)
 
     runs = relationship('SeismicityModelRun',
-                        back_populates='forecast_stage',
+                        back_populates='forecaststage',
                         cascade='all, delete-orphan')
 
     __mapper_args__ = {

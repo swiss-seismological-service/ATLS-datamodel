@@ -62,14 +62,14 @@ class InjectionPlan(CreationInfoMixin, ORMBase):
                            back_populates='injectionplan',
                            single_parent=True,
                            cascade='all, delete-orphan')
-    # relation: Scenario
+    # relation: ForecastScenario
     scenario_id = Column(Integer, ForeignKey('forecastscenario.id'))
     scenario = relationship('ForecastScenario',
                             back_populates='injectionplan')
 
     # relation: InjectionWell
     well_id = Column(Integer, ForeignKey('injectionwell.id'))
-    well = relationship('InjectionWell', back_populates='injectionplan')
+    well = relationship('InjectionWell', back_populates='injectionplans')
 
     def __iter__(self):
         for s in self.samples:
