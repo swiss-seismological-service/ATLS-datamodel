@@ -76,7 +76,8 @@ class ForecastScenario(NameMixin, ORMBase):
 
     .. note::
 
-        Currently, a scenario does only allow a single injection plan.
+        Currently, a scenario does only cover a single injection plan including
+        the reservoir geometry.
 
     """
     config = Column(MutableDict.as_mutable(JSONEncodedDict))
