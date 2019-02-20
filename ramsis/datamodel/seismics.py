@@ -3,7 +3,7 @@ Seismics related ORM facilities.
 """
 
 from sqlalchemy import Column
-from sqlalchemy import Integer, ForeignKey, PickleType
+from sqlalchemy import Integer, ForeignKey, LargeBinary
 from sqlalchemy.orm import relationship, class_mapper
 
 from ramsis.datamodel.base import (ORMBase, CreationInfoMixin,
@@ -92,7 +92,7 @@ class SeismicEvent(TimeQuantityMixin('datetime'),
     the XML, if necessary converted, and kept alongside using a flat
     representation.
     """
-    quakeml = Column(PickleType, nullable=False)
+    quakeml = Column(LargeBinary, nullable=False)
 
     # relation: SeismicCatalog
     seismiccatalog_id = Column(Integer, ForeignKey('seismiccatalog.id'))
