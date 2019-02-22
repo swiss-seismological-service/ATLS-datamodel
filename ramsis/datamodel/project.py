@@ -1,15 +1,14 @@
-# Copyright (C) 2013, ETH Zurich - Swiss Seismological Service SED
+# Copyright (C) 2019, ETH Zurich - Swiss Seismological Service SED
 """
 Project related ORM facilities.
 """
 
 from geoalchemy2 import Geometry
 from sqlalchemy import Column, String
-from sqlalchemy.orm import relationship, reconstructor
+from sqlalchemy.orm import relationship
 
 from ramsis.datamodel.base import (ORMBase, CreationInfoMixin, NameMixin,
                                    UniqueOpenEpochMixin)
-from ramsis.datamodel.signal import Signal
 
 
 class Project(CreationInfoMixin, NameMixin, UniqueOpenEpochMixin, ORMBase):
@@ -40,12 +39,6 @@ class Project(CreationInfoMixin, NameMixin, UniqueOpenEpochMixin, ORMBase):
     # TODO(damb):
     # * Implement a project factory/builder instead of using/abusing the
     #   constructor
-    def __init__(self):
-        self.will_close = Signal()
-
-    @reconstructor
-    def init_on_load(self):
-        self.__init__()
 
     def close(self):
         """
@@ -107,3 +100,6 @@ class Project(CreationInfoMixin, NameMixin, UniqueOpenEpochMixin, ORMBase):
             return eh if eh.date_time > es.date_time else es
 
 # class Project
+
+
+# ----- END OF project.py -----

@@ -17,7 +17,6 @@ from sqlalchemy.ext.declarative.api import DeclarativeMeta
 from sqlalchemy.orm import reconstructor, relationship
 
 from ramsis.datamodel.base import ORMBase, NameMixin
-from ramsis.datamodel.signal import Signal
 
 log = logging.getLogger(__name__)
 
@@ -74,13 +73,8 @@ class Settings(collections.UserDict, NameMixin, ORMBase,
         'polymorphic_identity': 'settings'
     }
 
-    def __init__(self):
-        super().__init__()
-        self.settings_changed = Signal()
-
     @reconstructor
     def init_on_load(self):
-        self.settings_changed = Signal()
         self.data = (json.loads(self.config,
                                 object_hook=datetime.datetime_decoder)
                      if self.config else {})

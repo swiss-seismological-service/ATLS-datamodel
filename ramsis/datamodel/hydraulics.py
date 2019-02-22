@@ -4,17 +4,16 @@ Hydraulics related ORM facilities.
 """
 
 from sqlalchemy import Column, Integer, String, ForeignKey
-from sqlalchemy.orm import relationship, reconstructor, class_mapper
+from sqlalchemy.orm import relationship, class_mapper
 
 from ramsis.datamodel.base import (ORMBase, CreationInfoMixin,
                                    RealQuantityMixin, TimeQuantityMixin)
-from ramsis.datamodel.signal import Signal
-
 
 # NOTE(damb): Currently, basically both Hydraulics and InjectionPlan implement
 # the same facilities i.e. a timeseries of hydraulics data shipping some
 # metadata. That is why, I propose that they inherit from a common base class.
 # Perhaps a mixin approach should be considered, too.
+
 
 class Hydraulics(CreationInfoMixin, ORMBase):
     """
@@ -29,13 +28,6 @@ class Hydraulics(CreationInfoMixin, ORMBase):
     # relation: InjectionWell
     well_id = Column(Integer, ForeignKey('injectionwell.id'))
     well = relationship('InjectionWell', back_populates='hydraulics')
-
-    def __init__(self):
-        self.history_changed = Signal()
-
-    @reconstructor
-    def init_on_load(self):
-        self.history_changed = Signal()
 
     def __iter__(self):
         for s in self.samples:
