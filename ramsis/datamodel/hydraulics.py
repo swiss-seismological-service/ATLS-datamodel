@@ -1,3 +1,4 @@
+# Copyright (C) 2019, ETH Zurich - Swiss Seismological Service SED
 """
 Hydraulics related ORM facilities.
 """
@@ -154,7 +155,7 @@ class HydraulicsEvent(TimeQuantityMixin('datetime'),
     # TODO(damb)
     # https://docs.python.org/3/reference/datamodel.html#object.__hash__
     # recommends to mix together the hash values of the components of the
-    # object that also play a part in comparison of objects by packing them
+    # object that also play a role in comparison of objects by packing them
     # into a tuple and hashing the tuple
     def __hash__(self):
         return id(self)

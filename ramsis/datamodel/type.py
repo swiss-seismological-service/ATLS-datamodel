@@ -1,12 +1,4 @@
-# This is <type.py>
-# ----------------------------------------------------------------------------
-#
 # Copyright (c) 2018 by Swiss Seismological Service (SED, ETHZ)
-#
-# REVISIONS and CHANGES
-#    2018/01/24   V1.0   Daniel Armbruster (damb)
-#
-# ============================================================================
 """
 `SQLAlchemy <https://www.sqlalchemy.org/>`_ custom type facilities.
 """

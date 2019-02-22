@@ -1,12 +1,4 @@
-# This is <seismicity.py>
-# ----------------------------------------------------------------------------
-#
-# Copyright (c) 2018 by Daniel Armbruster (SED, ETHZ)
-#
-# REVISIONS and CHANGES
-#    2018/01/24   V1.0   Daniel Armbruster (damb)
-#
-# ============================================================================
+# Copyright (C) 2019, ETH Zurich - Swiss Seismological Service SED
 """
 Seismicity prediction related ORM facilities.
 """

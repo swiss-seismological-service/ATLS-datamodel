@@ -1,4 +1,4 @@
-# Copyright (C) 2013, ETH Zurich - Swiss Seismological Service SED
+# Copyright (C) 2019, ETH Zurich - Swiss Seismological Service SED
 """
 Injection well ORM facilities.
 """
@@ -71,3 +71,7 @@ class WellSection(ORMBase):
     well = relationship('InjectionWell', back_populates='sections')
 
 # class WellSection
+
+
+# ----- END OF well.py -----
+

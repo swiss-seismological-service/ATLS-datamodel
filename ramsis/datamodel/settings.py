@@ -1,9 +1,9 @@
+# Copyright (C) 2019, ETH Zurich - Swiss Seismological Service SED
 """
 Settings access and storage
 
 These classes represent project related settings, i.e. settings
 that will be stored in the project database.
-
 """
 
 import abc
@@ -135,3 +135,6 @@ class ProjectSettings(Settings):
         self.commit()
 
 # class ProjectSettings
+
+
+# ----- END OF settings.py -----

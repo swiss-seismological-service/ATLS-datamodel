@@ -1,3 +1,4 @@
+# Copyright (C) 2019, ETH Zurich - Swiss Seismological Service SED
 """
 Seismics related ORM facilities.
 """
@@ -206,3 +207,6 @@ class SeismicEvent(TimeQuantityMixin('datetime'),
             type(self).__name__, self.datetime_value, self.magnitude_value)
 
 # class SeismicEvent
+
+
+# ----- END OF seismics.py -----

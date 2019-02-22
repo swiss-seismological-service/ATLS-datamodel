@@ -1,9 +1,7 @@
+# Copyright (C) 2019, ETH Zurich - Swiss Seismological Service SED
 """
 PyQt specific utilities (with replacements or mocks where PyQt is not
 available.
-
-Copyright (C) 2017, ETH Zurich - Swiss Seismological Service SED
-
 """
 
 try:
@@ -32,6 +30,8 @@ except ImportError:
             except KeyError:
                 pass
 
+    # class Signal
+
 else:
 
     class Proxy(QObject):
@@ -55,3 +55,8 @@ else:
 
         def disconnect(self, slot):
             self._proxy.sig.disconnect(slot)
+
+    # class Signal
+
+
+# ----- END OF signal.py -----
