@@ -25,8 +25,8 @@ ORMBase = declarative_base(cls=Base)
 
 
 # ----------------------------------------------------------------------------
-# XXX(damb): Within the mixins below the QML type *ResourceReference* i.e. an
-# URI is implemented as sqlalchemy.String
+# XXX(damb): Within the mixins below the QML type *ResourceReference* (i.e. an
+# URI) is implemented as sqlalchemy.String
 
 class CreationInfoMixin(object):
     """
