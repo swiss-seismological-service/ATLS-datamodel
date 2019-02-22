@@ -1,6 +1,3 @@
-# External Subversion repositories
-ramsis/external/shapiro_spatial
-
 # MATLAB generated files #
 *.asv
 *.m~
