@@ -10,7 +10,6 @@ import abc
 import collections
 import datetime
 import json
-import logging
 
 from sqlalchemy import Column, String, DateTime, ForeignKey
 from sqlalchemy.ext.declarative.api import DeclarativeMeta
@@ -18,7 +17,6 @@ from sqlalchemy.orm import reconstructor, relationship
 
 from ramsis.datamodel.base import ORMBase, NameMixin
 
-log = logging.getLogger(__name__)
 
 # TODO(damb): Better make use of a ISO8601 conform date format. With
 # https://docs.obspy.org/packages/autogen/obspy.core.utcdatetime.UTCDateTime.html
