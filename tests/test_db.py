@@ -1,3 +1,4 @@
+# Copyright (C) 2019, ETH Zurich - Swiss Seismological Service SED
 """
 General purpose DB test facilities.
 """
@@ -58,3 +59,6 @@ class GISDBTestCase(unittest.TestCase):
         self.assertIsNone(ORMBase.metadata.create_all(self.engine))
 
 # class GISDBTestCase
+
+
+# ----- END OF test_db.py -----

@@ -1,3 +1,4 @@
+# Copyright (C) 2019, ETH Zurich - Swiss Seismological Service SED
 """
 Seismics related test facilities.
 """
@@ -36,3 +37,6 @@ class SeismicCatalogTestCase(unittest.TestCase):
     # test_dumps_quakeml ()
 
 # class SeismicCatalogTestCase
+
+
+# ----- END OF test_seismics.py -----
