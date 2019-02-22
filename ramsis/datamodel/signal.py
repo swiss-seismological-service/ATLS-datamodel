@@ -1,7 +1,6 @@
 # Copyright (C) 2019, ETH Zurich - Swiss Seismological Service SED
 """
-PyQt specific utilities (with replacements or mocks where PyQt is not
-available.
+General purpose signal facilities.
 """
 
 try:
