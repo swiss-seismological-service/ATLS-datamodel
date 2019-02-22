@@ -40,15 +40,6 @@ class Project(CreationInfoMixin, NameMixin, UniqueOpenEpochMixin, ORMBase):
     # * Implement a project factory/builder instead of using/abusing the
     #   constructor
 
-    def close(self):
-        """
-        Closes the project file. Before closing, the *will_close* signal is
-        emitted. After closing, the project is not usable anymore and will have
-        to be reinstatiated if it is needed again.
-
-        """
-        self.will_close.emit(self)
-
     def event_time_range(self):
         """
         Returns the time range of all events in the project as a (start_time,
