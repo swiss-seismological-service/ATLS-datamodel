@@ -1,5 +1,8 @@
 # ramsis.datamodel
 
+> Deprecation Note: This release (v0.2) is the last release before 
+> reintegration into the ramsis core repository.
+
 This namspace distribution implements the *RT-RAMSIS* data model. Data is kept
 persistant by means of the `sqlalchemy` object relational mapper.
 
