@@ -1,4 +1,3 @@
-# Copyright (C) 2019, ETH Zurich - Swiss Seismological Service SED
 """
 Forecast related ORM facilities.
 """

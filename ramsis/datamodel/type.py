@@ -1,4 +1,3 @@
-# Copyright (c) 2018 by Swiss Seismological Service (SED, ETHZ)
 """
 `SQLAlchemy <https://www.sqlalchemy.org/>`_ custom type facilities.
 """
