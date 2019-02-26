@@ -1,7 +1,5 @@
 """
 Processing status related ORM facilities.
-
-Copyright (C) 2013, ETH Zurich - Swiss Seismological Service SED
 """
 
 import datetime
