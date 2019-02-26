@@ -56,8 +56,6 @@ class InjectionWell(CreationInfoMixin,
     def injectionpoint(self):
         return self.welltipx_value, self.welltipy_value, self.welltipz_value
 
-# class InjectionWell
-
 
 class WellSection(ORMBase):
     """
@@ -68,8 +66,3 @@ class WellSection(ORMBase):
     # relation: InjectionWell
     well_id = Column(Integer, ForeignKey('injectionwell.id'))
     well = relationship('InjectionWell', back_populates='sections')
-
-# class WellSection
-
-
-# ----- END OF well.py -----

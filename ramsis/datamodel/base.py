@@ -17,8 +17,6 @@ class Base(object):
 
     id = Column(Integer, primary_key=True)
 
-# class Base
-
 
 ORMBase = declarative_base(cls=Base)
 
@@ -46,8 +44,6 @@ class CreationInfoMixin(object):
     creationinfo_copyrightowneruri_used = Column(Boolean)
     creationinfo_license = Column(String)
 
-# class CreationInfo
-
 
 class NameMixin(object):
     """
@@ -55,8 +51,6 @@ class NameMixin(object):
     purpose :code:`name` attribute.
     """
     name = Column(String)
-
-# class NameMixin
 
 
 def EpochMixin(name, epoch_type=None, column_prefix=None):
@@ -122,11 +116,7 @@ def EpochMixin(name, epoch_type=None, column_prefix=None):
 
             return _datetime
 
-        # _make_datetime ()
-
         return _make_datetime(boundery, **kwargs)
-
-    # create_datetime ()
 
     if epoch_type is None or epoch_type == 'default':
         _func_map = (('starttime', create_datetime(Boundery.LEFT,
@@ -154,11 +144,7 @@ def EpochMixin(name, epoch_type=None, column_prefix=None):
         return {'{}{}'.format(attr_prefix, attr_name): attr
                 for attr_name, attr in func_map}
 
-    # __dict__ ()
-
     return type(name, (object,), __dict__(_func_map, column_prefix))
-
-# EpochMixin ()
 
 
 UniqueEpochMixin = EpochMixin('Epoch', column_prefix='')
@@ -222,8 +208,6 @@ def QuantityMixin(name, quantity_type, column_prefix=None):
 
             return _value
 
-        # _make_value ()
-
         if 'int' == quantity_type:
             return _make_value(Integer, column_prefix)
         elif quantity_type in ('real', 'float'):
@@ -232,8 +216,6 @@ def QuantityMixin(name, quantity_type, column_prefix=None):
             return _make_value(DateTime, column_prefix)
 
         raise ValueError('Invalid quantity_type: {}'.format(quantity_type))
-
-    # create_value ()
 
     @declared_attr
     def _uncertainty(cls):
@@ -262,11 +244,7 @@ def QuantityMixin(name, quantity_type, column_prefix=None):
         return {'{}{}'.format(attr_prefix, attr_name): attr
                 for attr_name, attr in func_map}
 
-    # __dict__ ()
-
     return type(name, (object,), __dict__(_func_map, column_prefix))
-
-# QuantityMixin ()
 
 
 FloatQuantityMixin = functools.partial(QuantityMixin,
@@ -276,6 +254,3 @@ IntegerQuantityMixin = functools.partial(QuantityMixin,
                                          quantity_type='int')
 TimeQuantityMixin = functools.partial(QuantityMixin,
                                       quantity_type='time')
-
-
-# ----- END OF base.py -----

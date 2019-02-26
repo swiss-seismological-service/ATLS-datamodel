@@ -43,8 +43,6 @@ class SeismicCatalog(CreationInfoMixin, ORMBase):
 
         return snap
 
-    # snapshot ()
-
     def reduce(self, filter_cond=None):
         """
         Remove events from the catalog.
@@ -59,8 +57,6 @@ class SeismicCatalog(CreationInfoMixin, ORMBase):
         except TypeError:
             if filter_cond is None:
                 self.events = []
-
-    # reduce ()
 
     def dumps(self, oformat="QUAKEML", encoding=None, **kwargs):
         """
@@ -102,8 +98,6 @@ class SeismicCatalog(CreationInfoMixin, ORMBase):
 
         return retval
 
-    # dumps ()
-
     def __getitem__(self, item):
         return self.events[item] if self.events else None
 
@@ -113,8 +107,6 @@ class SeismicCatalog(CreationInfoMixin, ORMBase):
 
     def __len__(self):
         return len(self.events)
-
-# class SeismicCatalog
 
 
 class SeismicEvent(TimeQuantityMixin('datetime'),
@@ -171,8 +163,6 @@ class SeismicEvent(TimeQuantityMixin('datetime'),
 
         return new
 
-    # copy ()
-
     def __eq__(self, other):
         if isinstance(other, SeismicEvent):
             mapper = class_mapper(type(self))
@@ -189,8 +179,6 @@ class SeismicEvent(TimeQuantityMixin('datetime'),
 
         raise ValueError
 
-    # __eq__ ()
-
     def __ne__(self, other):
         return not self.__eq__(other)
 
@@ -204,8 +192,3 @@ class SeismicEvent(TimeQuantityMixin('datetime'),
     def __repr__(self):
         return "<{}(datetime={!r}, magnitude={!r})>".format(
             type(self).__name__, self.datetime_value, self.magnitude_value)
-
-# class SeismicEvent
-
-
-# ----- END OF seismics.py -----

@@ -38,8 +38,3 @@ class Project(CreationInfoMixin, NameMixin, UniqueOpenEpochMixin, ORMBase):
     # TODO(damb):
     # * Implement a project factory/builder instead of using/abusing the
     #   constructor
-
-# class Project
-
-
-# ----- END OF project.py -----

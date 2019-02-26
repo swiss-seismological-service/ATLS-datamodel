@@ -48,8 +48,6 @@ class SeismicityModel(Model):
         return '<%s(name=%s, url=%s)>' % (type(self).__name__, self.name,
                                           self.url)
 
-# class SeismicityModel
-
 
 class SeismicityModelRun(ModelRun):
     """
@@ -80,7 +78,6 @@ class SeismicityModelRun(ModelRun):
     def __repr__(self):
         return '<%s(name=%s, url=%s)>' % (type(self).__name__, self.model.name,
                                           self.model.url)
-# class SeismicityModelRun
 
 
 class ReservoirSeismicityPrediction(RealQuantityMixin('rate'),
@@ -124,10 +121,3 @@ class ReservoirSeismicityPrediction(RealQuantityMixin('rate'),
         # TODO(damb): Implement recursively
         for c in self.children:
             yield c
-
-    # __iter__ ()
-
-# class ReservoirSeismicityPrediction
-
-
-# ----- END OF seismicity.py -----

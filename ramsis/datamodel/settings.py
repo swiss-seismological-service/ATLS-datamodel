@@ -89,8 +89,6 @@ class Settings(collections.UserDict, NameMixin, ORMBase,
         self.config = json.dumps(self.data, indent=4, default=datetime_encoder)
         self.settings_changed.emit(self)
 
-# class Settings
-
 
 class ProjectSettings(Settings):
     __tablename__ = 'settings'
@@ -124,8 +122,3 @@ class ProjectSettings(Settings):
         for key, default_value in self.DEFAULTS.items():
             self.setdefault(key, default=default_value)
         self.commit()
-
-# class ProjectSettings
-
-
-# ----- END OF settings.py -----

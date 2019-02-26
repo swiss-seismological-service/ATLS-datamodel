@@ -32,8 +32,6 @@ class Hydraulics(CreationInfoMixin, ORMBase):
         for s in self.samples:
             yield s
 
-    # __iter__ ()
-
     def __getitem__(self, item):
         return self.samples[item] if self.samples else None
 
@@ -41,8 +39,6 @@ class Hydraulics(CreationInfoMixin, ORMBase):
         return '<%s(creationtime=%s, samples=%d)>' % (
             type(self).__name__, self.creationinfo_creationtime,
             len(self.samples))
-
-# class Hydraulics
 
 
 class InjectionPlan(CreationInfoMixin, ORMBase):
@@ -67,8 +63,6 @@ class InjectionPlan(CreationInfoMixin, ORMBase):
         for s in self.samples:
             yield s
 
-    # __iter__ ()
-
     def __getitem__(self, item):
         return self.samples[item] if self.samples else None
 
@@ -76,10 +70,6 @@ class InjectionPlan(CreationInfoMixin, ORMBase):
         return '<%s(creationtime=%s, samples=%d)>' % (
             type(self).__name__, self.creationinfo_creationtime,
             len(self.samples))
-
-    # __repr__ ()
-
-# class InjectionPlan
 
 
 class HydraulicsEvent(TimeQuantityMixin('datetime'),
@@ -150,8 +140,3 @@ class HydraulicsEvent(TimeQuantityMixin('datetime'),
     # into a tuple and hashing the tuple
     def __hash__(self):
         return id(self)
-
-# class HydraulicsEvent
-
-
-# ----- END OF hydraulics.py -----

@@ -26,8 +26,6 @@ class JSONEncodedDict(TypeDecorator):
             value = json.loads(value)
         return value
 
-# class JSONEncodedDict
-
 
 class GUID(TypeDecorator):
     """
@@ -63,8 +61,3 @@ class GUID(TypeDecorator):
             if not isinstance(value, uuid.UUID):
                 value = uuid.UUID(value)
             return value
-
-# class GUID
-
-
-# ----- END OF type.py -----

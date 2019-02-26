@@ -18,8 +18,6 @@ class EModel(enum.Enum):
     HAZARD = 2
     RISK = 3
 
-# class EModel
-
 
 class Model(NameMixin, ORMBase):
     """
@@ -41,8 +39,6 @@ class Model(NameMixin, ORMBase):
         'polymorphic_identity': 'model',
         'polymorphic_on': _type,
     }
-
-# class Model
 
 
 class ModelRun(ORMBase):
@@ -70,8 +66,3 @@ class ModelRun(ORMBase):
         'polymorphic_identity': 'model_run',
         'polymorphic_on': _type,
     }
-
-# class ModelRun
-
-
-# ----- END OF model.py -----

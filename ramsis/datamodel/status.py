@@ -22,8 +22,6 @@ class EStatus(enum.Enum):
     ERROR = 2
     COMPLETE = 3
 
-# class EStatus
-
 
 class Status(UniqueEpochMixin, ORMBase):
     """
@@ -55,8 +53,3 @@ class Status(UniqueEpochMixin, ORMBase):
     @hybrid_property
     def finished(self):
         return self.state in (EStatus.ERROR, EStatus.COMPLETE)
-
-# class Status
-
-
-# ----- END OF status.py -----

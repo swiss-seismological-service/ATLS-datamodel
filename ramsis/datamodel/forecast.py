@@ -48,10 +48,6 @@ class Forecast(CreationInfoMixin,
         for s in self.scenarios:
             yield s
 
-    # __iter__ ()
-
-# class Forecast
-
 
 class ForecastScenario(NameMixin, ORMBase):
     """
@@ -87,8 +83,6 @@ class ForecastScenario(NameMixin, ORMBase):
                                  back_populates='scenario',
                                  cascade='all, delete-orphan')
 
-# class ForecastScenario
-
 
 class ForecastStage(ORMBase):
     """
@@ -117,8 +111,6 @@ class ForecastStage(ORMBase):
         'polymorphic_on': _type,
     }
 
-# class ForecastStage
-
 
 class SeismicityForecastStage(ForecastStage):
     """
@@ -135,8 +127,3 @@ class SeismicityForecastStage(ForecastStage):
     __mapper_args__ = {
         'polymorphic_identity': EModel.SEISMICITY,
     }
-
-# class SeismicityForecastStage
-
-
-# ----- END OF forecast.py -----
