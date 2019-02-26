@@ -3,7 +3,7 @@ Seismics related ORM facilities.
 """
 
 from sqlalchemy import Column
-from sqlalchemy import Integer, ForeignKey, PickleType
+from sqlalchemy import Integer, ForeignKey, LargeBinary
 from sqlalchemy.orm import relationship, class_mapper
 
 from ramsis.datamodel.base import (ORMBase, CreationInfoMixin,
@@ -43,8 +43,6 @@ class SeismicCatalog(CreationInfoMixin, ORMBase):
 
         return snap
 
-    # snapshot ()
-
     def reduce(self, filter_cond=None):
         """
         Remove events from the catalog.
@@ -60,7 +58,45 @@ class SeismicCatalog(CreationInfoMixin, ORMBase):
             if filter_cond is None:
                 self.events = []
 
-    # reduce ()
+    def dumps(self, oformat="QUAKEML", encoding=None, **kwargs):
+        """
+        Return a string representing a seismic catalog in the format specified.
+
+        :param str oformat: Seismic catalog output format. See the *Supported
+            Formats* list, below.
+        :param encoding: Encoding of the output catalog
+        :type encoding: str or None
+
+        :returns: Seismic catalog in the output format specified
+        :rtype: bytes or str
+
+        **Supported Formats**:
+
+            - `QUAKEML`
+        """
+        QUAKEML_HEADER = (
+            b'<?xml version="1.0" encoding="UTF-8"?>'
+            b'<q:quakeml xmlns="http://quakeml.org/xmlns/bed/1.2" '
+            b'xmlns:q="http://quakeml.org/xmlns/quakeml/1.2">'
+            b'<eventParameters publicID="smi:scs/0.7/EventParameters">')
+
+        QUAKEML_FOOTER = b'</eventParameters></q:quakeml>'
+
+        if oformat != "QUAKEML":
+            raise ValueError('Unsupported output format')
+
+        # XXX(damb): Create a seismic catalog by simply concatenating the
+        # QuakeML formatted events
+        retval = QUAKEML_HEADER
+        for e in self.events:
+            retval += e.quakeml
+
+        retval += QUAKEML_FOOTER
+
+        if encoding:
+            retval = retval.decode(encoding)
+
+        return retval
 
     def __getitem__(self, item):
         return self.events[item] if self.events else None
@@ -71,8 +107,6 @@ class SeismicCatalog(CreationInfoMixin, ORMBase):
 
     def __len__(self):
         return len(self.events)
-
-# class SeismicCatalog
 
 
 class SeismicEvent(TimeQuantityMixin('datetime'),
@@ -92,7 +126,7 @@ class SeismicEvent(TimeQuantityMixin('datetime'),
     the XML, if necessary converted, and kept alongside using a flat
     representation.
     """
-    quakeml = Column(PickleType, nullable=False)
+    quakeml = Column(LargeBinary, nullable=False)
 
     # relation: SeismicCatalog
     seismiccatalog_id = Column(Integer, ForeignKey('seismiccatalog.id'))
@@ -129,8 +163,6 @@ class SeismicEvent(TimeQuantityMixin('datetime'),
 
         return new
 
-    # copy ()
-
     def __eq__(self, other):
         if isinstance(other, SeismicEvent):
             mapper = class_mapper(type(self))
@@ -147,10 +179,11 @@ class SeismicEvent(TimeQuantityMixin('datetime'),
 
         raise ValueError
 
-    # __eq__ ()
-
     def __ne__(self, other):
         return not self.__eq__(other)
+
+    def __hash__(self):
+        return hash(self.quakeml)
 
     def __str__(self):
         return "M%.1f @ %s" % (self.magnitude_value,
@@ -159,5 +192,3 @@ class SeismicEvent(TimeQuantityMixin('datetime'),
     def __repr__(self):
         return "<{}(datetime={!r}, magnitude={!r})>".format(
             type(self).__name__, self.datetime_value, self.magnitude_value)
-
-# class SeismicEvent

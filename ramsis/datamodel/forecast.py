@@ -1,13 +1,3 @@
-# This is <forecast.py>
-# ----------------------------------------------------------------------------
-#
-# Copyright (c) 2018 by Lukas Heiniger (SED, ETHZ),
-#                       Daniel Armbruster (SED, ETHZ)
-#
-# REVISIONS and CHANGES
-#    2018/01/24   V1.0   Daniel Armbruster (damb)
-#
-# ============================================================================
 """
 Forecast related ORM facilities.
 """
@@ -58,10 +48,6 @@ class Forecast(CreationInfoMixin,
         for s in self.scenarios:
             yield s
 
-    # __iter__ ()
-
-# class Forecast
-
 
 class ForecastScenario(NameMixin, ORMBase):
     """
@@ -76,7 +62,8 @@ class ForecastScenario(NameMixin, ORMBase):
 
     .. note::
 
-        Currently, a scenario does only allow a single injection plan.
+        Currently, a scenario does only cover a single injection plan including
+        the reservoir geometry.
 
     """
     config = Column(MutableDict.as_mutable(JSONEncodedDict))
@@ -88,15 +75,13 @@ class ForecastScenario(NameMixin, ORMBase):
                            nullable=False)
 
     # relation: Forecast
-    forecast = Column(Integer, ForeignKey('forecast.id'))
+    forecast_id = Column(Integer, ForeignKey('forecast.id'))
     forecast = relationship('Forecast', back_populates='scenarios')
     # relation: InjectionPlan
     injectionplan = relationship('InjectionPlan',
                                  uselist=False,
                                  back_populates='scenario',
                                  cascade='all, delete-orphan')
-
-# class ForecastScenario
 
 
 class ForecastStage(ORMBase):
@@ -126,8 +111,6 @@ class ForecastStage(ORMBase):
         'polymorphic_on': _type,
     }
 
-# class ForecastStage
-
 
 class SeismicityForecastStage(ForecastStage):
     """
@@ -138,14 +121,9 @@ class SeismicityForecastStage(ForecastStage):
     id = Column(Integer, ForeignKey('forecaststage.id'), primary_key=True)
 
     runs = relationship('SeismicityModelRun',
-                        back_populates='forecast_stage',
+                        back_populates='forecaststage',
                         cascade='all, delete-orphan')
 
     __mapper_args__ = {
         'polymorphic_identity': EModel.SEISMICITY,
     }
-
-# class SeismicityForecastStage
-
-
-# ----- END OF forecast.py -----

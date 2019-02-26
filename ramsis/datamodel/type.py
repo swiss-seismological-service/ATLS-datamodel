@@ -1,12 +1,3 @@
-# This is <type.py>
-# ----------------------------------------------------------------------------
-#
-# Copyright (c) 2018 by Swiss Seismological Service (SED, ETHZ)
-#
-# REVISIONS and CHANGES
-#    2018/01/24   V1.0   Daniel Armbruster (damb)
-#
-# ============================================================================
 """
 `SQLAlchemy <https://www.sqlalchemy.org/>`_ custom type facilities.
 """
@@ -34,8 +25,6 @@ class JSONEncodedDict(TypeDecorator):
         if value is not None:
             value = json.loads(value)
         return value
-
-# class JSONEncodedDict
 
 
 class GUID(TypeDecorator):
@@ -72,8 +61,3 @@ class GUID(TypeDecorator):
             if not isinstance(value, uuid.UUID):
                 value = uuid.UUID(value)
             return value
-
-# class GUID
-
-
-# ----- END OF type.py -----

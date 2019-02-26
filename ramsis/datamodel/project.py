@@ -1,15 +1,13 @@
-# Copyright (C) 2013, ETH Zurich - Swiss Seismological Service SED
 """
 Project related ORM facilities.
 """
 
 from geoalchemy2 import Geometry
 from sqlalchemy import Column, String
-from sqlalchemy.orm import relationship, reconstructor
+from sqlalchemy.orm import relationship
 
 from ramsis.datamodel.base import (ORMBase, CreationInfoMixin, NameMixin,
                                    UniqueOpenEpochMixin)
-from ramsis.datamodel.signal import Signal
 
 
 class Project(CreationInfoMixin, NameMixin, UniqueOpenEpochMixin, ORMBase):
@@ -40,70 +38,3 @@ class Project(CreationInfoMixin, NameMixin, UniqueOpenEpochMixin, ORMBase):
     # TODO(damb):
     # * Implement a project factory/builder instead of using/abusing the
     #   constructor
-    def __init__(self):
-        self.will_close = Signal()
-
-    @reconstructor
-    def init_on_load(self):
-        self.__init__()
-
-    def close(self):
-        """
-        Closes the project file. Before closing, the *will_close* signal is
-        emitted. After closing, the project is not usable anymore and will have
-        to be reinstatiated if it is needed again.
-
-        """
-        self.will_close.emit(self)
-
-    def event_time_range(self):
-        """
-        Returns the time range of all events in the project as a (start_time,
-        end_time) tuple.
-
-        """
-        earliest = self.earliest_event()
-        latest = self.latest_event()
-        start = earliest.date_time if earliest else None
-        end = latest.date_time if latest else None
-        return start, end
-
-    def earliest_event(self):
-        """
-        Returns the earliest event in the project, either seismic or hydraulic.
-
-        """
-        try:
-            es = self.seismic_catalog[0]
-            eh = self.well.hydraulics[0]
-        except IndexError:
-            return None
-        if es is None and eh is None:
-            return None
-        elif es is None:
-            return eh
-        elif eh is None:
-            return es
-        else:
-            return eh if eh.date_time < es.date_time else es
-
-    def latest_event(self):
-        """
-        Returns the latest event in the project, either seismic or hydraulic.
-
-        """
-        try:
-            es = self.seismic_catalog[-1]
-            eh = self.well.hydraulics[-1]
-        except IndexError:
-            return None
-        if es is None and eh is None:
-            return None
-        elif es is None:
-            return eh
-        elif eh is None:
-            return es
-        else:
-            return eh if eh.date_time > es.date_time else es
-
-# class Project

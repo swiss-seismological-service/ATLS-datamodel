@@ -1,9 +1,9 @@
-# Copyright (C) 2013, ETH Zurich - Swiss Seismological Service SED
 """
 Injection well ORM facilities.
 """
 
 from sqlalchemy import Column, Integer, Boolean, ForeignKey
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 
 from ramsis.datamodel.base import (ORMBase, CreationInfoMixin,
@@ -33,6 +33,9 @@ class InjectionWell(CreationInfoMixin,
     # relation: Project
     project_id = Column(Integer, ForeignKey('project.id'))
     project = relationship('Project', back_populates='well')
+    # relation: Forecast
+    forecast_id = Column(Integer, ForeignKey('forecast.id'))
+    forecast = relationship('Forecast', back_populates='well')
 
     # relation: Hydraulics
     hydraulics = relationship('Hydraulics',
@@ -49,12 +52,9 @@ class InjectionWell(CreationInfoMixin,
                             back_populates='well',
                             cascade='all, delete-orphan')
 
-    @property
-    def injection_point(self):
-        # TODO(damb): To be implemented.
-        return 4740.3, 270645.0, 611631.0
-
-# class InjectionWell
+    @hybrid_property
+    def injectionpoint(self):
+        return self.welltipx_value, self.welltipy_value, self.welltipz_value
 
 
 class WellSection(ORMBase):
@@ -66,5 +66,3 @@ class WellSection(ORMBase):
     # relation: InjectionWell
     well_id = Column(Integer, ForeignKey('injectionwell.id'))
     well = relationship('InjectionWell', back_populates='sections')
-
-# class WellSection

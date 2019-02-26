@@ -1,12 +1,3 @@
-# This is <seismicity.py>
-# ----------------------------------------------------------------------------
-#
-# Copyright (c) 2018 by Daniel Armbruster (SED, ETHZ)
-#
-# REVISIONS and CHANGES
-#    2018/01/24   V1.0   Daniel Armbruster (damb)
-#
-# ============================================================================
 """
 Seismicity prediction related ORM facilities.
 """
@@ -57,8 +48,6 @@ class SeismicityModel(Model):
         return '<%s(name=%s, url=%s)>' % (type(self).__name__, self.name,
                                           self.url)
 
-# class SeismicityModel
-
 
 class SeismicityModelRun(ModelRun):
     """
@@ -89,7 +78,6 @@ class SeismicityModelRun(ModelRun):
     def __repr__(self):
         return '<%s(name=%s, url=%s)>' % (type(self).__name__, self.model.name,
                                           self.model.url)
-# class SeismicityModelRun
 
 
 class ReservoirSeismicityPrediction(RealQuantityMixin('rate'),
@@ -110,6 +98,7 @@ class ReservoirSeismicityPrediction(RealQuantityMixin('rate'),
     #
     # XXX(damb): The attribute rate_uncertainty should be used to express the
     # concept of a rate_propability.
+    id = Column(Integer, primary_key=True)
     geom = Column(Geometry(geometry_type='GEOMETRYZ',
                            dimension=3,
                            management=True,
@@ -132,10 +121,3 @@ class ReservoirSeismicityPrediction(RealQuantityMixin('rate'),
         # TODO(damb): Implement recursively
         for c in self.children:
             yield c
-
-    # __iter__ ()
-
-# class ReservoirSeismicityPrediction
-
-
-# ----- END OF seismicity.py -----

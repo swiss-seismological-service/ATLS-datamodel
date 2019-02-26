@@ -1,7 +1,5 @@
 """
 Processing status related ORM facilities.
-
-Copyright (C) 2013, ETH Zurich - Swiss Seismological Service SED
 """
 
 import datetime
@@ -21,8 +19,6 @@ class EStatus(enum.Enum):
     RUNNING = 1
     ERROR = 2
     COMPLETE = 3
-
-# class EStatus
 
 
 class Status(UniqueEpochMixin, ORMBase):
@@ -55,5 +51,3 @@ class Status(UniqueEpochMixin, ORMBase):
     @hybrid_property
     def finished(self):
         return self.state in (EStatus.ERROR, EStatus.COMPLETE)
-
-# class Status

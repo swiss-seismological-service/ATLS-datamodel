@@ -1,15 +1,4 @@
-# -*- encoding: utf-8 -*-
-# This is <setup.py>
-# ----------------------------------------------------------------------------
-#
-# Copyright (c) 2018 by Swiss Seismological Service (SED, ETHZ)
-#
-# setup.py
-#
-# REVISIONS and CHANGES
-#    2018/01/24   V1.0   Daniel Armbruster (damb)
-#
-# ============================================================================
+# Copyright (C) 2019, ETH Zurich - Swiss Seismological Service SED
 """
 setup.py for ramsis.datamodel
 
@@ -49,7 +38,7 @@ _tests_require = [
 setup(
     name='ramsis.datamodel',
     # TODO(damb): Provide version string globally
-    version='0.1',
+    version='0.2rc0',
     author=' (SED, ETHZ),'.join(_authors),
     author_email=', '.join(_authors_email),
     description=('Real Time Risk Assessment and Mitigation for Induced'

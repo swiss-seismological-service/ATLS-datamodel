@@ -3,25 +3,21 @@ Hydraulics related ORM facilities.
 """
 
 from sqlalchemy import Column, Integer, String, ForeignKey
-from sqlalchemy.orm import relationship, reconstructor, class_mapper
+from sqlalchemy.orm import relationship, class_mapper
 
 from ramsis.datamodel.base import (ORMBase, CreationInfoMixin,
                                    RealQuantityMixin, TimeQuantityMixin)
-from ramsis.datamode.signal import Signal
-
 
 # NOTE(damb): Currently, basically both Hydraulics and InjectionPlan implement
 # the same facilities i.e. a timeseries of hydraulics data shipping some
 # metadata. That is why, I propose that they inherit from a common base class.
 # Perhaps a mixin approach should be considered, too.
 
+
 class Hydraulics(CreationInfoMixin, ORMBase):
     """
     ORM representatio of a hydraulics time series.
     """
-    # relation: Project
-    project_id = Column(Integer, ForeignKey('project.id'))
-    project = relationship('Project', back_populates='hydraulics')
     # relation: HydraulicsEvent
     samples = relationship('HydraulicsEvent',
                            back_populates='hydraulics',
@@ -32,18 +28,9 @@ class Hydraulics(CreationInfoMixin, ORMBase):
     well_id = Column(Integer, ForeignKey('injectionwell.id'))
     well = relationship('InjectionWell', back_populates='hydraulics')
 
-    def __init__(self):
-        self.history_changed = Signal()
-
-    @reconstructor
-    def init_on_load(self):
-        self.history_changed = Signal()
-
     def __iter__(self):
         for s in self.samples:
             yield s
-
-    # __iter__ ()
 
     def __getitem__(self, item):
         return self.samples[item] if self.samples else None
@@ -52,8 +39,6 @@ class Hydraulics(CreationInfoMixin, ORMBase):
         return '<%s(creationtime=%s, samples=%d)>' % (
             type(self).__name__, self.creationinfo_creationtime,
             len(self.samples))
-
-# class Hydraulics
 
 
 class InjectionPlan(CreationInfoMixin, ORMBase):
@@ -65,20 +50,18 @@ class InjectionPlan(CreationInfoMixin, ORMBase):
                            back_populates='injectionplan',
                            single_parent=True,
                            cascade='all, delete-orphan')
-    # relation: Scenario
+    # relation: ForecastScenario
     scenario_id = Column(Integer, ForeignKey('forecastscenario.id'))
     scenario = relationship('ForecastScenario',
                             back_populates='injectionplan')
 
     # relation: InjectionWell
     well_id = Column(Integer, ForeignKey('injectionwell.id'))
-    well = relationship('InjectionWell', back_populates='injectionplan')
+    well = relationship('InjectionWell', back_populates='injectionplans')
 
     def __iter__(self):
         for s in self.samples:
             yield s
-
-    # __iter__ ()
 
     def __getitem__(self, item):
         return self.samples[item] if self.samples else None
@@ -87,10 +70,6 @@ class InjectionPlan(CreationInfoMixin, ORMBase):
         return '<%s(creationtime=%s, samples=%d)>' % (
             type(self).__name__, self.creationinfo_creationtime,
             len(self.samples))
-
-    # __repr__ ()
-
-# class InjectionPlan
 
 
 class HydraulicsEvent(TimeQuantityMixin('datetime'),
@@ -157,12 +136,7 @@ class HydraulicsEvent(TimeQuantityMixin('datetime'),
     # TODO(damb)
     # https://docs.python.org/3/reference/datamodel.html#object.__hash__
     # recommends to mix together the hash values of the components of the
-    # object that also play a part in comparison of objects by packing them
+    # object that also play a role in comparison of objects by packing them
     # into a tuple and hashing the tuple
     def __hash__(self):
         return id(self)
-
-# class HydraulicsEvent
-
-
-# ----- END OF hydraulics.py -----

@@ -3,23 +3,19 @@ Settings access and storage
 
 These classes represent project related settings, i.e. settings
 that will be stored in the project database.
-
 """
 
 import abc
 import collections
 import datetime
 import json
-import logging
 
 from sqlalchemy import Column, String, DateTime, ForeignKey
 from sqlalchemy.ext.declarative.api import DeclarativeMeta
 from sqlalchemy.orm import reconstructor, relationship
 
 from ramsis.datamodel.base import ORMBase, NameMixin
-from ramsis.datamodel.signal import Signal
 
-log = logging.getLogger(__name__)
 
 # TODO(damb): Better make use of a ISO8601 conform date format. With
 # https://docs.obspy.org/packages/autogen/obspy.core.utcdatetime.UTCDateTime.html
@@ -74,13 +70,8 @@ class Settings(collections.UserDict, NameMixin, ORMBase,
         'polymorphic_identity': 'settings'
     }
 
-    def __init__(self):
-        super().__init__()
-        self.settings_changed = Signal()
-
     @reconstructor
     def init_on_load(self):
-        self.settings_changed = Signal()
         self.data = (json.loads(self.config,
                                 object_hook=datetime.datetime_decoder)
                      if self.config else {})
@@ -97,8 +88,6 @@ class Settings(collections.UserDict, NameMixin, ORMBase,
         """
         self.config = json.dumps(self.data, indent=4, default=datetime_encoder)
         self.settings_changed.emit(self)
-
-# class Settings
 
 
 class ProjectSettings(Settings):
@@ -133,5 +122,3 @@ class ProjectSettings(Settings):
         for key, default_value in self.DEFAULTS.items():
             self.setdefault(key, default=default_value)
         self.commit()
-
-# class ProjectSettings

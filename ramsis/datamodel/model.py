@@ -1,12 +1,6 @@
-# This is <model.py>
-# ----------------------------------------------------------------------------
-#
-# Copyright (c) 2018 by Daniel Armbruster (SED, ETHZ)
-#
-# REVISIONS and CHANGES
-#    2018/01/24   V1.0   Daniel Armbruster (damb)
-#
-# ============================================================================
+"""
+Model related ORM facilities,
+"""
 
 import enum
 
@@ -23,8 +17,6 @@ class EModel(enum.Enum):
     SEISMICITY_SKILL = 1
     HAZARD = 2
     RISK = 3
-
-# class EModel
 
 
 class Model(NameMixin, ORMBase):
@@ -47,8 +39,6 @@ class Model(NameMixin, ORMBase):
         'polymorphic_identity': 'model',
         'polymorphic_on': _type,
     }
-
-# class Model
 
 
 class ModelRun(ORMBase):
@@ -76,8 +66,3 @@ class ModelRun(ORMBase):
         'polymorphic_identity': 'model_run',
         'polymorphic_on': _type,
     }
-
-# class ModelRun
-
-
-# ----- END OF model.py -----
