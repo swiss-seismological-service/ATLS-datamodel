@@ -18,7 +18,7 @@ means of e.g. the [virtualenv](https://pypi.python.org/pypi/virtualenv) package.
 
 ## License
 
-`ramsis` namspace distributions are licensed under the [*AGPL* license]
+`ramsis` namespace distributions are licensed under the [*AGPL* license]
 (https://gitlab.seismo.ethz.ch/indu/rt-ramsis/blob/master/LICENSE) to be
 compatible with some of the libraries we use.
 
