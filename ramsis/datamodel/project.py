@@ -27,6 +27,8 @@ class Project(CreationInfoMixin, NameMixin, UniqueOpenEpochMixin, ORMBase):
     # local coordinate system;
     # see also: https://www.gdal.org/classOGRSpatialReference.html
     spatialreference = Column(String, nullable=False)
+    # XXX(damb): Type of magnitude used e.g. ML, Mb, etc.
+    magnitudetype = Column(String, nullable=False)
 
     # relationships
     relationship_config = {'back_populates': 'project',
