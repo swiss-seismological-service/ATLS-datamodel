@@ -2,6 +2,7 @@
 """
 Seismics related ORM facilities.
 """
+import functools
 
 from sqlalchemy import Column
 from sqlalchemy import Integer, ForeignKey, LargeBinary
@@ -114,6 +115,7 @@ class SeismicCatalog(CreationInfoMixin, ORMBase):
             type(self).__name__, self.creationinfo_creationtime, len(self))
 
 
+@functools.total_ordering
 class SeismicEvent(TimeQuantityMixin('datetime'),
                    RealQuantityMixin('x'),
                    RealQuantityMixin('y'),
@@ -167,6 +169,13 @@ class SeismicEvent(TimeQuantityMixin('datetime'),
                 pass
 
         return new
+
+    def __lt__(self, other):
+        if isinstance(other, SeismicEvent):
+            return ((self.datetime_value, self.magnitude_value) <
+                    (other.datetime_value, other.magnitude_value))
+
+        raise ValueError
 
     def __eq__(self, other):
         if isinstance(other, SeismicEvent):
