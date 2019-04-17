@@ -190,10 +190,6 @@ class SeismicEvent(TimeQuantityMixin('datetime'),
     def __hash__(self):
         return hash(self.quakeml)
 
-    def __str__(self):
-        return "M%.1f @ %s" % (self.magnitude_value,
-                               self.datetime_value.ctime())
-
     def __repr__(self):
         return "<{}(datetime={!r}, magnitude={!r})>".format(
             type(self).__name__, self.datetime_value, self.magnitude_value)
