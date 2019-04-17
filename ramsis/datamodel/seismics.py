@@ -109,6 +109,10 @@ class SeismicCatalog(CreationInfoMixin, ORMBase):
     def __len__(self):
         return len(self.events)
 
+    def __repr__(self):
+        return "<{}(creationtime={!r}, events={})>".format(
+            type(self).__name__, self.creationinfo_creationtime, len(self))
+
 
 class SeismicEvent(TimeQuantityMixin('datetime'),
                    RealQuantityMixin('x'),
