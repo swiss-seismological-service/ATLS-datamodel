@@ -38,15 +38,6 @@ class InjectionWell(CreationInfoMixin,
     forecast_id = Column(Integer, ForeignKey('forecast.id'))
     forecast = relationship('Forecast', back_populates='well')
 
-    # relation: Hydraulics
-    hydraulics = relationship('Hydraulics',
-                              back_populates='well',
-                              cascade='all, delete-orphan')
-    # relation: InjectionPlan
-    injectionplans = relationship('InjectionPlan',
-                                  back_populates='well',
-                                  cascade='all, delete-orphan')
-
     # TODO(damb): WellSection is still a dummy implementation.
     # relation: WellSection
     sections = relationship('WellSection',
@@ -67,3 +58,14 @@ class WellSection(ORMBase):
     # relation: InjectionWell
     well_id = Column(Integer, ForeignKey('injectionwell.id'))
     well = relationship('InjectionWell', back_populates='sections')
+
+    # relation: Hydraulics
+    hydraulics = relationship('Hydraulics',
+                              back_populates='wellsection',
+                              cascade='all, delete-orphan')
+    # relation: InjectionPlan
+    injectionplans = relationship('InjectionPlan',
+                                  back_populates='wellsection',
+                                  cascade='all, delete-orphan')
+
+

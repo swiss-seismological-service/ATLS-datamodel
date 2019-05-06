@@ -25,9 +25,9 @@ class Hydraulics(CreationInfoMixin, ORMBase):
                            single_parent=True,
                            cascade='all, delete-orphan')
 
-    # relation: InjectionWell
-    well_id = Column(Integer, ForeignKey('injectionwell.id'))
-    well = relationship('InjectionWell', back_populates='hydraulics')
+    # relation: WellSection
+    wellsection_id = Column(Integer, ForeignKey('wellsection.id'))
+    wellsection = relationship('WellSection', back_populates='hydraulics')
 
     def __iter__(self):
         for s in self.samples:
@@ -56,9 +56,9 @@ class InjectionPlan(CreationInfoMixin, ORMBase):
     scenario = relationship('ForecastScenario',
                             back_populates='injectionplan')
 
-    # relation: InjectionWell
-    well_id = Column(Integer, ForeignKey('injectionwell.id'))
-    well = relationship('InjectionWell', back_populates='injectionplans')
+    # relation: WellSection
+    wellsection_id = Column(Integer, ForeignKey('wellsection.id'))
+    wellsection = relationship('WellSection', back_populates='injectionplans')
 
     def __iter__(self):
         for s in self.samples:
