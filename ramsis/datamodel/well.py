@@ -51,7 +51,7 @@ class InjectionWell(CreationInfoMixin,
         return self.welltipx_value, self.welltipy_value, self.welltipz_value
 
 
-class WellSection(ORMBase):
+class WellSection(CreationInfoMixin, ORMBase):
     """
     ORM implementation of a well section.
     """
