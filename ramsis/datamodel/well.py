@@ -38,7 +38,6 @@ class InjectionWell(CreationInfoMixin,
     forecast_id = Column(Integer, ForeignKey('forecast.id'))
     forecast = relationship('Forecast', back_populates='well')
 
-    # TODO(damb): WellSection is still a dummy implementation.
     # relation: WellSection
     sections = relationship('WellSection',
                             back_populates='well',
