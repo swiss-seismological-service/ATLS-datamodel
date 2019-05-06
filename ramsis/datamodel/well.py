@@ -3,7 +3,7 @@
 Injection well ORM facilities.
 """
 
-from sqlalchemy import Column, Integer, Boolean, ForeignKey
+from sqlalchemy import Column, Integer, ForeignKey
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 
@@ -65,5 +65,3 @@ class WellSection(ORMBase):
     injectionplans = relationship('InjectionPlan',
                                   back_populates='wellsection',
                                   cascade='all, delete-orphan')
-
-
