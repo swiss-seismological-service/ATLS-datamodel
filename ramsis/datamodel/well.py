@@ -51,10 +51,8 @@ class InjectionWell(CreationInfoMixin,
 
 class WellSection(ORMBase):
     """
-    Dummy ORM implementation of a well section.
+    ORM implementation of a well section.
     """
-    # TODO(damb): E.g. add positional information
-    cased = Column(Boolean)
     # relation: InjectionWell
     well_id = Column(Integer, ForeignKey('injectionwell.id'))
     well = relationship('InjectionWell', back_populates='sections')
