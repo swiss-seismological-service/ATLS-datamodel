@@ -19,8 +19,8 @@ class Hydraulics(CreationInfoMixin, ORMBase):
     """
     ORM representatio of a hydraulics time series.
     """
-    # relation: HydraulicsEvent
-    samples = relationship('HydraulicsEvent',
+    # relation: HydraulicSample
+    samples = relationship('HydraulicSample',
                            back_populates='hydraulics',
                            single_parent=True,
                            cascade='all, delete-orphan')
@@ -46,8 +46,8 @@ class InjectionPlan(CreationInfoMixin, ORMBase):
     """
     ORM representation of a planned injection.
     """
-    # relation: HydraulicsEvent
-    samples = relationship('HydraulicsEvent',
+    # relation: HydraulicSample
+    samples = relationship('HydraulicSample',
                            back_populates='injectionplan',
                            single_parent=True,
                            cascade='all, delete-orphan')
@@ -73,19 +73,19 @@ class InjectionPlan(CreationInfoMixin, ORMBase):
             len(self.samples))
 
 
-class HydraulicsEvent(TimeQuantityMixin('datetime'),
+class HydraulicSample(TimeQuantityMixin('datetime'),
                       RealQuantityMixin('downholetemperature'),
                       RealQuantityMixin('downholeflow'),
                       RealQuantityMixin('downholepressure'),
                       RealQuantityMixin('topholetemperature'),
                       RealQuantityMixin('topholeflow'),
                       RealQuantityMixin('topholepressure'),
-                      RealQuantityMixin('fuiddensity'),
+                      RealQuantityMixin('fluiddensity'),
                       RealQuantityMixin('fluidviscosity'),
                       RealQuantityMixin('fluidph'),
                       ORMBase):
     """
-    Represents a hydraulics event. The definition is based on `QuakeML
+    Represents a hydraulic measurement. The definition is based on `QuakeML
     <https://quake.ethz.ch/quakeml/QuakeML2.0/Hydraulic>`_.
 
     .. note::
@@ -108,7 +108,7 @@ class HydraulicsEvent(TimeQuantityMixin('datetime'),
 
     # TODO(damb): Is using functools.total_ordering an option?
     def __eq__(self, other):
-        if isinstance(other, HydraulicsEvent):
+        if isinstance(other, HydraulicSample):
             mapper = class_mapper(type(self))
 
             pk_keys = set([c.key for c in mapper.primary_key])
