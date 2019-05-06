@@ -37,6 +37,9 @@ class InjectionWell(CreationInfoMixin,
     # relation: Forecast
     forecast_id = Column(Integer, ForeignKey('forecast.id'))
     forecast = relationship('Forecast', back_populates='well')
+    # relation: ForecastScenario
+    scenario_id = Column(Integer, ForeignKey('forecastscenario.id'))
+    scenario = relationship('ForecastScenario', back_populates='well')
 
     # relation: WellSection
     sections = relationship('WellSection',

@@ -51,11 +51,6 @@ class InjectionPlan(CreationInfoMixin, ORMBase):
                            back_populates='injectionplan',
                            single_parent=True,
                            cascade='all, delete-orphan')
-    # relation: ForecastScenario
-    scenario_id = Column(Integer, ForeignKey('forecastscenario.id'))
-    scenario = relationship('ForecastScenario',
-                            back_populates='injectionplan')
-
     # relation: WellSection
     wellsection_id = Column(Integer, ForeignKey('wellsection.id'))
     wellsection = relationship('WellSection', back_populates='injectionplans')
