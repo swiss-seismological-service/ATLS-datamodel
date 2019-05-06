@@ -45,6 +45,17 @@ class Hydraulics(CreationInfoMixin, ORMBase):
 class InjectionPlan(CreationInfoMixin, ORMBase):
     """
     ORM representation of a planned injection.
+
+    .. note::
+
+        Injection plan rules and behaviours:
+
+        * Samples in an injection plan are interpolated linearly
+        * This includes interpolation from the last sample of the injection
+          history to the first sample of the injection plan
+        * A sample must always be provided for the end time of the forecast
+          period, except if no sample is provided at all. In this case, it is
+          assumed that the injection remains constant over the forecast period.
     """
     # relation: HydraulicSample
     samples = relationship('HydraulicSample',
