@@ -80,15 +80,15 @@ class InjectionPlan(CreationInfoMixin, ORMBase):
 
 
 class HydraulicSample(TimeQuantityMixin('datetime'),
-                      RealQuantityMixin('downholetemperature'),
-                      RealQuantityMixin('downholeflow'),
-                      RealQuantityMixin('downholepressure'),
-                      RealQuantityMixin('topholetemperature'),
-                      RealQuantityMixin('topholeflow'),
-                      RealQuantityMixin('topholepressure'),
-                      RealQuantityMixin('fluiddensity'),
-                      RealQuantityMixin('fluidviscosity'),
-                      RealQuantityMixin('fluidph'),
+                      RealQuantityMixin('bottomtemperature', optional=True),
+                      RealQuantityMixin('bottomflow', optional=True),
+                      RealQuantityMixin('bottompressure', optional=True),
+                      RealQuantityMixin('toptemperature', optional=True),
+                      RealQuantityMixin('topflow', optional=True),
+                      RealQuantityMixin('toppressure', optional=True),
+                      RealQuantityMixin('fluiddensity', optional=True),
+                      RealQuantityMixin('fluidviscosity', optional=True),
+                      RealQuantityMixin('fluidph', optional=True),
                       ORMBase):
     """
     Represents a hydraulic measurement. The definition is based on `QuakeML
