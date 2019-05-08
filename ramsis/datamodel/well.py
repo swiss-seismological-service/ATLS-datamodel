@@ -3,15 +3,13 @@
 Injection well ORM facilities.
 """
 
-from sqlalchemy import Column, Integer, ForeignKey
+from sqlalchemy import Column, Integer, Boolean, String, ForeignKey
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 
 from ramsis.datamodel.base import (ORMBase, CreationInfoMixin,
-                                   RealQuantityMixin)
+                                   UniqueEpochMixin, RealQuantityMixin)
 
-
-# FIXME(damb): Caution, this is a dummy implementation.
 
 class InjectionWell(CreationInfoMixin, ORMBase):
     """
@@ -46,39 +44,61 @@ class InjectionWell(CreationInfoMixin, ORMBase):
     def longitude(self):
         # min topdepth defines top-section
         return min([s for s in self.sections],
-                   key=lambda x: x.topdepth).toplongitude
+                   key=lambda x: x.topdepth_value).toplongitude_value
 
     @hybrid_property
     def latitude(self):
         # min topdepth defines top-section
         return min([s for s in self.sections],
-                   key=lambda x: x.topdepth).toplatitude
+                   key=lambda x: x.topdepth_value).toplatitude_value
 
     @hybrid_property
     def depth(self):
         # max bottomdepth defines bottom-section
-        return max([s.bottomdepth for s in self.sections])
+        return max([s.bottomdepth_value for s in self.sections])
 
     @hybrid_property
     def injectionpoint(self):
         """
-        Injection point of the borehole. It is defined by the furthermost
-        bottom section without casing.
+        Injection point of the borehole. It is defined by the uppermost
+        section's bottom with casing and an open bottom.
+
+        .. note::
+
+            The implementation requires boreholes to be linear.
         """
         isection = min([s for s in self.sections
-                       if (not s.casingtype and
-                           (not s.casingdiameter or s.casingdiameter == 0))],
-                       key=lambda x: x.bottomdepth)
+                       if s.casingdiameter_value and not s.bottomclosed],
+                       key=lambda x: x.bottomdepth_value, default=None)
 
-        return (isection.bottomlongitude,
-                isection.bottomlatitude,
-                isection.bottomdepth)
+        if not isection:
+            raise ValueError('Cased borehole has a closed bottom.')
+
+        return (isection.bottomlongitude_value,
+                isection.bottomlatitude_value,
+                isection.bottomdepth_value)
 
 
-class WellSection(CreationInfoMixin, ORMBase):
+class WellSection(CreationInfoMixin,
+                  UniqueEpochMixin,
+                  RealQuantityMixin('toplongitude'),
+                  RealQuantityMixin('toplatitude'),
+                  RealQuantityMixin('topdepth'),
+                  RealQuantityMixin('bottomlongitude'),
+                  RealQuantityMixin('bottomlatitude'),
+                  RealQuantityMixin('bottomdepth'),
+                  RealQuantityMixin('holediameter'),
+                  RealQuantityMixin('casingdiameter'),
+                  ORMBase):
     """
     ORM implementation of a well section.
     """
+    topclosed = Column(Boolean, default=False)
+    bottomclosed = Column(Boolean, default=False)
+    sectiontype = Column(String)
+    casingtype = Column(String)
+    description = Column(String)
+
     # relation: InjectionWell
     well_id = Column(Integer, ForeignKey('injectionwell.id'))
     well = relationship('InjectionWell', back_populates='sections')
