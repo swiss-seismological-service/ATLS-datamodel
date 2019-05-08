@@ -78,7 +78,7 @@ class ForecastScenario(NameMixin, ORMBase):
     forecast_id = Column(Integer, ForeignKey('forecast.id'))
     forecast = relationship('Forecast', back_populates='scenarios')
     # relation: InjectionWell
-    injectionplan = relationship('InjectionWell',
+    well = relationship('InjectionWell',
                                  uselist=False,
                                  back_populates='scenario')
     # XXX(damb): How to perform the cascade?
