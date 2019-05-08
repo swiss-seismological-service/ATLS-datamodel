@@ -13,11 +13,7 @@ from ramsis.datamodel.base import (ORMBase, CreationInfoMixin,
 
 # FIXME(damb): Caution, this is a dummy implementation.
 
-class InjectionWell(CreationInfoMixin,
-                    RealQuantityMixin('welltipx'),
-                    RealQuantityMixin('welltipy'),
-                    RealQuantityMixin('welltipz'),
-                    ORMBase):
+class InjectionWell(CreationInfoMixin, ORMBase):
     """
     ORM injection well representation (draft state).
 
@@ -47,8 +43,36 @@ class InjectionWell(CreationInfoMixin,
                             cascade='all, delete-orphan')
 
     @hybrid_property
+    def longitude(self):
+        # min topdepth defines top-section
+        return min([s for s in self.sections],
+                   key=lambda x: x.topdepth).toplongitude
+
+    @hybrid_property
+    def latitude(self):
+        # min topdepth defines top-section
+        return min([s for s in self.sections],
+                   key=lambda x: x.topdepth).toplatitude
+
+    @hybrid_property
+    def depth(self):
+        # max bottomdepth defines bottom-section
+        return max([s.bottomdepth for s in self.sections])
+
+    @hybrid_property
     def injectionpoint(self):
-        return self.welltipx_value, self.welltipy_value, self.welltipz_value
+        """
+        Injection point of the borehole. It is defined by the furthermost
+        bottom section without casing.
+        """
+        isection = min([s for s in self.sections
+                       if (not s.casingtype and
+                           (not s.casingdiameter or s.casingdiameter == 0))],
+                       key=lambda x: x.bottomdepth)
+
+        return (isection.bottomlongitude,
+                isection.bottomlatitude,
+                isection.bottomdepth)
 
 
 class WellSection(CreationInfoMixin, ORMBase):
