@@ -17,8 +17,8 @@ class Project(CreationInfoMixin, NameMixin, UniqueOpenEpochMixin, ORMBase):
     object of the RT-RAMSIS data model.
     """
     description = Column(String)
-    referencepoint = Column(Geometry(geometry_type='POINTZM',
-                                     dimension=4,
+    referencepoint = Column(Geometry(geometry_type='POINTZ',
+                                     dimension=3,
                                      srid=4326,
                                      management=True),
                             nullable=False)
