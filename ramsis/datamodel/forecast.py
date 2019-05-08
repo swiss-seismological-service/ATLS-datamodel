@@ -71,8 +71,7 @@ class ForecastScenario(NameMixin, ORMBase):
 
     reservoirgeom = Column(Geometry(geometry_type='GEOMETRYZ',
                                     dimension=3,
-                                    management=True,
-                                    use_st_prefix=False),
+                                    management=True),
                            nullable=False)
 
     # relation: Forecast

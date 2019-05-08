@@ -25,7 +25,7 @@ _authors_email = [
 
 _install_requires = [
     "sqlalchemy>=1.2",
-    "geoalchemy2>=0.5", ]
+    "geoalchemy2>=0.6.2", ]
 
 _extras_require = {'doc': [
     "sphinx==1.4.1",
