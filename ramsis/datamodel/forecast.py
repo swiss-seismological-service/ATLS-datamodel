@@ -79,8 +79,8 @@ class ForecastScenario(NameMixin, ORMBase):
     forecast = relationship('Forecast', back_populates='scenarios')
     # relation: InjectionWell
     well = relationship('InjectionWell',
-                                 uselist=False,
-                                 back_populates='scenario')
+                        uselist=False,
+                        back_populates='scenario')
     # XXX(damb): How to perform the cascade?
     # cascade='all, delete-orphan')
 
