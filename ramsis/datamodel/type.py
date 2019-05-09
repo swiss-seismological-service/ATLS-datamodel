@@ -1,3 +1,4 @@
+# Copyright 2019, ETH Zurich - Swiss Seismological Service SED
 """
 `SQLAlchemy <https://www.sqlalchemy.org/>`_ custom type facilities.
 """

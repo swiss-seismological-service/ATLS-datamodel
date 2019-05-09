@@ -25,7 +25,7 @@ _authors_email = [
 
 _install_requires = [
     "sqlalchemy>=1.2",
-    "geoalchemy2>=0.5", ]
+    "geoalchemy2>=0.6.2", ]
 
 _extras_require = {'doc': [
     "sphinx==1.4.1",
@@ -37,8 +37,7 @@ _tests_require = [
 
 setup(
     name='ramsis.datamodel',
-    # TODO(damb): Provide version string globally
-    version='0.2rc0',
+    version='0.2',
     author=' (SED, ETHZ),'.join(_authors),
     author_email=', '.join(_authors_email),
     description=('Real Time Risk Assessment and Mitigation for Induced'

@@ -1,6 +1,8 @@
+# Copyright 2019, ETH Zurich - Swiss Seismological Service SED
 """
 Seismics related ORM facilities.
 """
+import functools
 
 from sqlalchemy import Column
 from sqlalchemy import Integer, ForeignKey, LargeBinary
@@ -108,7 +110,12 @@ class SeismicCatalog(CreationInfoMixin, ORMBase):
     def __len__(self):
         return len(self.events)
 
+    def __repr__(self):
+        return "<{}(creationtime={!r}, events={})>".format(
+            type(self).__name__, self.creationinfo_creationtime, len(self))
 
+
+@functools.total_ordering
 class SeismicEvent(TimeQuantityMixin('datetime'),
                    RealQuantityMixin('x'),
                    RealQuantityMixin('y'),
@@ -163,6 +170,13 @@ class SeismicEvent(TimeQuantityMixin('datetime'),
 
         return new
 
+    def __lt__(self, other):
+        if isinstance(other, SeismicEvent):
+            return ((self.datetime_value, self.magnitude_value) <
+                    (other.datetime_value, other.magnitude_value))
+
+        raise ValueError
+
     def __eq__(self, other):
         if isinstance(other, SeismicEvent):
             mapper = class_mapper(type(self))
@@ -184,10 +198,6 @@ class SeismicEvent(TimeQuantityMixin('datetime'),
 
     def __hash__(self):
         return hash(self.quakeml)
-
-    def __str__(self):
-        return "M%.1f @ %s" % (self.magnitude_value,
-                               self.datetime_value.ctime())
 
     def __repr__(self):
         return "<{}(datetime={!r}, magnitude={!r})>".format(

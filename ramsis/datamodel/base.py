@@ -1,3 +1,4 @@
+# Copyright 2019, ETH Zurich - Swiss Seismological Service SED
 """
 General purpose datamodel ORM facilities.
 """
@@ -204,7 +205,8 @@ def QuantityMixin(name, quantity_type, column_prefix=None):
 
             @declared_attr
             def _value(cls):
-                return Column('%svalue' % column_prefix, Float, nullable=False)
+                return Column('%svalue' % column_prefix, sql_type,
+                              nullable=False)
 
             return _value
 

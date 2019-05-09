@@ -1,3 +1,4 @@
+# Copyright 2019, ETH Zurich - Swiss Seismological Service SED
 """
 Seismicity prediction related ORM facilities.
 """
@@ -101,8 +102,7 @@ class ReservoirSeismicityPrediction(RealQuantityMixin('rate'),
     id = Column(Integer, primary_key=True)
     geom = Column(Geometry(geometry_type='GEOMETRYZ',
                            dimension=3,
-                           management=True,
-                           use_st_prefix=False),
+                           management=True),
                   nullable=False)
 
     # relation: SeismicityModelRun

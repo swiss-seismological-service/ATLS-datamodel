@@ -1,3 +1,4 @@
+# Copyright 2019, ETH Zurich - Swiss Seismological Service SED
 """
 Processing status related ORM facilities.
 """
