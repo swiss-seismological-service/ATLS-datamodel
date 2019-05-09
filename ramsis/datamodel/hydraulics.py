@@ -19,15 +19,15 @@ class Hydraulics(CreationInfoMixin, ORMBase):
     """
     ORM representatio of a hydraulics time series.
     """
-    # relation: HydraulicsEvent
-    samples = relationship('HydraulicsEvent',
+    # relation: HydraulicSample
+    samples = relationship('HydraulicSample',
                            back_populates='hydraulics',
                            single_parent=True,
                            cascade='all, delete-orphan')
 
-    # relation: InjectionWell
-    well_id = Column(Integer, ForeignKey('injectionwell.id'))
-    well = relationship('InjectionWell', back_populates='hydraulics')
+    # relation: WellSection
+    wellsection_id = Column(Integer, ForeignKey('wellsection.id'))
+    wellsection = relationship('WellSection', back_populates='hydraulics')
 
     def __iter__(self):
         for s in self.samples:
@@ -45,20 +45,26 @@ class Hydraulics(CreationInfoMixin, ORMBase):
 class InjectionPlan(CreationInfoMixin, ORMBase):
     """
     ORM representation of a planned injection.
+
+    .. note::
+
+        Injection plan rules and behaviours:
+
+        * Samples in an injection plan are interpolated linearly
+        * This includes interpolation from the last sample of the injection
+          history to the first sample of the injection plan
+        * A sample must always be provided for the end time of the forecast
+          period, except if no sample is provided at all. In this case, it is
+          assumed that the injection remains constant over the forecast period.
     """
-    # relation: HydraulicsEvent
-    samples = relationship('HydraulicsEvent',
+    # relation: HydraulicSample
+    samples = relationship('HydraulicSample',
                            back_populates='injectionplan',
                            single_parent=True,
                            cascade='all, delete-orphan')
-    # relation: ForecastScenario
-    scenario_id = Column(Integer, ForeignKey('forecastscenario.id'))
-    scenario = relationship('ForecastScenario',
-                            back_populates='injectionplan')
-
-    # relation: InjectionWell
-    well_id = Column(Integer, ForeignKey('injectionwell.id'))
-    well = relationship('InjectionWell', back_populates='injectionplans')
+    # relation: WellSection
+    wellsection_id = Column(Integer, ForeignKey('wellsection.id'))
+    wellsection = relationship('WellSection', back_populates='injectionplans')
 
     def __iter__(self):
         for s in self.samples:
@@ -73,19 +79,19 @@ class InjectionPlan(CreationInfoMixin, ORMBase):
             len(self.samples))
 
 
-class HydraulicsEvent(TimeQuantityMixin('datetime'),
-                      RealQuantityMixin('downholetemperature'),
-                      RealQuantityMixin('downholeflow'),
-                      RealQuantityMixin('downholepressure'),
-                      RealQuantityMixin('topholetemperature'),
-                      RealQuantityMixin('topholeflow'),
-                      RealQuantityMixin('topholepressure'),
-                      RealQuantityMixin('fuiddensity'),
-                      RealQuantityMixin('fluidviscosity'),
-                      RealQuantityMixin('fluidph'),
+class HydraulicSample(TimeQuantityMixin('datetime'),
+                      RealQuantityMixin('bottomtemperature', optional=True),
+                      RealQuantityMixin('bottomflow', optional=True),
+                      RealQuantityMixin('bottompressure', optional=True),
+                      RealQuantityMixin('toptemperature', optional=True),
+                      RealQuantityMixin('topflow', optional=True),
+                      RealQuantityMixin('toppressure', optional=True),
+                      RealQuantityMixin('fluiddensity', optional=True),
+                      RealQuantityMixin('fluidviscosity', optional=True),
+                      RealQuantityMixin('fluidph', optional=True),
                       ORMBase):
     """
-    Represents a hydraulics event. The definition is based on `QuakeML
+    Represents a hydraulic measurement. The definition is based on `QuakeML
     <https://quake.ethz.ch/quakeml/QuakeML2.0/Hydraulic>`_.
 
     .. note::
@@ -108,7 +114,7 @@ class HydraulicsEvent(TimeQuantityMixin('datetime'),
 
     # TODO(damb): Is using functools.total_ordering an option?
     def __eq__(self, other):
-        if isinstance(other, HydraulicsEvent):
+        if isinstance(other, HydraulicSample):
             mapper = class_mapper(type(self))
 
             pk_keys = set([c.key for c in mapper.primary_key])

@@ -57,32 +57,32 @@ class ForecastScenario(NameMixin, ORMBase):
 
     In general, a :py:class:`ForecastScenario` provides a container for:
         * scenario specific end-user configuration,
-        * an :py:class:`InjectionPlan`,
+        * an :py:class:`InjectionWell`,
         * a set of :py:class:`ForecastStage` objects,
         * geometric description of a reservoir.
 
     .. note::
 
-        Currently, a scenario does only cover a single injection plan including
-        the reservoir geometry.
+        Currently, a scenario does only cover a single injection well scenario
+        (:code:`uselist=False`).
 
     """
     config = Column(MutableDict.as_mutable(JSONEncodedDict))
 
     reservoirgeom = Column(Geometry(geometry_type='GEOMETRYZ',
                                     dimension=3,
-                                    management=True,
-                                    use_st_prefix=False),
+                                    management=True),
                            nullable=False)
 
     # relation: Forecast
     forecast_id = Column(Integer, ForeignKey('forecast.id'))
     forecast = relationship('Forecast', back_populates='scenarios')
-    # relation: InjectionPlan
-    injectionplan = relationship('InjectionPlan',
-                                 uselist=False,
-                                 back_populates='scenario',
-                                 cascade='all, delete-orphan')
+    # relation: InjectionWell
+    well = relationship('InjectionWell',
+                        uselist=False,
+                        back_populates='scenario')
+    # XXX(damb): How to perform the cascade?
+    # cascade='all, delete-orphan')
 
 
 class ForecastStage(ORMBase):

@@ -102,8 +102,7 @@ class ReservoirSeismicityPrediction(RealQuantityMixin('rate'),
     id = Column(Integer, primary_key=True)
     geom = Column(Geometry(geometry_type='GEOMETRYZ',
                            dimension=3,
-                           management=True,
-                           use_st_prefix=False),
+                           management=True),
                   nullable=False)
 
     # relation: SeismicityModelRun
