@@ -107,8 +107,10 @@ class WellSection(PublicIDMixin,
     # relation: Hydraulics
     hydraulics = relationship('Hydraulics',
                               back_populates='wellsection',
+                              uselist=False,
                               cascade='all, delete-orphan')
     # relation: InjectionPlan
-    injectionplans = relationship('InjectionPlan',
-                                  back_populates='wellsection',
-                                  cascade='all, delete-orphan')
+    injectionplan = relationship('InjectionPlan',
+                                 back_populates='wellsection',
+                                 uselist=False,
+                                 cascade='all, delete-orphan')

@@ -64,7 +64,7 @@ class InjectionPlan(CreationInfoMixin, ORMBase):
                            cascade='all, delete-orphan')
     # relation: WellSection
     wellsection_id = Column(Integer, ForeignKey('wellsection.id'))
-    wellsection = relationship('WellSection', back_populates='injectionplans')
+    wellsection = relationship('WellSection', back_populates='injectionplan')
 
     def __iter__(self):
         for s in self.samples:
