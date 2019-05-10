@@ -26,6 +26,7 @@ class Forecast(CreationInfoMixin,
     their corresponding results) and the real *input* data i.e. both a
     :py:class:`SeismicCatalog` and :py:class:`InjectionWell`.
     """
+    # relation: Project
     project_id = Column(Integer, ForeignKey('project.id'))
     project = relationship('Project', back_populates='forecasts')
     # XXX(damb): Catalogs used for a forecast are snapshots. Thus, a
