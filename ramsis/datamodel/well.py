@@ -7,11 +7,11 @@ from sqlalchemy import Column, Integer, Boolean, String, ForeignKey
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 
-from ramsis.datamodel.base import (ORMBase, CreationInfoMixin,
+from ramsis.datamodel.base import (ORMBase, CreationInfoMixin, PublicIDMixin,
                                    UniqueEpochMixin, RealQuantityMixin)
 
 
-class InjectionWell(CreationInfoMixin, ORMBase):
+class InjectionWell(PublicIDMixin, CreationInfoMixin, ORMBase):
     """
     ORM injection well representation (draft state).
 
@@ -79,7 +79,8 @@ class InjectionWell(CreationInfoMixin, ORMBase):
                 isection.bottomdepth_value)
 
 
-class WellSection(CreationInfoMixin,
+class WellSection(PublicIDMixin,
+                  CreationInfoMixin,
                   UniqueEpochMixin,
                   RealQuantityMixin('toplongitude'),
                   RealQuantityMixin('toplatitude'),
