@@ -78,6 +78,15 @@ class InjectionWell(PublicIDMixin, CreationInfoMixin, ORMBase):
                 isection.bottomlatitude_value,
                 isection.bottomdepth_value)
 
+    def __iter__(self):
+        for s in self.sections:
+            yield s
+
+    def __repr__(self):
+        return ("<{}(publicid={!r}, longitude={}, latitude={}, "
+                "depth={})>").format(type(self).__name__, self.publicid,
+                                     self.longitude, self.latitude, self.depth)
+
 
 class WellSection(PublicIDMixin,
                   CreationInfoMixin,
