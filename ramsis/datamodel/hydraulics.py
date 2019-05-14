@@ -133,12 +133,8 @@ class HydraulicSample(TimeQuantityMixin('datetime'),
         return not self.__eq__(other)
 
     def __str__(self):
-        return "Flow: %.1f @ %s" % (self.downholeflow_value,
-                                    self.datetime_value.ctime())
-
-    def __repr__(self):
-        return "<{}(datetime={!r}, downholeflow={!r})>".format(
-            type(self).__name__, self.datetime_value, self.downholeflow_value)
+        return "<{}(datetime={})>".format(type(self).__name__,
+                                          self.datetime_value.isoformat())
 
     # TODO(damb)
     # https://docs.python.org/3/reference/datamodel.html#object.__hash__
