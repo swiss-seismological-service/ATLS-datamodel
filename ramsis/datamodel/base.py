@@ -65,7 +65,7 @@ def _PublicIDMixin(name='', column_prefix=None):
         <https://quake.ethz.ch/quakeml/>`_.
     """
     if not column_prefix:
-        column_prefix = '%s_' % name
+        column_prefix = '%s' % name
 
     @declared_attr
     def _publicid(cls):
