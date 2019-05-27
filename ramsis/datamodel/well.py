@@ -17,11 +17,6 @@ class InjectionWell(PublicIDMixin, CreationInfoMixin, ORMBase):
 
     .. note::
 
-        Dummy implementation. The mapping is currently still in draft state. In
-        future, a well should be defined according to the *real world* needs.
-
-    .. note::
-
         *Point quantities* are implemented as `QuakeML
         <https://quake.ethz.ch/quakeml>`_ real quantities.
     """
