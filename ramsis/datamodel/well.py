@@ -95,8 +95,8 @@ class WellSection(PublicIDMixin,
                   RealQuantityMixin('bottomlongitude'),
                   RealQuantityMixin('bottomlatitude'),
                   RealQuantityMixin('bottomdepth'),
-                  RealQuantityMixin('holediameter'),
-                  RealQuantityMixin('casingdiameter'),
+                  RealQuantityMixin('holediameter', optional=True),
+                  RealQuantityMixin('casingdiameter', optional=True),
                   ORMBase):
     """
     ORM implementation of a well section.
