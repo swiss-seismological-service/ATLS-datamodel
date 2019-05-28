@@ -8,7 +8,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 
 from ramsis.datamodel.base import (ORMBase, CreationInfoMixin, PublicIDMixin,
-                                   UniqueEpochMixin, RealQuantityMixin)
+                                   UniqueOpenEpochMixin, RealQuantityMixin)
 
 
 class InjectionWell(PublicIDMixin,
@@ -88,7 +88,7 @@ class InjectionWell(PublicIDMixin,
 
 class WellSection(PublicIDMixin,
                   CreationInfoMixin,
-                  UniqueEpochMixin,
+                  UniqueOpenEpochMixin,
                   RealQuantityMixin('toplongitude'),
                   RealQuantityMixin('toplatitude'),
                   RealQuantityMixin('topdepth'),
