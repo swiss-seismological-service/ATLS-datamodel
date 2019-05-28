@@ -11,7 +11,10 @@ from ramsis.datamodel.base import (ORMBase, CreationInfoMixin, PublicIDMixin,
                                    UniqueEpochMixin, RealQuantityMixin)
 
 
-class InjectionWell(PublicIDMixin, CreationInfoMixin, ORMBase):
+class InjectionWell(PublicIDMixin,
+                    CreationInfoMixin,
+                    RealQuantityMixin('bedrockdepth', optional=True),
+                    ORMBase):
     """
     ORM injection well representation (draft state).
 
