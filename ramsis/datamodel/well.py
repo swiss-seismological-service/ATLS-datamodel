@@ -7,18 +7,16 @@ from sqlalchemy import Column, Integer, Boolean, String, ForeignKey
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 
-from ramsis.datamodel.base import (ORMBase, CreationInfoMixin,
-                                   UniqueEpochMixin, RealQuantityMixin)
+from ramsis.datamodel.base import (ORMBase, CreationInfoMixin, PublicIDMixin,
+                                   UniqueOpenEpochMixin, RealQuantityMixin)
 
 
-class InjectionWell(CreationInfoMixin, ORMBase):
+class InjectionWell(PublicIDMixin,
+                    CreationInfoMixin,
+                    RealQuantityMixin('bedrockdepth', optional=True),
+                    ORMBase):
     """
-    ORM injection well representation (draft state).
-
-    .. note::
-
-        Dummy implementation. The mapping is currently still in draft state. In
-        future, a well should be defined according to the *real world* needs.
+    ORM injection well representation.
 
     .. note::
 
@@ -78,17 +76,27 @@ class InjectionWell(CreationInfoMixin, ORMBase):
                 isection.bottomlatitude_value,
                 isection.bottomdepth_value)
 
+    def __iter__(self):
+        for s in self.sections:
+            yield s
 
-class WellSection(CreationInfoMixin,
-                  UniqueEpochMixin,
+    def __repr__(self):
+        return ("<{}(publicid={!r}, longitude={}, latitude={}, "
+                "depth={})>").format(type(self).__name__, self.publicid,
+                                     self.longitude, self.latitude, self.depth)
+
+
+class WellSection(PublicIDMixin,
+                  CreationInfoMixin,
+                  UniqueOpenEpochMixin,
                   RealQuantityMixin('toplongitude'),
                   RealQuantityMixin('toplatitude'),
                   RealQuantityMixin('topdepth'),
                   RealQuantityMixin('bottomlongitude'),
                   RealQuantityMixin('bottomlatitude'),
                   RealQuantityMixin('bottomdepth'),
-                  RealQuantityMixin('holediameter'),
-                  RealQuantityMixin('casingdiameter'),
+                  RealQuantityMixin('holediameter', optional=True),
+                  RealQuantityMixin('casingdiameter', optional=True),
                   ORMBase):
     """
     ORM implementation of a well section.
@@ -106,8 +114,10 @@ class WellSection(CreationInfoMixin,
     # relation: Hydraulics
     hydraulics = relationship('Hydraulics',
                               back_populates='wellsection',
+                              uselist=False,
                               cascade='all, delete-orphan')
     # relation: InjectionPlan
-    injectionplans = relationship('InjectionPlan',
-                                  back_populates='wellsection',
-                                  cascade='all, delete-orphan')
+    injectionplan = relationship('InjectionPlan',
+                                 back_populates='wellsection',
+                                 uselist=False,
+                                 cascade='all, delete-orphan')

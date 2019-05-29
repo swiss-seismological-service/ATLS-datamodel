@@ -54,6 +54,29 @@ class NameMixin(object):
     name = Column(String)
 
 
+def _PublicIDMixin(name='', column_prefix=None):
+    """
+    `SQLAlchemy <https://www.sqlalchemy.org/>`_ mixin providing a general
+    purpose :code:`publicID` attribute.
+
+    .. note::
+
+        The attribute :code:`publicID` is inherited from `QuakeML
+        <https://quake.ethz.ch/quakeml/>`_.
+    """
+    if not column_prefix:
+        column_prefix = '%s' % name
+
+    @declared_attr
+    def _publicid(cls):
+        return Column('%spublicid' % column_prefix, String)
+
+    return type(name, (object,), {'%spublicid' % column_prefix: _publicid})
+
+
+PublicIDMixin = _PublicIDMixin()
+
+
 def EpochMixin(name, epoch_type=None, column_prefix=None):
     """
     Mixin factory for common :code:`Epoch` types from
