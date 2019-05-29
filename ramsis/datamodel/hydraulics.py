@@ -25,9 +25,9 @@ class Hydraulics(CreationInfoMixin, ORMBase):
                            single_parent=True,
                            cascade='all, delete-orphan')
 
-    # relation: InjectionWell
-    well_id = Column(Integer, ForeignKey('injectionwell.id'))
-    well = relationship('InjectionWell', back_populates='hydraulics')
+    # relation: WellSection
+    wellsection_id = Column(Integer, ForeignKey('wellsection.id'))
+    wellsection = relationship('WellSection', back_populates='hydraulics')
 
     def __iter__(self):
         for s in self.samples:
@@ -45,20 +45,26 @@ class Hydraulics(CreationInfoMixin, ORMBase):
 class InjectionPlan(CreationInfoMixin, ORMBase):
     """
     ORM representation of a planned injection.
+
+    .. note::
+
+        Injection plan rules and behaviours:
+
+        * Samples in an injection plan are interpolated linearly
+        * This includes interpolation from the last sample of the injection
+          history to the first sample of the injection plan
+        * A sample must always be provided for the end time of the forecast
+          period, except if no sample is provided at all. In this case, it is
+          assumed that the injection remains constant over the forecast period.
     """
     # relation: HydraulicSample
     samples = relationship('HydraulicSample',
                            back_populates='injectionplan',
                            single_parent=True,
                            cascade='all, delete-orphan')
-    # relation: ForecastScenario
-    scenario_id = Column(Integer, ForeignKey('forecastscenario.id'))
-    scenario = relationship('ForecastScenario',
-                            back_populates='injectionplan')
-
-    # relation: InjectionWell
-    well_id = Column(Integer, ForeignKey('injectionwell.id'))
-    well = relationship('InjectionWell', back_populates='injectionplans')
+    # relation: WellSection
+    wellsection_id = Column(Integer, ForeignKey('wellsection.id'))
+    wellsection = relationship('WellSection', back_populates='injectionplan')
 
     def __iter__(self):
         for s in self.samples:
@@ -74,15 +80,15 @@ class InjectionPlan(CreationInfoMixin, ORMBase):
 
 
 class HydraulicSample(TimeQuantityMixin('datetime'),
-                      RealQuantityMixin('downholetemperature'),
-                      RealQuantityMixin('downholeflow'),
-                      RealQuantityMixin('downholepressure'),
-                      RealQuantityMixin('topholetemperature'),
-                      RealQuantityMixin('topholeflow'),
-                      RealQuantityMixin('topholepressure'),
-                      RealQuantityMixin('fluiddensity'),
-                      RealQuantityMixin('fluidviscosity'),
-                      RealQuantityMixin('fluidph'),
+                      RealQuantityMixin('bottomtemperature', optional=True),
+                      RealQuantityMixin('bottomflow', optional=True),
+                      RealQuantityMixin('bottompressure', optional=True),
+                      RealQuantityMixin('toptemperature', optional=True),
+                      RealQuantityMixin('topflow', optional=True),
+                      RealQuantityMixin('toppressure', optional=True),
+                      RealQuantityMixin('fluiddensity', optional=True),
+                      RealQuantityMixin('fluidviscosity', optional=True),
+                      RealQuantityMixin('fluidph', optional=True),
                       ORMBase):
     """
     Represents a hydraulic measurement. The definition is based on `QuakeML
@@ -127,12 +133,8 @@ class HydraulicSample(TimeQuantityMixin('datetime'),
         return not self.__eq__(other)
 
     def __str__(self):
-        return "Flow: %.1f @ %s" % (self.downholeflow_value,
-                                    self.datetime_value.ctime())
-
-    def __repr__(self):
-        return "<{}(datetime={!r}, downholeflow={!r})>".format(
-            type(self).__name__, self.datetime_value, self.downholeflow_value)
+        return "<{}(datetime={})>".format(type(self).__name__,
+                                          self.datetime_value.isoformat())
 
     # TODO(damb)
     # https://docs.python.org/3/reference/datamodel.html#object.__hash__

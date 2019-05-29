@@ -37,7 +37,7 @@ _tests_require = [
 
 setup(
     name='ramsis.datamodel',
-    version='0.2',
+    version='0.3rc0',
     author=' (SED, ETHZ),'.join(_authors),
     author_email=', '.join(_authors_email),
     description=('Real Time Risk Assessment and Mitigation for Induced'

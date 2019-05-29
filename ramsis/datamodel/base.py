@@ -54,6 +54,29 @@ class NameMixin(object):
     name = Column(String)
 
 
+def _PublicIDMixin(name='', column_prefix=None):
+    """
+    `SQLAlchemy <https://www.sqlalchemy.org/>`_ mixin providing a general
+    purpose :code:`publicID` attribute.
+
+    .. note::
+
+        The attribute :code:`publicID` is inherited from `QuakeML
+        <https://quake.ethz.ch/quakeml/>`_.
+    """
+    if not column_prefix:
+        column_prefix = '%s' % name
+
+    @declared_attr
+    def _publicid(cls):
+        return Column('%spublicid' % column_prefix, String)
+
+    return type(name, (object,), {'%spublicid' % column_prefix: _publicid})
+
+
+PublicIDMixin = _PublicIDMixin()
+
+
 def EpochMixin(name, epoch_type=None, column_prefix=None):
     """
     Mixin factory for common :code:`Epoch` types from
@@ -153,7 +176,7 @@ UniqueOpenEpochMixin = EpochMixin('Epoch', epoch_type='open',
                                   column_prefix='')
 
 
-def QuantityMixin(name, quantity_type, column_prefix=None):
+def QuantityMixin(name, quantity_type, column_prefix=None, optional=False):
     """
     Mixin factory for common :code:`Quantity` types from
     `QuakeML <https://quake.ethz.ch/quakeml/>`_.
@@ -174,6 +197,8 @@ def QuantityMixin(name, quantity_type, column_prefix=None):
         :code:`name` with an appended underscore :code:`_` is used. Capital
         Letters are converted to lowercase.
     :type column_prefix: str or None
+    :param bool optional: Flag making the :code:`value` field optional
+        (:code:`True`).
 
     The usage of :py:func:`QuantityMixin` is illustrated bellow:
 
@@ -199,23 +224,23 @@ def QuantityMixin(name, quantity_type, column_prefix=None):
 
     column_prefix = column_prefix.lower()
 
-    def create_value(quantity_type, column_prefix):
+    def create_value(quantity_type, column_prefix, optional):
 
-        def _make_value(sql_type, column_prefix):
+        def _make_value(sql_type, column_prefix, optional):
 
             @declared_attr
             def _value(cls):
                 return Column('%svalue' % column_prefix, sql_type,
-                              nullable=False)
+                              nullable=optional)
 
             return _value
 
         if 'int' == quantity_type:
-            return _make_value(Integer, column_prefix)
+            return _make_value(Integer, column_prefix, optional)
         elif quantity_type in ('real', 'float'):
-            return _make_value(Float, column_prefix)
+            return _make_value(Float, column_prefix, optional)
         elif 'time' == quantity_type:
-            return _make_value(DateTime, column_prefix)
+            return _make_value(DateTime, column_prefix, optional)
 
         raise ValueError('Invalid quantity_type: {}'.format(quantity_type))
 
@@ -235,7 +260,8 @@ def QuantityMixin(name, quantity_type, column_prefix=None):
     def _confidence_level(cls):
         return Column('%sconfidencelevel' % column_prefix, Float)
 
-    _func_map = (('value', create_value(quantity_type, column_prefix)),
+    _func_map = (('value',
+                  create_value(quantity_type, column_prefix, optional)),
                  ('uncertainty', _uncertainty),
                  ('loweruncertainty', _lower_uncertainty),
                  ('upperuncertainty', _upper_uncertainty),

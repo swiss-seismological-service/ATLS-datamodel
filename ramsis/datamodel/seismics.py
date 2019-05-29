@@ -60,46 +60,6 @@ class SeismicCatalog(CreationInfoMixin, ORMBase):
             if filter_cond is None:
                 self.events = []
 
-    def dumps(self, oformat="QUAKEML", encoding=None, **kwargs):
-        """
-        Return a string representing a seismic catalog in the format specified.
-
-        :param str oformat: Seismic catalog output format. See the *Supported
-            Formats* list, below.
-        :param encoding: Encoding of the output catalog
-        :type encoding: str or None
-
-        :returns: Seismic catalog in the output format specified
-        :rtype: bytes or str
-
-        **Supported Formats**:
-
-            - `QUAKEML`
-        """
-        QUAKEML_HEADER = (
-            b'<?xml version="1.0" encoding="UTF-8"?>'
-            b'<q:quakeml xmlns="http://quakeml.org/xmlns/bed/1.2" '
-            b'xmlns:q="http://quakeml.org/xmlns/quakeml/1.2">'
-            b'<eventParameters publicID="smi:scs/0.7/EventParameters">')
-
-        QUAKEML_FOOTER = b'</eventParameters></q:quakeml>'
-
-        if oformat != "QUAKEML":
-            raise ValueError('Unsupported output format')
-
-        # XXX(damb): Create a seismic catalog by simply concatenating the
-        # QuakeML formatted events
-        retval = QUAKEML_HEADER
-        for e in self.events:
-            retval += e.quakeml
-
-        retval += QUAKEML_FOOTER
-
-        if encoding:
-            retval = retval.decode(encoding)
-
-        return retval
-
     def __getitem__(self, item):
         return self.events[item] if self.events else None
 
