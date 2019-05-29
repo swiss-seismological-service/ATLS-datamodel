@@ -16,7 +16,7 @@ class InjectionWell(PublicIDMixin,
                     RealQuantityMixin('bedrockdepth', optional=True),
                     ORMBase):
     """
-    ORM injection well representation (draft state).
+    ORM injection well representation.
 
     .. note::
 
