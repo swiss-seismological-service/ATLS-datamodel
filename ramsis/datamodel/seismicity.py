@@ -84,7 +84,7 @@ class SeismicityModelRun(ModelRun):
 class ReservoirSeismicityPrediction(RealQuantityMixin('rate'),
                                     RealQuantityMixin('bvalue'), ORMBase):
     """
-    ORM represenation for a :py:class:`SeismicityModelRun` result.
+    ORM representation for a :py:class:`SeismicityModelRun` result.
     """
     # XXX(damb): Currently this entity is implemented self referencial i.e.
     # using an adjacency list relationship. However, in future *parent*
