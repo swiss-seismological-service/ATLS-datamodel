@@ -59,4 +59,3 @@ class Project(CreationInfoMixin, NameMixin, UniqueOpenEpochMixin, ORMBase):
         if 'starttime' in kwargs:
             self.settings.forecast_start = kwargs['starttime']
         self.seismiccatalog = SeismicCatalog()
-
