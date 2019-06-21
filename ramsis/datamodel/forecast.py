@@ -12,6 +12,8 @@ from sqlalchemy.orm import relationship
 
 from ramsis.datamodel.base import (ORMBase, NameMixin, CreationInfoMixin,
                                    EpochMixin)
+from ramsis.datamodel.hydraulics import InjectionPlan
+from ramsis.datamodel.seismicity import SeismicityModelRun
 from ramsis.datamodel.type import JSONEncodedDict
 
 
@@ -48,9 +50,66 @@ class Forecast(CreationInfoMixin,
     def duration(self):
         return self.endtime - self.starttime
 
+    @classmethod
+    def create_interactive(cls, start_time, end_time, seismicity_models):
+        """
+        Create and prepare an interactive forecast.
+
+        An "interactive" forecast in this context means a forecast whose
+        details will be filled in later by the user. Those details include
+        defining additional scenarios and injections plans as well as
+        configuring stages and models.
+
+        .. note: We don't associate a well or a catalog yet at the time of
+                 creation. This is supposed to be done later when the forecast
+                 is executed.
+
+        :param datetime start_time: Start time of the forecast period
+        :param datetime end_time: End time of the forecast period
+        :param seismicity_models: List of seismicity forecast models to use
+            during forecast.
+        :type seismicity_models: [ramsis.datamodel.seismicity.SeismicityModel]
+        :return: Forecast with default scenario
+        :rtype: Forecast
+        """
+        forecast = Forecast(starttime=start_time,
+                            endtime=end_time)
+
+        scenario = ForecastScenario(name='Default Scenario')
+        scenario.injectionplan = InjectionPlan()
+
+        # TODO LH: Depending on how the other stages will be implemented we
+        #   might want to generalize this by providing the respective models
+        #   to each stage on creation.
+        scenario.stages = [Stage.create() for Stage in EStage]
+        try:
+            seismicity_forecast_stage = \
+                next((s for s in scenario.stages
+                      if isinstance(s, SeismicityForecastStage)), None)
+        except StopIteration:
+            pass
+        else:
+            seismicity_forecast_stage.prepare_runs(seismicity_models)
+
+        forecast.scenarios = [scenario]
+        return forecast
+
     def __iter__(self):
         for s in self.scenarios:
             yield s
+
+    def reset(self):
+        """
+        Resets the forecast by deleting all results
+
+        This keeps the configuration and scenarios but deletes anything that
+        is a result of running the forecast, including the catalog snapshot.
+        After reset a forecast can be re-run.
+
+        """
+        self.seismiccatalog = None
+        for scenario in self.scenarios:
+            scenario.reset()
 
 
 class ForecastScenario(NameMixin, ORMBase):
