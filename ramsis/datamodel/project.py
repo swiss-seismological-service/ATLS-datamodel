@@ -9,6 +9,8 @@ from sqlalchemy.orm import relationship
 
 from ramsis.datamodel.base import (ORMBase, CreationInfoMixin, NameMixin,
                                    UniqueOpenEpochMixin)
+from ramsis.datamodel.seismics import SeismicCatalog
+from ramsis.datamodel.settings import ProjectSettings
 
 
 class Project(CreationInfoMixin, NameMixin, UniqueOpenEpochMixin, ORMBase):
@@ -43,3 +45,17 @@ class Project(CreationInfoMixin, NameMixin, UniqueOpenEpochMixin, ORMBase):
     # TODO(damb):
     # * Implement a project factory/builder instead of using/abusing the
     #   constructor
+
+    def __init__(self, **kwargs):
+        """
+        Project initializer
+
+        Insantiates settings and the main seismic catalog which are both
+        integral parts of :class:`Project`.
+        """
+        super().__init__(**kwargs)
+        self.settings = ProjectSettings()
+        if 'starttime' in kwargs:
+            self.settings.forecast_start = kwargs['starttime']
+        self.seismiccatalog = SeismicCatalog()
+
