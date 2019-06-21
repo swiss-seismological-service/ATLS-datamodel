@@ -118,20 +118,20 @@ def EpochMixin(name, epoch_type=None, column_prefix=None):
 
     column_prefix = column_prefix.lower()
 
-    class Boundery(enum.Enum):
+    class Boundary(enum.Enum):
         LEFT = enum.auto()
         RIGHT = enum.auto()
 
-    def create_datetime(boundery, column_prefix, **kwargs):
+    def create_datetime(boundary, column_prefix, **kwargs):
 
-        def _make_datetime(boundery, **kwargs):
+        def _make_datetime(boundary, **kwargs):
 
-            if boundery is Boundery.LEFT:
+            if boundary is Boundary.LEFT:
                 name = 'starttime'
-            elif boundery is Boundery.RIGHT:
+            elif boundary is Boundary.RIGHT:
                 name = 'endtime'
             else:
-                raise ValueError('Invalid boundery: {!r}.'.format(boundery))
+                raise ValueError('Invalid boundary: {!r}.'.format(boundary))
 
             @declared_attr
             def _datetime(cls):
@@ -140,24 +140,24 @@ def EpochMixin(name, epoch_type=None, column_prefix=None):
 
             return _datetime
 
-        return _make_datetime(boundery, **kwargs)
+        return _make_datetime(boundary, **kwargs)
 
     if epoch_type is None or epoch_type == 'default':
-        _func_map = (('starttime', create_datetime(Boundery.LEFT,
+        _func_map = (('starttime', create_datetime(Boundary.LEFT,
                                                    column_prefix,
                                                    nullable=False)),
-                     ('endtime', create_datetime(Boundery.RIGHT,
+                     ('endtime', create_datetime(Boundary.RIGHT,
                                                  column_prefix)))
     elif epoch_type == 'open':
-        _func_map = (('starttime', create_datetime(Boundery.LEFT,
+        _func_map = (('starttime', create_datetime(Boundary.LEFT,
                                                    column_prefix)),
-                     ('endtime', create_datetime(Boundery.RIGHT,
+                     ('endtime', create_datetime(Boundary.RIGHT,
                                                  column_prefix)))
     elif epoch_type == 'finite':
-        _func_map = (('starttime', create_datetime(Boundery.LEFT,
+        _func_map = (('starttime', create_datetime(Boundary.LEFT,
                                                    column_prefix,
                                                    nullable=False)),
-                     ('endtime', create_datetime(Boundery.RIGHT,
+                     ('endtime', create_datetime(Boundary.RIGHT,
                                                  column_prefix,
                                                  nullable=False)))
     else:
