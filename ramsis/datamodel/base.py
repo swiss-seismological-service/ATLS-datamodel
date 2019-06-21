@@ -105,12 +105,12 @@ def EpochMixin(name, epoch_type=None, column_prefix=None):
 
             def __repr__(self):
                 return \
-                    '<MyObject(epoch_starttime={}, epoch_endtime={})>'.format(
-                        self.epoch_starttime, self.epoch_endtime)
+                    '<MyObject(starttime={}, endtime={})>'.format(
+                        self.starttime, self.endtime)
 
 
         # create instance of "MyObject"
-        my_obj = MyObject(epoch_starttime=datetime.datetime.utcnow())
+        my_obj = MyObject(starttime=datetime.datetime.utcnow())
 
     """
     if column_prefix is None:
