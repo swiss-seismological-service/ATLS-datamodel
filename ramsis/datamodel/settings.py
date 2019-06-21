@@ -74,7 +74,7 @@ class Settings(collections.UserDict, NameMixin, ORMBase,
     @reconstructor
     def init_on_load(self):
         self.data = (json.loads(self.config,
-                                object_hook=datetime.datetime_decoder)
+                                object_hook=datetime_decoder)
                      if self.config else {})
 
     def commit(self):
