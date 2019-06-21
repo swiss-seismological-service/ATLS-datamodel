@@ -86,6 +86,8 @@ class ForecastScenario(NameMixin, ORMBase):
                         back_populates='scenario')
     # XXX(damb): How to perform the cascade?
     # cascade='all, delete-orphan')
+    stages = relationship('ForecastStage', back_populates='scenario',
+                          cascade='all, delete-orphan')
 
 
 class EStage(Enum):
@@ -133,6 +135,9 @@ class ForecastStage(ORMBase):
     config = Column(MutableDict.as_mutable(JSONEncodedDict))
     enabled = Column(Boolean, default=True)
     _type = Column(sqlalchemy.Enum(EStage))
+
+    scenario_id = Column(Integer, ForeignKey('forecastscenario.id'))
+    scenario = relationship('ForecastScenario', back_populates='stages')
 
     # TODO(damb): Calculation status needs to be introduced for forecast
     # stages.
