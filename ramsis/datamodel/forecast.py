@@ -2,16 +2,16 @@
 """
 Forecast related ORM facilities.
 """
-
+from enum import Enum
 from geoalchemy2 import Geometry
-from sqlalchemy import Column, Boolean, Enum, Integer, ForeignKey
+import sqlalchemy
+from sqlalchemy import Column, Boolean, Integer, ForeignKey
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 
 from ramsis.datamodel.base import (ORMBase, NameMixin, CreationInfoMixin,
                                    EpochMixin)
-from ramsis.datamodel.model import EModel
 from ramsis.datamodel.type import JSONEncodedDict
 
 
@@ -86,6 +86,33 @@ class ForecastScenario(NameMixin, ORMBase):
     # cascade='all, delete-orphan')
 
 
+class EStage(Enum):
+
+    SEISMICITY = 0
+    SEISMICITY_SKILL = 1
+    HAZARD = 2
+    RISK = 3
+
+    def create(self, *args, **kwargs):
+        """
+        Create and return a corresponding stage instance
+
+        The *args and **kwargs are directly passed on to the stage initializer.
+
+        :param args: Positional init params for stage
+        :param kwargs: Keyword init params for stage
+        :return: Instance of stage
+        :rtype: ForecastStage
+        """
+        stage_map = {
+            EStage.SEISMICITY: SeismicityForecastStage,
+            EStage.SEISMICITY_SKILL: SeismicitySkillStage,
+            EStage.HAZARD: HazardStage,
+            EStage.RISK: RiskStage
+        }
+        return stage_map[self](*args, **kwargs)
+
+
 class ForecastStage(ORMBase):
     """
     Abstract base class for RT-RAMSIS forecast stages.
@@ -103,7 +130,7 @@ class ForecastStage(ORMBase):
     """
     config = Column(MutableDict.as_mutable(JSONEncodedDict))
     enabled = Column(Boolean, default=True)
-    _type = Column(Enum(EModel))
+    _type = Column(sqlalchemy.Enum(EStage))
 
     # TODO(damb): Calculation status needs to be introduced for forecast
     # stages.
@@ -127,5 +154,48 @@ class SeismicityForecastStage(ForecastStage):
                         cascade='all, delete-orphan')
 
     __mapper_args__ = {
-        'polymorphic_identity': EModel.SEISMICITY,
+        'polymorphic_identity': EStage.SEISMICITY,
+    }
+
+
+class SeismicitySkillStage(ForecastStage):
+    """
+    Concrete :py:class:`ForecastStage` container for seismicity model skill
+    testing.
+
+    """
+    # TODO LH: Implement
+    __tablename__ = 'seismicityskillstage'
+    id = Column(Integer, ForeignKey('forecaststage.id'), primary_key=True)
+
+    __mapper_args__ = {
+        'polymorphic_identity': EStage.SEISMICITY_SKILL,
+    }
+
+
+class HazardStage(ForecastStage):
+    """
+    Concrete :py:class:`ForecastStage` container for hazard computations
+
+    """
+    # TODO LH: Implement
+    __tablename__ = 'hazardstage'
+    id = Column(Integer, ForeignKey('forecaststage.id'), primary_key=True)
+
+    __mapper_args__ = {
+        'polymorphic_identity': EStage.HAZARD,
+    }
+
+
+class RiskStage(ForecastStage):
+    """
+    Concrete :py:class:`ForecastStage` container for risk computations
+
+    """
+    # TODO LH: Implement
+    __tablename__ = 'riskstage'
+    id = Column(Integer, ForeignKey('forecaststage.id'), primary_key=True)
+
+    __mapper_args__ = {
+        'polymorphic_identity': EStage.RISK,
     }
