@@ -32,13 +32,13 @@ class Project(CreationInfoMixin, NameMixin, UniqueOpenEpochMixin, ORMBase):
                            'cascade': 'all, delete-orphan'}
     well = relationship('InjectionWell', **relationship_config)
     forecasts = relationship('Forecast', **relationship_config)
-    settings = relationship('ProjectSettings')
     # TODO LH: delete-orphan won't work on Generic Associations. Delete orphans
     #   manually (see https://stackoverflow.com/questions/43629364)
     seismiccatalog = relationship('SeismicCatalog',
                                   back_populates='project',
                                   cascade='all',
                                   uselist=False)
+    settings = relationship('ProjectSettings', uselist=False)
 
     # TODO(damb):
     # * Implement a project factory/builder instead of using/abusing the
