@@ -31,10 +31,12 @@ class Forecast(CreationInfoMixin,
     project = relationship('Project', back_populates='forecasts')
     # XXX(damb): Catalogs used for a forecast are snapshots. Thus, a
     # delete-orphan is appropriate.
+    # TODO LH: delete-orphan won't work on Generic Associations. Delete orphans
+    #   manually (see https://stackoverflow.com/questions/43629364)
     seismiccatalog = relationship('SeismicCatalog',
                                   uselist=False,
                                   back_populates='forecast',
-                                  cascade='all, delete-orphan')
+                                  cascade='all')
     well = relationship('InjectionWell',
                         uselist=False,
                         back_populates='forecast')
