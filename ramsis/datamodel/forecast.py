@@ -148,6 +148,17 @@ class ForecastScenario(NameMixin, ORMBase):
     stages = relationship('ForecastStage', back_populates='scenario',
                           cascade='all, delete-orphan')
 
+    def reset(self):
+        """
+        Resets the forecast scenario by deleting all results
+
+        This keeps the configuration and scenarios but deletes any computed
+        results. After that, the scenario can be re-run
+
+        """
+        for stage in self.stages:
+            stage.reset()
+
 
 class EStage(Enum):
 
@@ -206,6 +217,16 @@ class ForecastStage(ORMBase):
         'polymorphic_on': _type,
     }
 
+    def reset(self):
+        """
+        Resets the stage by deleting all results
+
+        This keeps the configuration but deletes any computed results. After
+        that, the stage can be re-run
+
+        """
+        NotImplementedError('To be implemented by children')
+
 
 class SeismicityForecastStage(ForecastStage):
     """
@@ -235,6 +256,14 @@ class SeismicityForecastStage(ForecastStage):
             run.model = model
             self.runs.append(run)
 
+    def reset(self):
+        for run in self.runs:
+            run.result = None
+            # ToDo LH: not sure if we should reset to EStatus.PENDING instead
+            #   Does a run always have a status? Or only after it has started?
+            run.status = None
+
+
 class SeismicitySkillStage(ForecastStage):
     """
     Concrete :py:class:`ForecastStage` container for seismicity model skill
@@ -248,6 +277,9 @@ class SeismicitySkillStage(ForecastStage):
     __mapper_args__ = {
         'polymorphic_identity': EStage.SEISMICITY_SKILL,
     }
+
+    def reset(self):
+        pass
 
 
 class HazardStage(ForecastStage):
@@ -263,6 +295,9 @@ class HazardStage(ForecastStage):
         'polymorphic_identity': EStage.HAZARD,
     }
 
+    def reset(self):
+        pass
+
 
 class RiskStage(ForecastStage):
     """
@@ -276,3 +311,6 @@ class RiskStage(ForecastStage):
     __mapper_args__ = {
         'polymorphic_identity': EStage.RISK,
     }
+
+    def reset(self):
+        pass
