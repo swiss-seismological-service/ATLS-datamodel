@@ -88,7 +88,6 @@ class Settings(collections.UserDict, NameMixin, ORMBase,
 
         """
         self.config = json.dumps(self.data, indent=4, default=datetime_encoder)
-        self.settings_changed.emit(self)
 
 
 class ProjectSettings(Settings):
