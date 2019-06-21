@@ -223,6 +223,17 @@ class SeismicityForecastStage(ForecastStage):
         'polymorphic_identity': EStage.SEISMICITY,
     }
 
+    def prepare_runs(self, models):
+        """
+        Prepare runs for seismicity models
+
+        :param models: Global seismicity model configs to prepare runs for.
+
+        """
+        for model in models:
+            run = SeismicityModelRun()
+            run.model = model
+            self.runs.append(run)
 
 class SeismicitySkillStage(ForecastStage):
     """
