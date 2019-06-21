@@ -8,7 +8,8 @@ from geoalchemy2 import Geometry
 from sqlalchemy import Column, String, Integer, ForeignKey
 from sqlalchemy.orm import relationship, backref
 
-from ramsis.datamodel.base import ORMBase, RealQuantityMixin
+from ramsis.datamodel.base import (ORMBase, RealQuantityMixin,
+                                   UniqueFiniteEpochMixin)
 from ramsis.datamodel.model import Model, ModelRun, EModel
 
 
@@ -81,10 +82,9 @@ class SeismicityModelRun(ModelRun):
                                           self.model.url)
 
 
-class ReservoirSeismicityPrediction(RealQuantityMixin('rate'),
-                                    RealQuantityMixin('bvalue'), ORMBase):
+class ReservoirSeismicityPrediction(ORMBase):
     """
-    ORM represenation for a :py:class:`SeismicityModelRun` result.
+    ORM representation for a :py:class:`SeismicityModelRun` result.
     """
     # XXX(damb): Currently this entity is implemented self referencial i.e.
     # using an adjacency list relationship. However, in future *parent*
@@ -105,6 +105,9 @@ class ReservoirSeismicityPrediction(RealQuantityMixin('rate'),
                            management=True),
                   nullable=False)
 
+    # relation: SeismicityPredictionSample
+    samples = relationship('SeismicityPredictionBin',
+                           back_populates='result')
     # relation: SeismicityModelRun
     modelrun_id = Column(Integer, ForeignKey('seismicitymodelrun.id'))
     modelrun = relationship('SeismicityModelRun',
@@ -121,3 +124,15 @@ class ReservoirSeismicityPrediction(RealQuantityMixin('rate'),
         # TODO(damb): Implement recursively
         for c in self.children:
             yield c
+
+
+class SeismicityPredictionBin(UniqueFiniteEpochMixin,
+                              RealQuantityMixin('rate'),
+                              RealQuantityMixin('b'),
+                              ORMBase):
+    """
+    ORM representation of a seismicity prediction sample.
+    """
+    result_id = Column(Integer, ForeignKey('reservoirseismicityprediction.id'))
+    result = relationship('ReservoirSeismicityPrediction',
+                          back_populates='samples')
