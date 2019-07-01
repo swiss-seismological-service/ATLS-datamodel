@@ -16,6 +16,14 @@ from ramsis.datamodel.hydraulics import InjectionPlan
 from ramsis.datamodel.seismicity import SeismicityModelRun
 from ramsis.datamodel.type import JSONEncodedDict
 
+# TODO LH: find a better way to handle default configs (from file? project
+#   specific -> configurable in project settings.
+DEFAULT_SCENARIO_CONFIG = {
+    'run_is_forecast': True,
+    'run_hazard': True,
+    'run_risk': True
+}
+
 
 class Forecast(CreationInfoMixin,
                EpochMixin('interval', epoch_type='finite', column_prefix=''),
@@ -77,6 +85,11 @@ class Forecast(CreationInfoMixin,
 
         scenario = ForecastScenario(name='Default Scenario')
         scenario.injectionplan = InjectionPlan()
+        # TODO LH: See above. If the core needs to be referenced for
+        #   constructing this, this would justify using a builder pattern for
+        #   the whole construction process, i.e. moving all this code to
+        #   somewhere else.
+        scenario.config = DEFAULT_SCENARIO_CONFIG
 
         # TODO LH: Depending on how the other stages will be implemented we
         #   might want to generalize this by providing the respective models
