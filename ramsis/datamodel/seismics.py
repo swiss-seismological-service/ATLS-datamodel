@@ -41,7 +41,7 @@ class SeismicCatalog(CreationInfoMixin, ORMBase):
         :rtype: :py:class:`SeismicCatalog`
         """
         snap = type(self)()
-        snap.events = filter(filter_cond, self.events)
+        snap.events = list(filter(filter_cond, self.events))
 
         return snap
 
