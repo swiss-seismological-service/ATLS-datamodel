@@ -94,7 +94,8 @@ class Forecast(CreationInfoMixin,
         # TODO LH: Depending on how the other stages will be implemented we
         #   might want to generalize this by providing the respective models
         #   to each stage on creation.
-        scenario.stages = [Stage.create() for Stage in EStage]
+        scenario.stages = [ForecastStage.create(stage_type)
+                           for stage_type in EStage]
         try:
             seismicity_forecast_stage = \
                 next((s for s in scenario.stages
@@ -174,30 +175,10 @@ class ForecastScenario(NameMixin, ORMBase):
 
 
 class EStage(Enum):
-
     SEISMICITY = 0
     SEISMICITY_SKILL = 1
     HAZARD = 2
     RISK = 3
-
-    def create(self, *args, **kwargs):
-        """
-        Create and return a corresponding stage instance
-
-        The *args and **kwargs are directly passed on to the stage initializer.
-
-        :param args: Positional init params for stage
-        :param kwargs: Keyword init params for stage
-        :return: Instance of stage
-        :rtype: ForecastStage
-        """
-        stage_map = {
-            EStage.SEISMICITY: SeismicityForecastStage,
-            EStage.SEISMICITY_SKILL: SeismicitySkillStage,
-            EStage.HAZARD: HazardStage,
-            EStage.RISK: RiskStage
-        }
-        return stage_map[self](*args, **kwargs)
 
 
 class ForecastStage(ORMBase):
@@ -229,6 +210,27 @@ class ForecastStage(ORMBase):
         'polymorphic_identity': 'stage',
         'polymorphic_on': _type,
     }
+
+    @staticmethod
+    def create(stage_type, *args, **kwargs):
+        """
+        Create and return a corresponding forecast stage instance
+
+        The *args and **kwargs are directly passed on to the stage initializer.
+
+        :param EStage stage_type: Type of stage to create
+        :param args: Positional init params for stage
+        :param kwargs: Keyword init params for stage
+        :return: Instance of stage
+        :rtype: ForecastStage
+        """
+        stage_map = {
+            EStage.SEISMICITY: SeismicityForecastStage,
+            EStage.SEISMICITY_SKILL: SeismicitySkillStage,
+            EStage.HAZARD: HazardStage,
+            EStage.RISK: RiskStage
+        }
+        return stage_map[stage_type](*args, **kwargs)
 
     def reset(self):
         """
