@@ -49,7 +49,7 @@ class Project(CreationInfoMixin, NameMixin, UniqueOpenEpochMixin, ORMBase):
         """
         Project initializer
 
-        Insantiates settings and the main seismic catalog which are both
+        Instantiates settings and the main seismic catalog which are both
         integral parts of :class:`Project`.
         """
         super().__init__(**kwargs)
