@@ -9,10 +9,13 @@ from sqlalchemy import Integer, ForeignKey, LargeBinary
 from sqlalchemy.orm import relationship, class_mapper
 
 from ramsis.datamodel.base import (ORMBase, CreationInfoMixin,
-                                   RealQuantityMixin, TimeQuantityMixin)
+                                   RealQuantityMixin, TimeQuantityMixin,
+                                   DeleteMultiParentOrphanMixin)
 
 
-class SeismicCatalog(CreationInfoMixin, ORMBase):
+class SeismicCatalog(DeleteMultiParentOrphanMixin(['project', 'forecast']),
+                     CreationInfoMixin,
+                     ORMBase):
     """
     ORM representation of a seismic catalog.
     """

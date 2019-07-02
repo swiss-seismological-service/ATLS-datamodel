@@ -6,8 +6,9 @@ import datetime
 import enum
 import functools
 
-from sqlalchemy import Column, Boolean, Integer, Float, String, DateTime
+from sqlalchemy import Column, Boolean, Integer, Float, String, DateTime, event
 from sqlalchemy.ext.declarative import declared_attr, declarative_base
+from sqlalchemy.orm import Session
 
 
 class Base(object):
@@ -284,3 +285,32 @@ IntegerQuantityMixin = functools.partial(QuantityMixin,
                                          quantity_type='int')
 TimeQuantityMixin = functools.partial(QuantityMixin,
                                       quantity_type='time')
+
+
+def DeleteMultiParentOrphanMixin(parent_relationships):
+    """
+    This provides a Mixin for entities that have multiple possible owners
+    (parents). For these we can't simply configure the owning relationships
+    cascading option as 'delete-orphan'. Instead we install a listener on the
+    session that deletes any orphaned catalogs after a flush.
+
+    :param [str] parent_relationships: Relationship attributes that define
+        the relations to parent entities.
+    """
+
+    class Mixin:
+
+        @classmethod
+        def __declare_last__(cls):
+            """ Called by the ORM after mapping has completed """
+
+            def is_orphaned(i):
+                return not any(getattr(i, r) for r in parent_relationships)
+
+            @event.listens_for(Session, 'after_flush')
+            def delete_orphans(session, _):
+                for orphan in (i for i in session.dirty | session.new
+                               if isinstance(i, cls) and is_orphaned(i)):
+                    session.delete(orphan)
+
+    return Mixin
