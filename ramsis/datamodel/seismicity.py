@@ -2,11 +2,12 @@
 """
 Seismicity prediction related ORM facilities.
 """
+import functools
 
 from geoalchemy2 import Geometry
 
 from sqlalchemy import Column, String, Integer, ForeignKey
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm import relationship, backref, class_mapper
 
 from ramsis.datamodel.base import (ORMBase, RealQuantityMixin,
                                    UniqueFiniteEpochMixin)
@@ -82,6 +83,7 @@ class SeismicityModelRun(ModelRun):
                                           self.model.url)
 
 
+@functools.total_ordering
 class ReservoirSeismicityPrediction(ORMBase):
     """
     ORM representation for a :py:class:`SeismicityModelRun` result.
@@ -125,7 +127,35 @@ class ReservoirSeismicityPrediction(ORMBase):
         for c in self.children:
             yield c
 
+    def __lt__(self, other):
+        # FIXME(damb): geom comparison corresponds to a string comparison;
+        # An improved implementation would be a volume comparison.
+        # FIXME(damb): Does not consider children, yet.
+        if isinstance(other, ReservoirSeismicityPrediction):
+            return ((self.geom, self.samples) <
+                    (other.geom, self.samples))
 
+        raise ValueError
+
+    def __eq__(self, other):
+        if isinstance(other, ReservoirSeismicityPrediction):
+            mapper = class_mapper(type(self))
+
+            pk_keys = set([c.key for c in mapper.primary_key])
+            rel_keys = set([c.key for c in mapper.relationships])
+            fk_keys = set([c.key for c in mapper.columns if c.foreign_keys])
+
+            omit = pk_keys | rel_keys | fk_keys
+
+            return all(getattr(self, attr) == getattr(other, attr)
+                       for attr in [p.key for p in mapper.iterate_properties
+                                    if p.key not in omit])
+
+    def __hash__(self):
+        return id(self)
+
+
+@functools.total_ordering
 class SeismicityPredictionBin(UniqueFiniteEpochMixin,
                               RealQuantityMixin('rate'),
                               RealQuantityMixin('b'),
@@ -136,3 +166,29 @@ class SeismicityPredictionBin(UniqueFiniteEpochMixin,
     result_id = Column(Integer, ForeignKey('reservoirseismicityprediction.id'))
     result = relationship('ReservoirSeismicityPrediction',
                           back_populates='samples')
+
+    def __lt__(self, other):
+        if isinstance(other, SeismicityPredictionBin):
+            return ((self.rate_value, self.b_value) <
+                    (other.rate_value, other.b_value))
+
+        raise ValueError
+
+    def __eq__(self, other):
+        if isinstance(other, SeismicityPredictionBin):
+            mapper = class_mapper(type(self))
+
+            pk_keys = set([c.key for c in mapper.primary_key])
+            rel_keys = set([c.key for c in mapper.relationships])
+            fk_keys = set([c.key for c in mapper.columns if c.foreign_keys])
+
+            omit = pk_keys | rel_keys | fk_keys
+
+            return all(getattr(self, attr) == getattr(other, attr)
+                       for attr in [p.key for p in mapper.iterate_properties
+                                    if p.key not in omit])
+
+        raise ValueError
+
+    def __hash__(self):
+        return id(self)
