@@ -7,7 +7,8 @@ from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship, class_mapper
 
 from ramsis.datamodel.base import (ORMBase, CreationInfoMixin,
-                                   RealQuantityMixin, TimeQuantityMixin)
+                                   RealQuantityMixin, TimeQuantityMixin,
+                                   DeleteMultiParentOrphanMixin)
 
 # NOTE(damb): Currently, basically both Hydraulics and InjectionPlan implement
 # the same facilities i.e. a timeseries of hydraulics data shipping some
@@ -23,7 +24,7 @@ class Hydraulics(CreationInfoMixin, ORMBase):
     samples = relationship('HydraulicSample',
                            back_populates='hydraulics',
                            single_parent=True,
-                           cascade='all, delete-orphan')
+                           cascade='all')
 
     # relation: WellSection
     wellsection_id = Column(Integer, ForeignKey('wellsection.id'))
@@ -62,7 +63,7 @@ class InjectionPlan(CreationInfoMixin, ORMBase):
     samples = relationship('HydraulicSample',
                            back_populates='injectionplan',
                            single_parent=True,
-                           cascade='all, delete-orphan')
+                           cascade='all')
     # relation: WellSection
     wellsection_id = Column(Integer, ForeignKey('wellsection.id'))
     wellsection = relationship('WellSection', back_populates='injectionplan')
@@ -80,7 +81,9 @@ class InjectionPlan(CreationInfoMixin, ORMBase):
             len(self.samples))
 
 
-class HydraulicSample(TimeQuantityMixin('datetime'),
+class HydraulicSample(DeleteMultiParentOrphanMixin(['injectionplan',
+                                                    'hydraulics']),
+                      TimeQuantityMixin('datetime'),
                       RealQuantityMixin('bottomtemperature', optional=True),
                       RealQuantityMixin('bottomflow', optional=True),
                       RealQuantityMixin('bottompressure', optional=True),
