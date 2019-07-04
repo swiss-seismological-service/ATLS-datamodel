@@ -30,11 +30,13 @@ class Project(CreationInfoMixin, NameMixin, UniqueOpenEpochMixin, ORMBase):
     spatialreference = Column(String, nullable=False)
 
     # relationships
-    relationship_config = {'back_populates': 'project',
-                           'cascade': 'all, delete-orphan'}
-    wells = relationship('InjectionWell', **relationship_config)
-    forecasts = relationship('Forecast', order_by='Forecast.starttime',
-                             **relationship_config)
+    wells = relationship('InjectionWell',
+                         back_populates='project',
+                         cascade='all')
+    forecasts = relationship('Forecast',
+                             order_by='Forecast.starttime',
+                             back_populates='project',
+                             cascade='all, delete-orphan')
     seismiccatalog = relationship('SeismicCatalog',
                                   back_populates='project',
                                   cascade='all',

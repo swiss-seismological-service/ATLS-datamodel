@@ -8,10 +8,14 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 
 from ramsis.datamodel.base import (ORMBase, CreationInfoMixin, PublicIDMixin,
-                                   UniqueOpenEpochMixin, RealQuantityMixin)
+                                   UniqueOpenEpochMixin, RealQuantityMixin,
+                                   DeleteMultiParentOrphanMixin)
 
 
-class InjectionWell(PublicIDMixin,
+class InjectionWell(DeleteMultiParentOrphanMixin(['project',
+                                                  'forecast',
+                                                  'forecastscenario']),
+                    PublicIDMixin,
                     CreationInfoMixin,
                     RealQuantityMixin('bedrockdepth', optional=True),
                     ORMBase):

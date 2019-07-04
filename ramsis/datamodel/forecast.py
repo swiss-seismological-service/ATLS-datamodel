@@ -45,7 +45,8 @@ class Forecast(CreationInfoMixin,
                                   cascade='all')
     well = relationship('InjectionWell',
                         uselist=False,
-                        back_populates='forecast')
+                        back_populates='forecast',
+                        cascade='all')
     scenarios = relationship('ForecastScenario',
                              back_populates='forecast',
                              cascade='all, delete-orphan')
@@ -152,7 +153,8 @@ class ForecastScenario(NameMixin, ORMBase):
     # relation: InjectionWell
     well = relationship('InjectionWell',
                         uselist=False,
-                        back_populates='scenario')
+                        back_populates='scenario',
+                        cascade='all')
     # XXX(damb): How to perform the cascade?
     # cascade='all, delete-orphan')
     stages = relationship('ForecastStage', back_populates='scenario',
