@@ -271,7 +271,6 @@ class SeismicityForecastStage(ForecastStage):
 
     def reset(self):
         for run in self.runs:
-            run.result = None
             # ToDo LH: not sure if we should reset to EStatus.PENDING instead
             #   Does a run always have a status? Or only after it has started?
             run.status = None
