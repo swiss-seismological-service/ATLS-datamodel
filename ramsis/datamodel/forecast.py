@@ -273,6 +273,7 @@ class SeismicityForecastStage(ForecastStage):
         for run in self.runs:
             # ToDo LH: not sure if we should reset to EStatus.PENDING instead
             #   Does a run always have a status? Or only after it has started?
+            # TODO(damb): Use EStatus.INITIALIZED instead
             run.status = None
 
 
