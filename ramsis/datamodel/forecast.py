@@ -12,17 +12,7 @@ from sqlalchemy.orm import relationship
 
 from ramsis.datamodel.base import (ORMBase, NameMixin, CreationInfoMixin,
                                    EpochMixin)
-from ramsis.datamodel.hydraulics import InjectionPlan
-from ramsis.datamodel.seismicity import SeismicityModelRun
 from ramsis.datamodel.type import JSONEncodedDict
-
-# TODO LH: find a better way to handle default configs (from file? project
-#   specific -> configurable in project settings.
-DEFAULT_SCENARIO_CONFIG = {
-    'run_is_forecast': True,
-    'run_hazard': True,
-    'run_risk': True
-}
 
 
 class Forecast(CreationInfoMixin,
@@ -54,56 +44,6 @@ class Forecast(CreationInfoMixin,
     @hybrid_property
     def duration(self):
         return self.endtime - self.starttime
-
-    @classmethod
-    def create_interactive(cls, start_time, end_time, seismicity_models):
-        """
-        Create and prepare an interactive forecast.
-
-        An "interactive" forecast in this context means a forecast whose
-        details will be filled in later by the user. Those details include
-        defining additional scenarios and injections plans as well as
-        configuring stages and models.
-
-        .. note: We don't associate a well or a catalog yet at the time of
-                 creation. This is supposed to be done later when the forecast
-                 is executed.
-
-        :param datetime start_time: Start time of the forecast period
-        :param datetime end_time: End time of the forecast period
-        :param seismicity_models: List of seismicity forecast models to use
-            during forecast.
-        :type seismicity_models: [ramsis.datamodel.seismicity.SeismicityModel]
-        :return: Forecast with default scenario
-        :rtype: Forecast
-        """
-        forecast = Forecast(starttime=start_time,
-                            endtime=end_time)
-
-        scenario = ForecastScenario(name='Default Scenario')
-        scenario.injectionplan = InjectionPlan()
-        # TODO LH: See above. If the core needs to be referenced for
-        #   constructing this, this would justify using a builder pattern for
-        #   the whole construction process, i.e. moving all this code to
-        #   somewhere else.
-        scenario.config = DEFAULT_SCENARIO_CONFIG
-
-        # TODO LH: Depending on how the other stages will be implemented we
-        #   might want to generalize this by providing the respective models
-        #   to each stage on creation.
-        scenario.stages = [ForecastStage.create(stage_type)
-                           for stage_type in EStage]
-        try:
-            seismicity_forecast_stage = \
-                next((s for s in scenario.stages
-                      if isinstance(s, SeismicityForecastStage)), None)
-        except StopIteration:
-            pass
-        else:
-            seismicity_forecast_stage.prepare_runs(seismicity_models)
-
-        forecast.scenarios = [scenario]
-        return forecast
 
     def __iter__(self):
         for s in self.scenarios:
@@ -256,18 +196,6 @@ class SeismicityForecastStage(ForecastStage):
     __mapper_args__ = {
         'polymorphic_identity': EStage.SEISMICITY,
     }
-
-    def prepare_runs(self, models):
-        """
-        Prepare runs for seismicity models
-
-        :param models: Global seismicity model configs to prepare runs for.
-
-        """
-        for model in models:
-            run = SeismicityModelRun()
-            run.model = model
-            self.runs.append(run)
 
     def reset(self):
         for run in self.runs:
