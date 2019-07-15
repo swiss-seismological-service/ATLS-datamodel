@@ -63,6 +63,34 @@ class SeismicCatalog(DeleteMultiParentOrphanMixin(['project', 'forecast']),
         except TypeError:
             if filter_cond is None:
                 self.events = []
+            else:
+                raise
+
+    def merge(self, cat):
+        """
+        Merge events from :code:`cat` into the seismic catalog. The merging
+        strategy applied is a *delete by time* strategy i.e. events overlapping
+        with respect to the :code:`datetime_value` attribute value are
+        overwritten with by events from :code:`cat`.
+
+        :param cat: Seismic catalog the events are merged from.
+        :type cat: :py:class:`SeismicCatalog`
+        """
+        assert isinstance(cat, type(self)), \
+            "cat is not of type SeismicCatalog."
+
+        first_event = min(e.datetime_value for e in cat.events)
+        last_event = max(e.datetime_value for e in cat.events)
+
+        def filter_by_overlapping_datetime(e):
+            return (e.datetime_value >= first_event and
+                    e.datetime_value <= last_event)
+
+        self.reduce(filter_cond=filter_by_overlapping_datetime)
+
+        # merge
+        for e in cat.events:
+            self.events.append(e.copy())
 
     def __getitem__(self, item):
         return self.events[item] if self.events else None
