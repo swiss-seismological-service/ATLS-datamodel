@@ -55,3 +55,11 @@ class GISDBTestCase(unittest.TestCase):
 
     def test_create_tables(self):
         self.assertIsNone(ORMBase.metadata.create_all(self.engine))
+
+
+def suite():
+    return unittest.makeSuite(GISDBTestCase, 'test')
+
+
+if __name__ == '__main__':
+    unittest.main(defaultTest='suite')

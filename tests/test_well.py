@@ -112,3 +112,11 @@ class InjectionWellTestCase(unittest.TestCase):
         bh.sections = [s0, s1]
 
         self.assertEqual(bh.injectionpoint, reference_result)
+
+
+def suite():
+    return unittest.makeSuite(InjectionWellTestCase, 'test')
+
+
+if __name__ == '__main__':
+    unittest.main(defaultTest='suite')
