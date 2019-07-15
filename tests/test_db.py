@@ -50,15 +50,8 @@ class GISDBTestCase(unittest.TestCase):
         conn.execute(select([func.InitSpatialMetaData()]))
         conn.close()
 
-    # setUp ()
-
     def tearDown(self):
         os.remove(self.path_db)
 
     def test_create_tables(self):
         self.assertIsNone(ORMBase.metadata.create_all(self.engine))
-
-# class GISDBTestCase
-
-
-# ----- END OF test_db.py -----

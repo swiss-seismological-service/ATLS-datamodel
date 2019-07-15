@@ -69,3 +69,11 @@ class SeismicCatalogTestCase(unittest.TestCase):
         self.assertEqual(
             SeismicEvent(datetime_value=datetime.datetime(2020, 1, 1, 4, 30)),
             c1.events[8])
+
+
+def suite():
+    return unittest.makeSuite(SeismicCatalogTestCase, 'test')
+
+
+if __name__ == '__main__':
+    unittest.main(defaultTest='suite')
