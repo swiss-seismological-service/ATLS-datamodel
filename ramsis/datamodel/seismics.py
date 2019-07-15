@@ -58,7 +58,8 @@ class SeismicCatalog(DeleteMultiParentOrphanMixin(['project', 'forecast']),
         :type filter_cond: callable or None
         """
         try:
-            self.events = filter(lambda e: not filter_cond(e), self.events)
+            self.events = list(
+                filter(lambda e: not filter_cond(e), self.events))
         except TypeError:
             if filter_cond is None:
                 self.events = []
