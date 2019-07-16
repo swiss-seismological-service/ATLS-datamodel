@@ -37,6 +37,9 @@ class Hydraulics(CreationInfoMixin, ORMBase):
     def __getitem__(self, item):
         return self.samples[item] if self.samples else None
 
+    def __len__(self):
+        return len(self.samples)
+
     def __repr__(self):
         return '<%s(creationtime=%s, samples=%d)>' % (
             type(self).__name__, self.creationinfo_creationtime,
@@ -74,6 +77,9 @@ class InjectionPlan(CreationInfoMixin, ORMBase):
 
     def __getitem__(self, item):
         return self.samples[item] if self.samples else None
+
+    def __len__(self):
+        return len(self.samples)
 
     def __repr__(self):
         return '<%s(creationtime=%s, samples=%d)>' % (
