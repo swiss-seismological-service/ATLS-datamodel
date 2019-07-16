@@ -80,18 +80,19 @@ class SeismicCatalog(DeleteMultiParentOrphanMixin(['project', 'forecast']),
         assert isinstance(cat, type(self)), \
             "cat is not of type SeismicCatalog."
 
-        first_event = min(e.datetime_value for e in cat.events)
-        last_event = max(e.datetime_value for e in cat.events)
+        if cat.events:
+            first_event = min(e.datetime_value for e in cat.events)
+            last_event = max(e.datetime_value for e in cat.events)
 
-        def filter_by_overlapping_datetime(e):
-            return (e.datetime_value >= first_event and
-                    e.datetime_value <= last_event)
+            def filter_by_overlapping_datetime(e):
+                return (e.datetime_value >= first_event and
+                        e.datetime_value <= last_event)
 
-        self.reduce(filter_cond=filter_by_overlapping_datetime)
+            self.reduce(filter_cond=filter_by_overlapping_datetime)
 
-        # merge
-        for e in cat.events:
-            self.events.append(e.copy())
+            # merge
+            for e in cat.events:
+                self.events.append(e.copy())
 
     def __getitem__(self, item):
         return self.events[item] if self.events else None
