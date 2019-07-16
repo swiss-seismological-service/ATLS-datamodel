@@ -19,7 +19,7 @@ from ramsis.datamodel.utils import clone
 
 class Hydraulics(CreationInfoMixin, ORMBase):
     """
-    ORM representation of a hydraulics time series.
+    ORM representation of a hydraulic time series.
     """
     # relation: HydraulicSample
     samples = relationship('HydraulicSample',
@@ -55,6 +55,51 @@ class Hydraulics(CreationInfoMixin, ORMBase):
         snap.samples = [s.copy() for s in self.samples if filter_cond(s)]
 
         return snap
+
+    def reduce(self, filter_cond=None):
+        """
+        Remove samples from the hydraulic time series.
+
+        :param filter_cond: Callable applied to hydraulic samples when removing
+            events. Events matching the condition are removed. If
+            :code:`filter_cond` is :code:`None` all samples are removed.
+        :type filter_cond: callable or None
+        """
+        try:
+            self.samples = list(
+                filter(lambda e: not filter_cond(e), self.samples))
+        except TypeError:
+            if filter_cond is None:
+                self.samples = []
+            else:
+                raise
+
+    def merge(self, other):
+        """
+        Merge samples from :code:`other` into the hydraulics. The merging
+        strategy applied is a *delete by time* strategy i.e. samples
+        overlapping with respect to the :code:`datetime_value` attribute value
+        are overwritten with by samples from :code:`other`.
+
+        :param other: Hydraulics to be merged
+        :type other: :py:class:`Hydraulics`
+        """
+        assert isinstance(other, type(self)), \
+            "other is not of type Hydraulics."
+
+        if other.samples:
+            first_sample = min(e.datetime_value for e in other.samples)
+            last_sample = max(e.datetime_value for e in other.samples)
+
+            def filter_by_overlapping_datetime(s):
+                return (s.datetime_value >= first_sample and
+                        s.datetime_value <= last_sample)
+
+            self.reduce(filter_cond=filter_by_overlapping_datetime)
+
+            # merge
+            for s in other.samples:
+                self.samples.append(s.copy())
 
     def __eq__(self, other):
         if isinstance(other, Hydraulics):
