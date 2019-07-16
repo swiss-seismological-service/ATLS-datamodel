@@ -11,6 +11,7 @@ from sqlalchemy.orm import relationship, class_mapper
 from ramsis.datamodel.base import (ORMBase, CreationInfoMixin,
                                    RealQuantityMixin, TimeQuantityMixin,
                                    DeleteMultiParentOrphanMixin)
+from ramsis.datamodel.utils import clone
 
 
 class SeismicCatalog(DeleteMultiParentOrphanMixin(['project', 'forecast']),
@@ -141,26 +142,7 @@ class SeismicEvent(TimeQuantityMixin('datetime'),
         :returns: Copy of seismic event
         :rtype: :py:class:`SeismicEvent`
         """
-        mapper = class_mapper(type(self))
-        new = type(self)()
-
-        pk_keys = set([c.key for c in mapper.primary_key])
-        rel_keys = set([c.key for c in mapper.relationships])
-        omit = pk_keys | rel_keys
-
-        if with_foreignkeys:
-            fk_keys = set([c.key for c in mapper.columns if c.foreign_keys])
-            omit = omit | fk_keys
-
-        for attr in [p.key for p in mapper.iterate_properties
-                     if p.key not in omit]:
-            try:
-                value = getattr(self, attr)
-                setattr(new, attr, value)
-            except AttributeError:
-                pass
-
-        return new
+        return clone(self, with_foreignkeys=with_foreignkeys)
 
     def __lt__(self, other):
         if isinstance(other, SeismicEvent):
