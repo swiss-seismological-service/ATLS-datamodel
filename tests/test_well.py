@@ -241,9 +241,179 @@ class InjectionWellTestCase(unittest.TestCase):
         self.assertNotEqual(id(bh_hydraulics), id(snap_hydraulics))
         self.assertEqual(bh_hydraulics, snap_hydraulics)
 
+    def test_merge_update_mutable(self):
+        bh_id = str(uuid.uuid4())
+        dt = datetime.datetime(2020, 1, 1)
+        delta = datetime.timedelta(days=365)
+
+        bh0 = InjectionWell(
+            publicid=bh_id,
+            creationinfo_creationtime=dt)
+
+        bh1 = InjectionWell(
+            publicid=bh_id,
+            creationinfo_creationtime=dt + delta)
+
+        bh0.merge(bh1)
+
+        self.assertEqual(bh0.creationinfo_creationtime, dt + delta)
+
+    def test_merge_update_section(self):
+        bh_id = str(uuid.uuid4())
+        dt = datetime.datetime(2020, 1, 1)
+        delta = datetime.timedelta(days=365)
+
+        sec_id = str(uuid.uuid4())
+        s0 = WellSection(publicid=sec_id,
+                         starttime=dt,
+                         endtime=None)
+        s1 = WellSection(publicid=sec_id,
+                         starttime=dt,
+                         endtime=dt + delta)
+
+        bh0 = InjectionWell(
+            publicid=bh_id,
+            sections=[s0, ])
+
+        bh1 = InjectionWell(
+            publicid=bh_id,
+            sections=[s1, ])
+
+        bh0.merge(bh1)
+
+        self.assertEqual(bh0.sections[0].endtime, dt + delta)
+
+    def test_merge_append_section(self):
+        bh_id = str(uuid.uuid4())
+        dt = datetime.datetime(2020, 1, 1)
+        delta = datetime.timedelta(days=365)
+
+        sec_id0 = str(uuid.uuid4())
+        s0 = WellSection(publicid=sec_id0,
+                         starttime=dt,
+                         endtime=None)
+        sec_id1 = str(uuid.uuid4())
+        s1 = WellSection(publicid=sec_id1,
+                         starttime=dt + delta,
+                         endtime=None)
+
+        bh0 = InjectionWell(
+            publicid=bh_id,
+            sections=[s0, ])
+
+        bh1 = InjectionWell(
+            publicid=bh_id,
+            sections=[s1, ])
+
+        bh0.merge(bh1)
+
+        self.assertEqual(len(bh0.sections), 2)
+
+
+class WellSectionTestCase(unittest.TestCase):
+    """
+    Test cases for :py:class:`ramsis.datamodel.well.WellSection`.
+    """
+
+    def test_merge_update_mutable(self):
+        dt = datetime.datetime(2020, 1, 1)
+        interval = datetime.timedelta(seconds=3600)
+        num_samples = 7
+        delta_flow = 0.1
+        samples = [
+            HydraulicSample(datetime_value=dt + i * interval,
+                            topflow_value=i,
+                            bottomflow_value=i - delta_flow)
+            for i in range(num_samples)]
+        sec_id = str(uuid.uuid4())
+        s0 = WellSection(publicid=sec_id,
+                         starttime=dt,
+                         endtime=None,
+                         toplongitude_value=8.925293642,
+                         toplatitude_value=46.90669014,
+                         topdepth_value=0,
+                         bottomlongitude_value=9,
+                         bottomlatitude_value=47,
+                         bottomdepth_value=500,
+                         holediameter_value=0.3,
+                         casingdiameter_value=0.25,
+                         hydraulics=Hydraulics(samples=samples))
+        s1 = WellSection(publicid=sec_id,
+                         starttime=dt,
+                         endtime=dt + (num_samples - 1) * interval,
+                         toplongitude_value=8.925293642,
+                         toplatitude_value=46.90669014,
+                         topdepth_value=0,
+                         bottomlongitude_value=9,
+                         bottomlatitude_value=47,
+                         bottomdepth_value=500,
+                         holediameter_value=0.3,
+                         casingdiameter_value=0.25)
+
+        s0.merge(s1)
+
+        self.assertEqual(s0.endtime, dt + (num_samples - 1) * interval)
+        self.assertEqual(len(samples), len(s0.hydraulics.samples))
+
+    def test_merge_append_samples(self):
+        dt0 = datetime.datetime(2020, 1, 1)
+        interval = datetime.timedelta(seconds=3600)
+        num_samples = 7
+        delta_flow = 0.1
+        samples0 = [
+            HydraulicSample(datetime_value=dt0 + i * interval,
+                            topflow_value=i,
+                            bottomflow_value=i - delta_flow)
+            for i in range(num_samples)]
+
+        dt1 = datetime.datetime(2021, 1, 1)
+        samples1 = [
+            HydraulicSample(datetime_value=dt1 + i * interval,
+                            topflow_value=i,
+                            bottomflow_value=i - delta_flow)
+            for i in range(num_samples)]
+
+        sec_id = str(uuid.uuid4())
+        s0 = WellSection(publicid=sec_id,
+                         starttime=dt0,
+                         endtime=None,
+                         toplongitude_value=8.925293642,
+                         toplatitude_value=46.90669014,
+                         topdepth_value=0,
+                         bottomlongitude_value=9,
+                         bottomlatitude_value=47,
+                         bottomdepth_value=500,
+                         holediameter_value=0.3,
+                         casingdiameter_value=0.25,
+                         hydraulics=Hydraulics(samples=samples0))
+        s1 = WellSection(publicid=sec_id,
+                         starttime=dt1,
+                         endtime=None,
+                         toplongitude_value=8.925293642,
+                         toplatitude_value=46.90669014,
+                         topdepth_value=0,
+                         bottomlongitude_value=9,
+                         bottomlatitude_value=47,
+                         bottomdepth_value=500,
+                         holediameter_value=0.3,
+                         casingdiameter_value=0.25,
+                         hydraulics=Hydraulics(samples=samples1))
+
+        s0.merge(s1)
+
+        self.assertEqual(s0.starttime, dt0)
+        self.assertEqual(len(s0.hydraulics.samples),
+                         len(samples0) + len(samples1))
+        self.assertEqual(s0.hydraulics[0].datetime_value, dt0)
+        self.assertEqual(s0.hydraulics[-1].datetime_value,
+                         dt1 + (num_samples - 1) * interval)
+
 
 def suite():
-    return unittest.makeSuite(InjectionWellTestCase, 'test')
+    suite = unittest.makeSuite(InjectionWellTestCase, 'test')
+    suite.addTest(
+        unittest.makeSuite(WellSectionTestCase, 'test'))
+    return suite
 
 
 if __name__ == '__main__':
