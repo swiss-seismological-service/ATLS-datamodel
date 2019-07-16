@@ -3,6 +3,8 @@
 Injection well ORM facilities.
 """
 
+import inspect
+
 from sqlalchemy import Column, Integer, Boolean, String, ForeignKey
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
@@ -11,6 +13,12 @@ from ramsis.datamodel.base import (ORMBase, CreationInfoMixin, PublicIDMixin,
                                    UniqueOpenEpochMixin, RealQuantityMixin,
                                    DeleteMultiParentOrphanMixin)
 from ramsis.datamodel.utils import clone
+
+
+_ci_attrs = inspect.getmembers(CreationInfoMixin,
+                               lambda a: not(inspect.isroutine(a)))
+_ci_attrs = [a[0] for a in _ci_attrs if not(a[0].startswith('__') and
+                                            a[0].endswith('__'))]
 
 
 class InjectionWell(DeleteMultiParentOrphanMixin(['project',
@@ -102,9 +110,44 @@ class InjectionWell(DeleteMultiParentOrphanMixin(['project',
                                               self.sections))]
         return snap
 
+    def merge(self, other):
+        """
+        Merge this injection well with another injection well.
+
+        :param other: Injection well to be merged
+        :type other: :py:class:`InjectionWell`
+        """
+        assert isinstance(other, type(self)), \
+            "other is not of type InjectionWell."
+
+        if self.publicid == other.publicid:
+
+            MUTABLE_ATTRS = _ci_attrs
+            for attr in MUTABLE_ATTRS:
+                value = getattr(other, attr)
+                setattr(self, attr, value)
+
+            for sec in other.sections:
+                _sec = self[sec.publicid]
+                if _sec is None:
+                    self.sections.append(sec)
+                else:
+                    _sec.merge(sec)
+
     def __iter__(self):
         for s in self.sections:
             yield s
+
+    def __getitem__(self, item):
+        if isinstance(item, str):
+            for k, v in enumerate(self.sections):
+                if v.publicid == item:
+                    item = k
+                    break
+            else:
+                return None
+
+        return self.sections[item] if self.sections else None
 
     def __repr__(self):
         return ("<{}(publicid={!r}, longitude={}, latitude={}, "
@@ -163,3 +206,28 @@ class WellSection(PublicIDMixin,
         snap.hydraulics = self.hydraulics.snapshot(filter_cond=filter_cond)
 
         return snap
+
+    def merge(self, other):
+        """
+        Merge this well section with another well section.
+
+        :param other: Well section to be merged
+        :type other: :py:class:`WellSection`
+        """
+        assert isinstance(other, type(self)) or other is None, \
+            "other is not of type WellSection."
+
+        if other and self.publicid == other.publicid:
+
+            MUTABLE_ATTRS = _ci_attrs
+            MUTABLE_ATTRS.append('endtime')
+
+            # update mutable attributes
+            for attr in MUTABLE_ATTRS:
+                value = getattr(other, attr)
+                setattr(self, attr, value)
+
+            if self.hydraulics:
+                self.hydraulics.merge(other.hydraulics)
+            elif other.hydraulics:
+                self.hydraulics = other.hydraulics.snapshot()
