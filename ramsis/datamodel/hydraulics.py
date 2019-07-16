@@ -84,10 +84,10 @@ class Hydraulics(CreationInfoMixin, ORMBase):
         :param other: Hydraulics to be merged
         :type other: :py:class:`Hydraulics`
         """
-        assert isinstance(other, type(self)), \
+        assert isinstance(other, type(self)) or other is None, \
             "other is not of type Hydraulics."
 
-        if other.samples:
+        if other and other.samples:
             first_sample = min(e.datetime_value for e in other.samples)
             last_sample = max(e.datetime_value for e in other.samples)
 
