@@ -70,6 +70,80 @@ class SeismicCatalogTestCase(unittest.TestCase):
             SeismicEvent(datetime_value=datetime.datetime(2020, 1, 1, 4, 30)),
             c1.events[8])
 
+    def test_merge_empty(self):
+        c1_first_event = datetime.datetime(2020, 1, 1)
+        c1_interval = datetime.timedelta(seconds=3600)
+        c1_num_events = 7
+
+        c1 = SeismicCatalog(
+            events=[SeismicEvent(
+                datetime_value=c1_first_event + i * c1_interval)
+                for i in range(c1_num_events)])
+
+        c2 = SeismicCatalog()
+
+        c1.merge(c2)
+
+        self.assertEqual(
+            SeismicEvent(datetime_value=datetime.datetime(2020, 1, 1)),
+            c1.events[0])
+        self.assertEqual(
+            SeismicEvent(datetime_value=datetime.datetime(2020, 1, 1, 1)),
+            c1.events[1])
+        self.assertEqual(
+            SeismicEvent(datetime_value=datetime.datetime(2020, 1, 1, 2)),
+            c1.events[2])
+        self.assertEqual(
+            SeismicEvent(datetime_value=datetime.datetime(2020, 1, 1, 3)),
+            c1.events[3])
+        self.assertEqual(
+            SeismicEvent(datetime_value=datetime.datetime(2020, 1, 1, 4)),
+            c1.events[4])
+        self.assertEqual(
+            SeismicEvent(datetime_value=datetime.datetime(2020, 1, 1, 5)),
+            c1.events[5])
+        self.assertEqual(
+            SeismicEvent(datetime_value=datetime.datetime(2020, 1, 1, 6)),
+            c1.events[6])
+
+    def test_merge_single(self):
+        c1_first_event = datetime.datetime(2020, 1, 1)
+        c1_interval = datetime.timedelta(seconds=3600)
+        c1_num_events = 7
+
+        c1 = SeismicCatalog(
+            events=[SeismicEvent(
+                datetime_value=c1_first_event + i * c1_interval)
+                for i in range(c1_num_events)])
+
+        c2 = SeismicCatalog(
+            events=[SeismicEvent(
+                datetime_value=datetime.datetime(2020, 1, 1, 3))])
+
+        c1.merge(c2)
+
+        self.assertEqual(
+            SeismicEvent(datetime_value=datetime.datetime(2020, 1, 1)),
+            c1.events[0])
+        self.assertEqual(
+            SeismicEvent(datetime_value=datetime.datetime(2020, 1, 1, 1)),
+            c1.events[1])
+        self.assertEqual(
+            SeismicEvent(datetime_value=datetime.datetime(2020, 1, 1, 2)),
+            c1.events[2])
+        self.assertEqual(
+            SeismicEvent(datetime_value=datetime.datetime(2020, 1, 1, 4)),
+            c1.events[3])
+        self.assertEqual(
+            SeismicEvent(datetime_value=datetime.datetime(2020, 1, 1, 5)),
+            c1.events[4])
+        self.assertEqual(
+            SeismicEvent(datetime_value=datetime.datetime(2020, 1, 1, 6)),
+            c1.events[5])
+        self.assertEqual(
+            SeismicEvent(datetime_value=datetime.datetime(2020, 1, 1, 3)),
+            c1.events[6])
+
 
 def suite():
     return unittest.makeSuite(SeismicCatalogTestCase, 'test')
