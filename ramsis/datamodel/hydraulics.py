@@ -9,6 +9,7 @@ from sqlalchemy.orm import relationship, class_mapper
 from ramsis.datamodel.base import (ORMBase, CreationInfoMixin,
                                    RealQuantityMixin, TimeQuantityMixin,
                                    DeleteMultiParentOrphanMixin)
+from ramsis.datamodel.utils import clone
 
 # NOTE(damb): Currently, basically both Hydraulics and InjectionPlan implement
 # the same facilities i.e. a timeseries of hydraulics data shipping some
@@ -29,6 +30,31 @@ class Hydraulics(CreationInfoMixin, ORMBase):
     # relation: WellSection
     wellsection_id = Column(Integer, ForeignKey('wellsection.id'))
     wellsection = relationship('WellSection', back_populates='hydraulics')
+
+    def snapshot(self, filter_cond=None):
+        """
+        Snapshot hydraulics.
+
+        :param filter_cond: Filter conditions applied to samples when
+            performing the snapshot.
+        :type filter_cond: callable or None
+
+        :returns: Snapshot of hydraulics
+        :rtype: :py:class:`Hydraulics`
+        """
+        assert callable(filter_cond) or filter_cond is None, \
+            f"Invalid filter_cond: {filter_cond!r}"
+
+        if filter_cond is None:
+            def no_filter(s):
+                return True
+
+            filter_cond = no_filter
+
+        snap = type(self)()
+        snap.samples = [s.copy() for s in self.samples if filter_cond(s)]
+
+        return snap
 
     def __iter__(self):
         for s in self.samples:
@@ -121,6 +147,17 @@ class HydraulicSample(DeleteMultiParentOrphanMixin(['injectionplan',
                               ForeignKey('injectionplan.id'))
     injectionplan = relationship('InjectionPlan',
                                  back_populates='samples')
+
+    def copy(self, with_foreignkeys=False):
+        """
+        Copy a seismic event omitting primary keys.
+
+        :param bool with_foreignkeys: Include foreign keys while copying
+
+        :returns: Copy of seismic event
+        :rtype: :py:class:`SeismicEvent`
+        """
+        return clone(self, with_foreignkeys=with_foreignkeys)
 
     # TODO(damb): Is using functools.total_ordering an option?
     def __eq__(self, other):

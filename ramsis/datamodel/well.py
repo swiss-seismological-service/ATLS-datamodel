@@ -10,6 +10,7 @@ from sqlalchemy.orm import relationship
 from ramsis.datamodel.base import (ORMBase, CreationInfoMixin, PublicIDMixin,
                                    UniqueOpenEpochMixin, RealQuantityMixin,
                                    DeleteMultiParentOrphanMixin)
+from ramsis.datamodel.utils import clone
 
 
 class InjectionWell(DeleteMultiParentOrphanMixin(['project',
@@ -80,6 +81,27 @@ class InjectionWell(DeleteMultiParentOrphanMixin(['project',
                 isection.bottomlatitude_value,
                 isection.bottomdepth_value)
 
+    def snapshot(self, section_filter_cond=None, sample_filter_cond=None):
+        """
+        Create a snapshot of the injection well.
+
+        :param section_filter_cond: Callable applied on well sections when
+            creating the snapshot
+        :type section_filter_cond: callable or None
+        :param sample_filter_cond: Callable applied on hydraulic samples when
+            creating the snapshot
+        :type sample_filter_cond: callable or None
+
+        :returns: Snapshot of the injection well
+        :rtype: :py:class:`InjectionWell`
+        """
+        snap = type(self)()
+        snap.publicid = self.publicid
+        snap.sections = [s.snapshot(filter_cond=sample_filter_cond)
+                         for s in list(filter(section_filter_cond,
+                                              self.sections))]
+        return snap
+
     def __iter__(self):
         for s in self.sections:
             yield s
@@ -125,3 +147,19 @@ class WellSection(PublicIDMixin,
                                  back_populates='wellsection',
                                  uselist=False,
                                  cascade='all, delete-orphan')
+
+    def snapshot(self, filter_cond=None):
+        """
+        Create a snapshot of the well section.
+
+        :param filter_cond: Callable applied on hydraulic samples when creating
+            the snapshot
+        :type filter_cond: callable or None
+
+        :returns: Snapshot of the well section
+        :rtype: :py:class:`WellSection`
+        """
+        snap = clone(self)
+        snap.hydraulics = self.hydraulics.snapshot(filter_cond=filter_cond)
+
+        return snap
