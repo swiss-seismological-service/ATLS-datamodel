@@ -215,8 +215,8 @@ class HydraulicSample(DeleteMultiParentOrphanMixin(['injectionplan',
 
         :param bool with_foreignkeys: Include foreign keys while copying
 
-        :returns: Copy of seismic event
-        :rtype: :py:class:`SeismicEvent`
+        :returns: Copy of hydraulic sample
+        :rtype: :py:class:`HydraulicSample`
         """
         return clone(self, with_foreignkeys=with_foreignkeys)
 
