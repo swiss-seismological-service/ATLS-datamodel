@@ -19,7 +19,7 @@ from ramsis.datamodel.utils import clone
 
 class Hydraulics(CreationInfoMixin, ORMBase):
     """
-    ORM representatio of a hydraulics time series.
+    ORM representation of a hydraulics time series.
     """
     # relation: HydraulicSample
     samples = relationship('HydraulicSample',
