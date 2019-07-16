@@ -56,6 +56,22 @@ class Hydraulics(CreationInfoMixin, ORMBase):
 
         return snap
 
+    def __eq__(self, other):
+        if isinstance(other, Hydraulics):
+            if len(self.samples) != len(other.samples):
+                return False
+
+            for i, j in zip(self.samples, other.samples):
+                if i != j:
+                    return False
+
+            return True
+
+        raise ValueError
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
     def __iter__(self):
         for s in self.samples:
             yield s
