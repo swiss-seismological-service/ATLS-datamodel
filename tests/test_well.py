@@ -19,6 +19,9 @@ from ramsis.datamodel.project import Project  # noqa
 
 
 class InjectionWellTestCase(unittest.TestCase):
+    """
+    Test cases for :py:class:`ramsis.datamodel.well.InjectionWell`.
+    """
 
     def test_longitude(self):
         reference_result = 8.925293642
