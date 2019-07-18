@@ -309,6 +309,33 @@ class InjectionWellTestCase(unittest.TestCase):
 
         self.assertEqual(len(bh0.sections), 2)
 
+    def test_merge_to_empty(self):
+        bh0 = InjectionWell()
+
+        bh_id = str(uuid.uuid4())
+        sec_id = str(uuid.uuid4())
+        dt = datetime.datetime(2020, 1, 1)
+        s0 = WellSection(publicid=sec_id,
+                         starttime=dt,
+                         endtime=None,
+                         toplongitude_value=8.925293642,
+                         toplatitude_value=46.90669014,
+                         topdepth_value=0,
+                         bottomlongitude_value=9,
+                         bottomlatitude_value=47,
+                         bottomdepth_value=500,
+                         holediameter_value=0.3,
+                         casingdiameter_value=0.25)
+        bh1 = InjectionWell(
+            publicid=bh_id,
+            sections=[s0, ])
+
+        bh0.merge(bh1, merge_undefined=True)
+
+        self.assertEqual(bh0.publicid, bh1.publicid)
+        self.assertEqual(len(bh0.sections), 1)
+        self.assertEqual(len(bh1.sections), 0)
+
 
 class WellSectionTestCase(unittest.TestCase):
     """
