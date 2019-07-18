@@ -120,6 +120,12 @@ class InjectionWell(DeleteMultiParentOrphanMixin(['project',
         assert isinstance(other, type(self)), \
             "other is not of type InjectionWell."
 
+        def section_lookup_by_publicid(publicid):
+            for k, v in enumerate(self.sections):
+                if v.publicid == publicid:
+                    return self[k]
+            return None
+
         if self.publicid == other.publicid:
 
             MUTABLE_ATTRS = _ci_attrs
@@ -128,7 +134,7 @@ class InjectionWell(DeleteMultiParentOrphanMixin(['project',
                 setattr(self, attr, value)
 
             for sec in other.sections:
-                _sec = self[sec.publicid]
+                _sec = section_lookup_by_publicid(sec.publicid)
                 if _sec is None:
                     self.sections.append(sec)
                 else:
@@ -139,15 +145,8 @@ class InjectionWell(DeleteMultiParentOrphanMixin(['project',
             yield s
 
     def __getitem__(self, item):
-        if isinstance(item, str):
-            for k, v in enumerate(self.sections):
-                if v.publicid == item:
-                    item = k
-                    break
-            else:
-                return None
-
         return self.sections[item] if self.sections else None
+
 
     def __repr__(self):
         return ("<{}(publicid={!r}, longitude={}, latitude={}, "
