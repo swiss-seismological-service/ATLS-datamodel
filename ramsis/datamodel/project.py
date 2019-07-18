@@ -10,6 +10,7 @@ from sqlalchemy.orm import relationship
 from ramsis.datamodel.base import (ORMBase, CreationInfoMixin, NameMixin,
                                    UniqueOpenEpochMixin)
 from ramsis.datamodel.seismics import SeismicCatalog
+from ramsis.datamodel.well import InjectionWell
 from ramsis.datamodel.settings import ProjectSettings
 
 
@@ -51,11 +52,12 @@ class Project(CreationInfoMixin, NameMixin, UniqueOpenEpochMixin, ORMBase):
         """
         Project initializer
 
-        Instantiates settings and the main seismic catalog which are both
-        integral parts of :class:`Project`.
+        Instantiates settings and *real-time* the project dependent
+        infrastructure (i.e. a seismic catalog and injectionwell).
         """
         super().__init__(**kwargs)
         self.settings = ProjectSettings()
         if 'starttime' in kwargs:
             self.settings.forecast_start = kwargs['starttime']
         self.seismiccatalog = SeismicCatalog()
+        self.wells = [InjectionWell()]
