@@ -147,7 +147,6 @@ class InjectionWell(DeleteMultiParentOrphanMixin(['project',
     def __getitem__(self, item):
         return self.sections[item] if self.sections else None
 
-
     def __repr__(self):
         return ("<{}(publicid={!r}, longitude={}, latitude={}, "
                 "depth={})>").format(type(self).__name__, self.publicid,
