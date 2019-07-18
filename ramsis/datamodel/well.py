@@ -53,18 +53,24 @@ class InjectionWell(DeleteMultiParentOrphanMixin(['project',
 
     @hybrid_property
     def longitude(self):
+        if not self.sections:
+            return None
         # min topdepth defines top-section
         return min([s for s in self.sections],
                    key=lambda x: x.topdepth_value).toplongitude_value
 
     @hybrid_property
     def latitude(self):
+        if not self.sections:
+            return None
         # min topdepth defines top-section
         return min([s for s in self.sections],
                    key=lambda x: x.topdepth_value).toplatitude_value
 
     @hybrid_property
     def depth(self):
+        if not self.sections:
+            return None
         # max bottomdepth defines bottom-section
         return max([s.bottomdepth_value for s in self.sections])
 
