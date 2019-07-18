@@ -116,12 +116,16 @@ class InjectionWell(DeleteMultiParentOrphanMixin(['project',
                                               self.sections))]
         return snap
 
-    def merge(self, other):
+    def merge(self, other, merge_undefined=True):
         """
         Merge this injection well with another injection well.
 
         :param other: Injection well to be merged
         :type other: :py:class:`InjectionWell`
+        :param bool merge_undefined: Merge :code:`other` into the injection
+            well if the well is undefined (i.e. if the :code:`publicid` is not
+            specified). Note, that the well's sections are removed and
+            substituted by the sections of :code:`other`.
         """
         assert isinstance(other, type(self)), \
             "other is not of type InjectionWell."
@@ -145,6 +149,11 @@ class InjectionWell(DeleteMultiParentOrphanMixin(['project',
                     self.sections.append(sec)
                 else:
                     _sec.merge(sec)
+        elif merge_undefined and not self.publicid:
+            self.publicid = other.publicid
+            self.sections = []
+            for sec in other.sections:
+                self.sections.append(sec)
 
     def __iter__(self):
         for s in self.sections:
