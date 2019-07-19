@@ -67,32 +67,56 @@ class SeismicCatalog(DeleteMultiParentOrphanMixin(['project', 'forecast']),
             else:
                 raise
 
-    def merge(self, cat):
+    def merge(self, cat, starttime=None, endtime=None):
         """
         Merge events from :code:`cat` into the seismic catalog. The merging
         strategy applied is a *delete by time* strategy i.e. events overlapping
         with respect to the :code:`datetime_value` attribute value are
-        overwritten with by events from :code:`cat`.
+        overwritten with by events from :code:`cat`. In addition, the merging
+        time window can be modified using the :code:`starttime` and
+        :code:`endtime` parameters.
 
         :param cat: Seismic catalog the events are merged from.
         :type cat: :py:class:`SeismicCatalog`
+        :param starttime: Force datetime to merge from
+        :type starttime: :py:class:`datetime.datetime` or None
+        :param endtime: Force datetime to merge until
+        :type endtime: :py:class:`datetime.datetime` or None
+
+        .. note::
+            :code:`starttime` and :code:`endtime` parameters are evaluated
+            only if :code:`cat` contains events. To remove events from the
+            catalog see :py:meth:`~.SeismicCatalog.reduce`.
         """
         assert isinstance(cat, type(self)), \
             "cat is not of type SeismicCatalog."
 
         if cat.events:
-            first_event = min(e.datetime_value for e in cat.events)
-            last_event = max(e.datetime_value for e in cat.events)
+            if None not in (starttime, endtime) and starttime >= endtime:
+                raise ValueError('starttime >= endtime.')
+
+            merge_begin = starttime
+            merge_end = endtime
+            if not merge_begin:
+                merge_begin = min(e.datetime_value for e in cat.events)
+            if not merge_end:
+                merge_end = max(e.datetime_value for e in cat.events)
+
+            if merge_begin > merge_end:
+                raise ValueError('merge_begin > merge_end: '
+                                 f'{merge_begin} > {merge_end}')
 
             def filter_by_overlapping_datetime(e):
-                return (e.datetime_value >= first_event and
-                        e.datetime_value <= last_event)
+                return (e.datetime_value >= merge_begin and
+                        e.datetime_value <= merge_end)
 
             self.reduce(filter_cond=filter_by_overlapping_datetime)
 
             # merge
             for e in cat.events:
-                self.events.append(e.copy())
+                if (e.datetime_value >= merge_begin and
+                        e.datetime_value <= merge_end):
+                    self.events.append(e.copy())
 
     def __getitem__(self, item):
         return self.events[item] if self.events else None
