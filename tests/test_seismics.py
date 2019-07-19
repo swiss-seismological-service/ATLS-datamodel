@@ -144,6 +144,25 @@ class SeismicCatalogTestCase(unittest.TestCase):
             SeismicEvent(datetime_value=datetime.datetime(2020, 1, 1, 3)),
             c1.events[6])
 
+    def test_merge_into_empty(self):
+
+        c1 = SeismicCatalog()
+
+        c2_first_event = datetime.datetime(2020, 1, 1)
+        c2_interval = datetime.timedelta(seconds=3600)
+        c2_num_events = 7
+
+        c2 = SeismicCatalog(
+            events=[SeismicEvent(
+                datetime_value=c2_first_event + i * c2_interval, magnitude=i)
+                for i in range(c2_num_events)])
+
+        c1.merge(c2)
+
+        self.assertEqual(len(c1), len(c2))
+        for e_c1, e_c2 in zip(c1, c2):
+            self.assertEqual(e_c1, e_c2)
+
 
 def suite():
     return unittest.makeSuite(SeismicCatalogTestCase, 'test')
