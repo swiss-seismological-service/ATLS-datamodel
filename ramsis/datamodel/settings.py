@@ -100,6 +100,8 @@ class ProjectSettings(Settings):
     __mapper_args__ = {'polymorphic_identity': 'project'}
     __table_args__ = {'extend_existing': True}
 
+    # FIXME(damb): Separate application settings from
+    # project/forecast/scenario settings
     DEFAULTS = {
         'fdsnws_enable': False,
         'fdsnws_url': None,
