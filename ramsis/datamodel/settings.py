@@ -89,6 +89,9 @@ class Settings(collections.UserDict, NameMixin, ORMBase,
         """
         self.config = json.dumps(self.data, indent=4, default=datetime_encoder)
 
+    def __hash__(self):
+        return self.id
+
 
 class ProjectSettings(Settings):
     __tablename__ = 'settings'
