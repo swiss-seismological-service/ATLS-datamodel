@@ -26,6 +26,7 @@ class Forecast(CreationInfoMixin,
     their corresponding results) and the real *input* data i.e. both a
     :py:class:`SeismicCatalog` and :py:class:`InjectionWell`.
     """
+    enabled = Column(Boolean, default=True)
     # relation: Project
     project_id = Column(Integer, ForeignKey('project.id'))
     project = relationship('Project', back_populates='forecasts')
@@ -81,6 +82,7 @@ class ForecastScenario(NameMixin, ORMBase):
 
     """
     config = Column(MutableDict.as_mutable(JSONEncodedDict))
+    enabled = Column(Boolean, default=True)
 
     reservoirgeom = Column(Geometry(geometry_type='GEOMETRYZ',
                                     dimension=3,
