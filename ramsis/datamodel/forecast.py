@@ -50,6 +50,10 @@ class Forecast(CreationInfoMixin,
         for s in self.scenarios:
             yield s
 
+    def append(self, scenario):
+        if isinstance(scenario, ForecastScenario):
+            self.scenarios.append(scenario)
+
     def reset(self):
         """
         Resets the forecast by deleting all results
