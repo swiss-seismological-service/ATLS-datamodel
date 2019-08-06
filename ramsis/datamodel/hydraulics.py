@@ -106,8 +106,9 @@ class Hydraulics(CreationInfoMixin, ORMBase):
             if len(self.samples) != len(other.samples):
                 return False
 
-            if any(i != j for i, j in zip(self.samples, other.samples)):
-                return False
+            for i, j in zip(self.samples, other.samples):
+                if i != j:
+                    return False
 
             return True
 
