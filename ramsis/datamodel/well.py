@@ -23,7 +23,7 @@ _ci_attrs = [a[0] for a in _ci_attrs if not(a[0].startswith('__') and
 
 class InjectionWell(DeleteMultiParentOrphanMixin(['project',
                                                   'forecast',
-                                                  'forecastscenario']),
+                                                  'scenario']),
                     PublicIDMixin,
                     CreationInfoMixin,
                     RealQuantityMixin('bedrockdepth', optional=True),
