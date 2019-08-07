@@ -74,7 +74,7 @@ class Settings(collections.UserDict, NameMixin, ORMBase,
     @reconstructor
     def init_on_load(self):
         self.data = (json.loads(self.config,
-                                object_hook=datetime.datetime_decoder)
+                                object_hook=datetime_decoder)
                      if self.config else {})
 
     def commit(self):
@@ -88,7 +88,9 @@ class Settings(collections.UserDict, NameMixin, ORMBase,
 
         """
         self.config = json.dumps(self.data, indent=4, default=datetime_encoder)
-        self.settings_changed.emit(self)
+
+    def __hash__(self):
+        return self.id
 
 
 class ProjectSettings(Settings):
@@ -101,6 +103,8 @@ class ProjectSettings(Settings):
     __mapper_args__ = {'polymorphic_identity': 'project'}
     __table_args__ = {'extend_existing': True}
 
+    # FIXME(damb): Separate application settings from
+    # project/forecast/scenario settings
     DEFAULTS = {
         'fdsnws_enable': False,
         'fdsnws_url': None,

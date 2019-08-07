@@ -2,16 +2,16 @@
 """
 Forecast related ORM facilities.
 """
-
+from enum import Enum
 from geoalchemy2 import Geometry
-from sqlalchemy import Column, Boolean, Enum, Integer, ForeignKey
+import sqlalchemy
+from sqlalchemy import Column, Boolean, Integer, ForeignKey
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 
 from ramsis.datamodel.base import (ORMBase, NameMixin, CreationInfoMixin,
                                    EpochMixin)
-from ramsis.datamodel.model import EModel
 from ramsis.datamodel.type import JSONEncodedDict
 
 
@@ -26,18 +26,18 @@ class Forecast(CreationInfoMixin,
     their corresponding results) and the real *input* data i.e. both a
     :py:class:`SeismicCatalog` and :py:class:`InjectionWell`.
     """
+    enabled = Column(Boolean, default=True)
     # relation: Project
     project_id = Column(Integer, ForeignKey('project.id'))
     project = relationship('Project', back_populates='forecasts')
-    # XXX(damb): Catalogs used for a forecast are snapshots. Thus, a
-    # delete-orphan is appropriate.
     seismiccatalog = relationship('SeismicCatalog',
                                   uselist=False,
                                   back_populates='forecast',
-                                  cascade='all, delete-orphan')
+                                  cascade='all')
     well = relationship('InjectionWell',
                         uselist=False,
-                        back_populates='forecast')
+                        back_populates='forecast',
+                        cascade='all')
     scenarios = relationship('ForecastScenario',
                              back_populates='forecast',
                              cascade='all, delete-orphan')
@@ -49,6 +49,23 @@ class Forecast(CreationInfoMixin,
     def __iter__(self):
         for s in self.scenarios:
             yield s
+
+    def append(self, scenario):
+        if isinstance(scenario, ForecastScenario):
+            self.scenarios.append(scenario)
+
+    def reset(self):
+        """
+        Resets the forecast by deleting all results
+
+        This keeps the configuration and scenarios but deletes anything that
+        is a result of running the forecast, including the catalog snapshot.
+        After reset a forecast can be re-run.
+
+        """
+        self.seismiccatalog = None
+        for scenario in self.scenarios:
+            scenario.reset()
 
 
 class ForecastScenario(NameMixin, ORMBase):
@@ -69,6 +86,7 @@ class ForecastScenario(NameMixin, ORMBase):
 
     """
     config = Column(MutableDict.as_mutable(JSONEncodedDict))
+    enabled = Column(Boolean, default=True)
 
     reservoirgeom = Column(Geometry(geometry_type='GEOMETRYZ',
                                     dimension=3,
@@ -81,9 +99,30 @@ class ForecastScenario(NameMixin, ORMBase):
     # relation: InjectionWell
     well = relationship('InjectionWell',
                         uselist=False,
-                        back_populates='scenario')
+                        back_populates='scenario',
+                        cascade='all')
     # XXX(damb): How to perform the cascade?
     # cascade='all, delete-orphan')
+    stages = relationship('ForecastStage', back_populates='scenario',
+                          cascade='all, delete-orphan')
+
+    def reset(self):
+        """
+        Resets the forecast scenario by deleting all results
+
+        This keeps the configuration and scenarios but deletes any computed
+        results. After that, the scenario can be re-run
+
+        """
+        for stage in self.stages:
+            stage.reset()
+
+
+class EStage(Enum):
+    SEISMICITY = 0
+    SEISMICITY_SKILL = 1
+    HAZARD = 2
+    RISK = 3
 
 
 class ForecastStage(ORMBase):
@@ -103,7 +142,10 @@ class ForecastStage(ORMBase):
     """
     config = Column(MutableDict.as_mutable(JSONEncodedDict))
     enabled = Column(Boolean, default=True)
-    _type = Column(Enum(EModel))
+    _type = Column(sqlalchemy.Enum(EStage))
+
+    scenario_id = Column(Integer, ForeignKey('forecastscenario.id'))
+    scenario = relationship('ForecastScenario', back_populates='stages')
 
     # TODO(damb): Calculation status needs to be introduced for forecast
     # stages.
@@ -112,6 +154,37 @@ class ForecastStage(ORMBase):
         'polymorphic_identity': 'stage',
         'polymorphic_on': _type,
     }
+
+    @staticmethod
+    def create(stage_type, *args, **kwargs):
+        """
+        Create and return a corresponding forecast stage instance
+
+        The *args and **kwargs are directly passed on to the stage initializer.
+
+        :param EStage stage_type: Type of stage to create
+        :param args: Positional init params for stage
+        :param kwargs: Keyword init params for stage
+        :return: Instance of stage
+        :rtype: ForecastStage
+        """
+        stage_map = {
+            EStage.SEISMICITY: SeismicityForecastStage,
+            EStage.SEISMICITY_SKILL: SeismicitySkillStage,
+            EStage.HAZARD: HazardStage,
+            EStage.RISK: RiskStage
+        }
+        return stage_map[stage_type](*args, **kwargs)
+
+    def reset(self):
+        """
+        Resets the stage by deleting all results
+
+        This keeps the configuration but deletes any computed results. After
+        that, the stage can be re-run
+
+        """
+        NotImplementedError('To be implemented by children')
 
 
 class SeismicityForecastStage(ForecastStage):
@@ -127,5 +200,64 @@ class SeismicityForecastStage(ForecastStage):
                         cascade='all, delete-orphan')
 
     __mapper_args__ = {
-        'polymorphic_identity': EModel.SEISMICITY,
+        'polymorphic_identity': EStage.SEISMICITY,
     }
+
+    def reset(self):
+        for run in self.runs:
+            # ToDo LH: not sure if we should reset to EStatus.PENDING instead
+            #   Does a run always have a status? Or only after it has started?
+            # TODO(damb): Use EStatus.INITIALIZED instead
+            run.status = None
+
+
+class SeismicitySkillStage(ForecastStage):
+    """
+    Concrete :py:class:`ForecastStage` container for seismicity model skill
+    testing.
+
+    """
+    # TODO LH: Implement
+    __tablename__ = 'seismicityskillstage'
+    id = Column(Integer, ForeignKey('forecaststage.id'), primary_key=True)
+
+    __mapper_args__ = {
+        'polymorphic_identity': EStage.SEISMICITY_SKILL,
+    }
+
+    def reset(self):
+        pass
+
+
+class HazardStage(ForecastStage):
+    """
+    Concrete :py:class:`ForecastStage` container for hazard computations
+
+    """
+    # TODO LH: Implement
+    __tablename__ = 'hazardstage'
+    id = Column(Integer, ForeignKey('forecaststage.id'), primary_key=True)
+
+    __mapper_args__ = {
+        'polymorphic_identity': EStage.HAZARD,
+    }
+
+    def reset(self):
+        pass
+
+
+class RiskStage(ForecastStage):
+    """
+    Concrete :py:class:`ForecastStage` container for risk computations
+
+    """
+    # TODO LH: Implement
+    __tablename__ = 'riskstage'
+    id = Column(Integer, ForeignKey('forecaststage.id'), primary_key=True)
+
+    __mapper_args__ = {
+        'polymorphic_identity': EStage.RISK,
+    }
+
+    def reset(self):
+        pass

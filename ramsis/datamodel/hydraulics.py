@@ -7,7 +7,9 @@ from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship, class_mapper
 
 from ramsis.datamodel.base import (ORMBase, CreationInfoMixin,
-                                   RealQuantityMixin, TimeQuantityMixin)
+                                   RealQuantityMixin, TimeQuantityMixin,
+                                   DeleteMultiParentOrphanMixin)
+from ramsis.datamodel.utils import clone
 
 # NOTE(damb): Currently, basically both Hydraulics and InjectionPlan implement
 # the same facilities i.e. a timeseries of hydraulics data shipping some
@@ -17,17 +19,103 @@ from ramsis.datamodel.base import (ORMBase, CreationInfoMixin,
 
 class Hydraulics(CreationInfoMixin, ORMBase):
     """
-    ORM representatio of a hydraulics time series.
+    ORM representation of a hydraulic time series.
     """
     # relation: HydraulicSample
     samples = relationship('HydraulicSample',
                            back_populates='hydraulics',
                            single_parent=True,
-                           cascade='all, delete-orphan')
+                           cascade='all')
 
     # relation: WellSection
     wellsection_id = Column(Integer, ForeignKey('wellsection.id'))
     wellsection = relationship('WellSection', back_populates='hydraulics')
+
+    def snapshot(self, filter_cond=None):
+        """
+        Snapshot hydraulics.
+
+        :param filter_cond: Filter conditions applied to samples when
+            performing the snapshot.
+        :type filter_cond: callable or None
+
+        :returns: Snapshot of hydraulics
+        :rtype: :py:class:`Hydraulics`
+        """
+        assert callable(filter_cond) or filter_cond is None, \
+            f"Invalid filter_cond: {filter_cond!r}"
+
+        if filter_cond is None:
+            def no_filter(s):
+                return True
+
+            filter_cond = no_filter
+
+        snap = type(self)()
+        snap.samples = [s.copy() for s in self.samples if filter_cond(s)]
+
+        return snap
+
+    def reduce(self, filter_cond=None):
+        """
+        Remove samples from the hydraulic time series.
+
+        :param filter_cond: Callable applied to hydraulic samples when removing
+            events. Events matching the condition are removed. If
+            :code:`filter_cond` is :code:`None` all samples are removed.
+        :type filter_cond: callable or None
+        """
+        try:
+            self.samples = list(
+                filter(lambda e: not filter_cond(e), self.samples))
+        except TypeError:
+            if filter_cond is None:
+                self.samples = []
+            else:
+                raise
+
+    def merge(self, other):
+        """
+        Merge samples from :code:`other` into the hydraulics. The merging
+        strategy applied is a *delete by time* strategy i.e. samples
+        overlapping with respect to the :code:`datetime_value` attribute value
+        are overwritten with by samples from :code:`other`.
+
+        :param other: Hydraulics to be merged
+        :type other: :py:class:`Hydraulics`
+        """
+        assert isinstance(other, type(self)) or other is None, \
+            "other is not of type Hydraulics."
+
+        if other and other.samples:
+            first_sample = min(e.datetime_value for e in other.samples)
+            last_sample = max(e.datetime_value for e in other.samples)
+
+            def filter_by_overlapping_datetime(s):
+                return (s.datetime_value >= first_sample and
+                        s.datetime_value <= last_sample)
+
+            self.reduce(filter_cond=filter_by_overlapping_datetime)
+
+            # merge
+            for s in other.samples:
+                self.samples.append(s.copy())
+
+    def __eq__(self, other):
+        if isinstance(other, Hydraulics):
+            if len(self.samples) != len(other.samples):
+                return False
+
+            for i, j in zip(self.samples, other.samples):
+                if i != j:
+                    return False
+
+            return True
+
+        raise ValueError
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
     def __iter__(self):
         for s in self.samples:
@@ -35,6 +123,9 @@ class Hydraulics(CreationInfoMixin, ORMBase):
 
     def __getitem__(self, item):
         return self.samples[item] if self.samples else None
+
+    def __len__(self):
+        return len(self.samples)
 
     def __repr__(self):
         return '<%s(creationtime=%s, samples=%d)>' % (
@@ -54,14 +145,15 @@ class InjectionPlan(CreationInfoMixin, ORMBase):
         * This includes interpolation from the last sample of the injection
           history to the first sample of the injection plan
         * A sample must always be provided for the end time of the forecast
-          period, except if no sample is provided at all. In this case, it is
-          assumed that the injection remains constant over the forecast period.
+          period, except if no sample is provided at all. In this case, it
+          is assumed that the injection will stop (default plan).
+
     """
     # relation: HydraulicSample
     samples = relationship('HydraulicSample',
                            back_populates='injectionplan',
                            single_parent=True,
-                           cascade='all, delete-orphan')
+                           cascade='all')
     # relation: WellSection
     wellsection_id = Column(Integer, ForeignKey('wellsection.id'))
     wellsection = relationship('WellSection', back_populates='injectionplan')
@@ -73,13 +165,18 @@ class InjectionPlan(CreationInfoMixin, ORMBase):
     def __getitem__(self, item):
         return self.samples[item] if self.samples else None
 
+    def __len__(self):
+        return len(self.samples)
+
     def __repr__(self):
         return '<%s(creationtime=%s, samples=%d)>' % (
             type(self).__name__, self.creationinfo_creationtime,
             len(self.samples))
 
 
-class HydraulicSample(TimeQuantityMixin('datetime'),
+class HydraulicSample(DeleteMultiParentOrphanMixin(['injectionplan',
+                                                    'hydraulics']),
+                      TimeQuantityMixin('datetime'),
                       RealQuantityMixin('bottomtemperature', optional=True),
                       RealQuantityMixin('bottomflow', optional=True),
                       RealQuantityMixin('bottompressure', optional=True),
@@ -111,6 +208,17 @@ class HydraulicSample(TimeQuantityMixin('datetime'),
                               ForeignKey('injectionplan.id'))
     injectionplan = relationship('InjectionPlan',
                                  back_populates='samples')
+
+    def copy(self, with_foreignkeys=False):
+        """
+        Copy a seismic event omitting primary keys.
+
+        :param bool with_foreignkeys: Include foreign keys while copying
+
+        :returns: Copy of hydraulic sample
+        :rtype: :py:class:`HydraulicSample`
+        """
+        return clone(self, with_foreignkeys=with_foreignkeys)
 
     # TODO(damb): Is using functools.total_ordering an option?
     def __eq__(self, other):

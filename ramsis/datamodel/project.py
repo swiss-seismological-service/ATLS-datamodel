@@ -9,6 +9,9 @@ from sqlalchemy.orm import relationship
 
 from ramsis.datamodel.base import (ORMBase, CreationInfoMixin, NameMixin,
                                    UniqueOpenEpochMixin)
+from ramsis.datamodel.seismics import SeismicCatalog
+from ramsis.datamodel.well import InjectionWell
+from ramsis.datamodel.settings import ProjectSettings
 
 
 class Project(CreationInfoMixin, NameMixin, UniqueOpenEpochMixin, ORMBase):
@@ -28,13 +31,33 @@ class Project(CreationInfoMixin, NameMixin, UniqueOpenEpochMixin, ORMBase):
     spatialreference = Column(String, nullable=False)
 
     # relationships
-    relationship_config = {'back_populates': 'project',
-                           'cascade': 'all, delete-orphan'}
-    well = relationship('InjectionWell', **relationship_config)
-    forecasts = relationship('Forecast', **relationship_config)
-    seismiccatalog = relationship('SeismicCatalog', **relationship_config)
-    settings = relationship('ProjectSettings')
+    wells = relationship('InjectionWell',
+                         back_populates='project',
+                         cascade='all')
+    forecasts = relationship('Forecast',
+                             order_by='Forecast.starttime',
+                             back_populates='project',
+                             cascade='all, delete-orphan')
+    seismiccatalog = relationship('SeismicCatalog',
+                                  back_populates='project',
+                                  cascade='all',
+                                  uselist=False)
+    settings = relationship('ProjectSettings', uselist=False)
 
     # TODO(damb):
     # * Implement a project factory/builder instead of using/abusing the
     #   constructor
+
+    def __init__(self, **kwargs):
+        """
+        Project initializer
+
+        Instantiates settings and *real-time* the project dependent
+        infrastructure (i.e. a seismic catalog and injectionwell).
+        """
+        super().__init__(**kwargs)
+        self.settings = ProjectSettings()
+        if 'starttime' in kwargs:
+            self.settings.forecast_start = kwargs['starttime']
+        self.seismiccatalog = SeismicCatalog()
+        self.wells = [InjectionWell()]

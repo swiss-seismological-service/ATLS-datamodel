@@ -9,10 +9,14 @@ from sqlalchemy import Integer, ForeignKey, LargeBinary
 from sqlalchemy.orm import relationship, class_mapper
 
 from ramsis.datamodel.base import (ORMBase, CreationInfoMixin,
-                                   RealQuantityMixin, TimeQuantityMixin)
+                                   RealQuantityMixin, TimeQuantityMixin,
+                                   DeleteMultiParentOrphanMixin)
+from ramsis.datamodel.utils import clone
 
 
-class SeismicCatalog(CreationInfoMixin, ORMBase):
+class SeismicCatalog(DeleteMultiParentOrphanMixin(['project', 'forecast']),
+                     CreationInfoMixin,
+                     ORMBase):
     """
     ORM representation of a seismic catalog.
     """
@@ -41,7 +45,7 @@ class SeismicCatalog(CreationInfoMixin, ORMBase):
         :rtype: :py:class:`SeismicCatalog`
         """
         snap = type(self)()
-        snap.events = filter(filter_cond, self.events)
+        snap.events = list(filter(filter_cond, self.events))
 
         return snap
 
@@ -55,10 +59,64 @@ class SeismicCatalog(CreationInfoMixin, ORMBase):
         :type filter_cond: callable or None
         """
         try:
-            self.events = filter(lambda e: not filter_cond(e), self.events)
+            self.events = list(
+                filter(lambda e: not filter_cond(e), self.events))
         except TypeError:
             if filter_cond is None:
                 self.events = []
+            else:
+                raise
+
+    def merge(self, cat, starttime=None, endtime=None):
+        """
+        Merge events from :code:`cat` into the seismic catalog. The merging
+        strategy applied is a *delete by time* strategy i.e. events overlapping
+        with respect to the :code:`datetime_value` attribute value are
+        overwritten with by events from :code:`cat`. In addition, the merging
+        time window can be modified using the :code:`starttime` and
+        :code:`endtime` parameters.
+
+        :param cat: Seismic catalog the events are merged from.
+        :type cat: :py:class:`SeismicCatalog`
+        :param starttime: Force datetime to merge from
+        :type starttime: :py:class:`datetime.datetime` or None
+        :param endtime: Force datetime to merge until
+        :type endtime: :py:class:`datetime.datetime` or None
+
+        .. note::
+            :code:`starttime` and :code:`endtime` parameters are evaluated
+            only if :code:`cat` contains events. To remove events from the
+            catalog see :py:meth:`~.SeismicCatalog.reduce`.
+        """
+        assert isinstance(cat, type(self)), \
+            "cat is not of type SeismicCatalog."
+
+        if cat.events:
+            if None not in (starttime, endtime) and starttime >= endtime:
+                raise ValueError('starttime >= endtime.')
+
+            merge_begin = starttime
+            merge_end = endtime
+            if not merge_begin:
+                merge_begin = min(e.datetime_value for e in cat.events)
+            if not merge_end:
+                merge_end = max(e.datetime_value for e in cat.events)
+
+            if merge_begin > merge_end:
+                raise ValueError('merge_begin > merge_end: '
+                                 f'{merge_begin} > {merge_end}')
+
+            def filter_by_overlapping_datetime(e):
+                return (e.datetime_value >= merge_begin and
+                        e.datetime_value <= merge_end)
+
+            self.reduce(filter_cond=filter_by_overlapping_datetime)
+
+            # merge
+            for e in cat.events:
+                if (e.datetime_value >= merge_begin and
+                        e.datetime_value <= merge_end):
+                    self.events.append(e.copy())
 
     def __getitem__(self, item):
         return self.events[item] if self.events else None
@@ -109,26 +167,7 @@ class SeismicEvent(TimeQuantityMixin('datetime'),
         :returns: Copy of seismic event
         :rtype: :py:class:`SeismicEvent`
         """
-        mapper = class_mapper(type(self))
-        new = type(self)()
-
-        pk_keys = set([c.key for c in mapper.primary_key])
-        rel_keys = set([c.key for c in mapper.relationships])
-        omit = pk_keys | rel_keys
-
-        if with_foreignkeys:
-            fk_keys = set([c.key for c in mapper.columns if c.foreign_keys])
-            omit = omit | fk_keys
-
-        for attr in [p.key for p in mapper.iterate_properties
-                     if p.key not in omit]:
-            try:
-                value = getattr(self, attr)
-                setattr(new, attr, value)
-            except AttributeError:
-                pass
-
-        return new
+        return clone(self, with_foreignkeys=with_foreignkeys)
 
     def __lt__(self, other):
         if isinstance(other, SeismicEvent):

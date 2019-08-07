@@ -6,8 +6,9 @@ import datetime
 import enum
 import functools
 
-from sqlalchemy import Column, Boolean, Integer, Float, String, DateTime
+from sqlalchemy import Column, Boolean, Integer, Float, String, DateTime, event
 from sqlalchemy.ext.declarative import declared_attr, declarative_base
+from sqlalchemy.orm import Session
 
 
 class Base(object):
@@ -118,20 +119,20 @@ def EpochMixin(name, epoch_type=None, column_prefix=None):
 
     column_prefix = column_prefix.lower()
 
-    class Boundery(enum.Enum):
+    class Boundary(enum.Enum):
         LEFT = enum.auto()
         RIGHT = enum.auto()
 
-    def create_datetime(boundery, column_prefix, **kwargs):
+    def create_datetime(boundary, column_prefix, **kwargs):
 
-        def _make_datetime(boundery, **kwargs):
+        def _make_datetime(boundary, **kwargs):
 
-            if boundery is Boundery.LEFT:
+            if boundary is Boundary.LEFT:
                 name = 'starttime'
-            elif boundery is Boundery.RIGHT:
+            elif boundary is Boundary.RIGHT:
                 name = 'endtime'
             else:
-                raise ValueError('Invalid boundery: {!r}.'.format(boundery))
+                raise ValueError('Invalid boundary: {!r}.'.format(boundary))
 
             @declared_attr
             def _datetime(cls):
@@ -140,24 +141,24 @@ def EpochMixin(name, epoch_type=None, column_prefix=None):
 
             return _datetime
 
-        return _make_datetime(boundery, **kwargs)
+        return _make_datetime(boundary, **kwargs)
 
     if epoch_type is None or epoch_type == 'default':
-        _func_map = (('starttime', create_datetime(Boundery.LEFT,
+        _func_map = (('starttime', create_datetime(Boundary.LEFT,
                                                    column_prefix,
                                                    nullable=False)),
-                     ('endtime', create_datetime(Boundery.RIGHT,
+                     ('endtime', create_datetime(Boundary.RIGHT,
                                                  column_prefix)))
     elif epoch_type == 'open':
-        _func_map = (('starttime', create_datetime(Boundery.LEFT,
+        _func_map = (('starttime', create_datetime(Boundary.LEFT,
                                                    column_prefix)),
-                     ('endtime', create_datetime(Boundery.RIGHT,
+                     ('endtime', create_datetime(Boundary.RIGHT,
                                                  column_prefix)))
     elif epoch_type == 'finite':
-        _func_map = (('starttime', create_datetime(Boundery.LEFT,
+        _func_map = (('starttime', create_datetime(Boundary.LEFT,
                                                    column_prefix,
                                                    nullable=False)),
-                     ('endtime', create_datetime(Boundery.RIGHT,
+                     ('endtime', create_datetime(Boundary.RIGHT,
                                                  column_prefix,
                                                  nullable=False)))
     else:
@@ -284,3 +285,32 @@ IntegerQuantityMixin = functools.partial(QuantityMixin,
                                          quantity_type='int')
 TimeQuantityMixin = functools.partial(QuantityMixin,
                                       quantity_type='time')
+
+
+def DeleteMultiParentOrphanMixin(parent_relationships):
+    """
+    This provides a Mixin for entities that have multiple possible owners
+    (parents). For these we can't simply configure the owning relationships
+    cascading option as 'delete-orphan'. Instead we install a listener on the
+    session that deletes any orphaned catalogs after a flush.
+
+    :param [str] parent_relationships: Relationship attributes that define
+        the relations to parent entities.
+    """
+
+    class Mixin:
+
+        @classmethod
+        def __declare_last__(cls):
+            """ Called by the ORM after mapping has completed """
+
+            def is_orphaned(i):
+                return not any(getattr(i, r) for r in parent_relationships)
+
+            @event.listens_for(Session, 'after_flush')
+            def delete_orphans(session, _):
+                for orphan in (i for i in session.dirty | session.new
+                               if isinstance(i, cls) and is_orphaned(i)):
+                    session.delete(orphan)
+
+    return Mixin
