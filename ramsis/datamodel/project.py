@@ -20,11 +20,11 @@ class Project(CreationInfoMixin, NameMixin, UniqueOpenEpochMixin, ORMBase):
     object of the RT-RAMSIS data model.
     """
     description = Column(String)
+    # XXX(damb): Should be nullable.
     referencepoint = Column(Geometry(geometry_type='POINTZ',
                                      dimension=3,
-                                     srid=4326,
                                      management=True),
-                            nullable=False)
+                            )
     # XXX(damb): Spatial reference system in Proj4 notation representing the
     # local coordinate system;
     # see also: https://www.gdal.org/classOGRSpatialReference.html
