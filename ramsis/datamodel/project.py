@@ -22,7 +22,6 @@ class Project(CreationInfoMixin, NameMixin, UniqueOpenEpochMixin, ORMBase):
     description = Column(String)
     referencepoint = Column(Geometry(geometry_type='POINTZ',
                                      dimension=3,
-                                     srid=4326,
                                      management=True),
                             nullable=False)
     # XXX(damb): Spatial reference system in Proj4 notation representing the
