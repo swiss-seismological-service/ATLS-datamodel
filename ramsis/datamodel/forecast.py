@@ -106,6 +106,21 @@ class ForecastScenario(NameMixin, ORMBase):
     stages = relationship('ForecastStage', back_populates='scenario',
                           cascade='all, delete-orphan')
 
+    def __contains__(self, stage_type):
+        for s in self.stages:
+            if s._type == stage_type:
+                return True
+        return False
+
+    def __getitem__(self, stage_type):
+        if not isinstance(stage_type, EStage):
+            raise TypeError(f"{stage_type!r}")
+
+        for s in self.stages:
+            if s._type == stage_type:
+                return s
+        raise KeyError(f"{stage_type!r}")
+
     def reset(self):
         """
         Resets the forecast scenario by deleting all results
