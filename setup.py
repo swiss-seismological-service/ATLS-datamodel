@@ -34,6 +34,7 @@ _extras_require = {'doc': [
 _tests_require = [
     'pytest>=3.4', ]
 
+_namespace_packages = ['ramsis']
 
 setup(
     name='ramsis.datamodel',
@@ -64,6 +65,7 @@ setup(
         'Programming Language :: Python :: Implementation :: CPython',
         'Topic :: Scientific/Engineering', ],
     platforms=['Linux', ],
+    namespace_packages=_namespace_packages,
     packages=['ramsis.' + pkg for pkg in find_packages(where='ramsis')],
     install_requires=_install_requires,
     extras_require=_extras_require,
