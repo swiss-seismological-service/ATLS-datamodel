@@ -20,6 +20,7 @@ class Project(CreationInfoMixin, NameMixin, UniqueOpenEpochMixin, ORMBase):
     object of the RT-RAMSIS data model.
     """
     description = Column(String)
+    # XXX(damb): Should be nullable.
     referencepoint = Column(Geometry(geometry_type='POINTZ',
                                      dimension=3,
                                      management=True),
