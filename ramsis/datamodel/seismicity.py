@@ -59,7 +59,7 @@ class SeismicityModelRun(ModelRun):
     """
     __tablename__ = 'seismicitymodelrun'
     id = Column(Integer, ForeignKey('modelrun.id'), primary_key=True)
-    run_id = Column(GUID, unique=True, index=True, nullable=False)
+    run_id = Column(GUID, unique=True, index=True)
 
     # relation: SeismicityModel
     model_id = Column(Integer, ForeignKey('seismicitymodel.id'))
