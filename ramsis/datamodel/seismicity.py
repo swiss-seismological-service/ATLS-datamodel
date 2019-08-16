@@ -12,6 +12,7 @@ from sqlalchemy.orm import relationship, backref, class_mapper
 from ramsis.datamodel.base import (ORMBase, RealQuantityMixin,
                                    UniqueFiniteEpochMixin)
 from ramsis.datamodel.model import Model, ModelRun, EModel
+from ramsis.datamodel.type import GUID
 
 
 # FIXME(damb): Maintaining both a SeismicityModel, a SeismicityModelRun and on
@@ -58,6 +59,7 @@ class SeismicityModelRun(ModelRun):
     """
     __tablename__ = 'seismicitymodelrun'
     id = Column(Integer, ForeignKey('modelrun.id'), primary_key=True)
+    run_id = Column(GUID, unique=True, index=True, nullable=False)
 
     # relation: SeismicityModel
     model_id = Column(Integer, ForeignKey('seismicitymodel.id'))
