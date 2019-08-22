@@ -40,6 +40,7 @@ class SeismicityModel(Model):
     id = Column(Integer, ForeignKey('model.id'), primary_key=True)
 
     url = Column(String)
+    sfmwid = Column(String)
 
     runs = relationship('SeismicityModelRun',
                         cascade='all, delete-orphan')
