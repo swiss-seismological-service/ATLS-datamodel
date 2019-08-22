@@ -12,7 +12,6 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 
 from ramsis.datamodel.base import ORMBase, UniqueEpochMixin
-from ramsis.datamodel.type import GUID
 
 
 class EStatus(enum.Enum):
@@ -34,8 +33,6 @@ class Status(UniqueEpochMixin, ORMBase):
         'last_response': Last http response for remote workers
     }
     """
-    # TODO(damb): Check if UUID is better located at ModelRun
-    uuid = Column(GUID, unique=True, index=True, nullable=False)
     state = Column(Enum(EStatus), default=EStatus.PENDING)
     info = Column(PickleType(pickler=json))
 
