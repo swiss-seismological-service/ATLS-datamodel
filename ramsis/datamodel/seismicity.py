@@ -160,8 +160,11 @@ class ReservoirSeismicityPrediction(ORMBase):
 
 @functools.total_ordering
 class SeismicityPredictionBin(UniqueFiniteEpochMixin,
-                              RealQuantityMixin('rate'),
+                              RealQuantityMixin('numberevents'),
                               RealQuantityMixin('b'),
+                              RealQuantityMixin('a'),
+                              RealQuantityMixin('mc'),
+                              RealQuantityMixin('hydraulicvol'),
                               ORMBase):
     """
     ORM representation of a seismicity prediction sample.
@@ -172,8 +175,10 @@ class SeismicityPredictionBin(UniqueFiniteEpochMixin,
 
     def __lt__(self, other):
         if isinstance(other, SeismicityPredictionBin):
-            return ((self.rate_value, self.b_value) <
-                    (other.rate_value, other.b_value))
+            return ((self.numberevents_value, self.b_value, self.a_value,
+                     self.mc_value, self.hydraulicvol_value) <
+                    (other.numberevents_value, other.b_value, other.a_value,
+                     other.mc_value, other.hydraulicvol_value))
 
         raise ValueError
 
