@@ -44,9 +44,17 @@ class SeismicCatalog(DeleteMultiParentOrphanMixin(['project', 'forecast']),
         :returns: Snapshot of the catalog
         :rtype: :py:class:`SeismicCatalog`
         """
-        snap = type(self)()
-        snap.events = list(filter(filter_cond, self.events))
+        assert callable(filter_cond) or filter_cond is None, \
+            f"Invalid filter_cond: {filter_cond!r}"
 
+        if filter_cond is None:
+            def no_filter(s):
+                return True
+
+            filter_cond = no_filter
+
+        snap = type(self)()
+        snap.events = [e.copy() for e in self.events if filter_cond(e)]
         return snap
 
     def reduce(self, filter_cond=None):

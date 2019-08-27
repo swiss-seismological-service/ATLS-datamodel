@@ -127,6 +127,9 @@ class Hydraulics(CreationInfoMixin, ORMBase):
     def __len__(self):
         return len(self.samples)
 
+    def __hash__(self):
+        return id(self)
+
     def __repr__(self):
         return '<%s(creationtime=%s, samples=%d)>' % (
             type(self).__name__, self.creationinfo_creationtime,
