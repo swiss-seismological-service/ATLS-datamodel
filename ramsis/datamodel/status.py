@@ -40,8 +40,7 @@ class Status(UniqueEpochMixin, ORMBase):
     run_id = Column(Integer, ForeignKey('modelrun.id'))
     run = relationship('ModelRun', back_populates='status')
 
-    def __init__(self, uuid, state=EStatus.PENDING, info=None):
-        self.uuid = uuid
+    def __init__(self, state=EStatus.PENDING, info=None):
         self.state = state
         self.info = info
         self.starttime = datetime.datetime.utcnow()
