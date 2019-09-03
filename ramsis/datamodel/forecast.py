@@ -13,6 +13,7 @@ from sqlalchemy.orm import relationship
 from ramsis.datamodel.base import (ORMBase, NameMixin, CreationInfoMixin,
                                    EpochMixin)
 from ramsis.datamodel.type import JSONEncodedDict
+from ramsis.datamodel.utils import clone
 
 
 class Forecast(CreationInfoMixin,
@@ -55,6 +56,19 @@ class Forecast(CreationInfoMixin,
     def append(self, scenario):
         if isinstance(scenario, ForecastScenario):
             self.scenarios.append(scenario)
+
+    def clone(self, with_results=False, prototype=False):
+        new = clone(self, with_foreignkeys=False)
+        new.config['prototype']['enabled'] = prototype
+
+        if with_results:
+            new.seismiccatalog = self.seismiccatalog
+            new.well = self.well
+
+        for scenario in self.scenarios:
+            new.append(scenario.clone(with_results=False))
+
+        return new
 
     def reset(self):
         """
@@ -122,6 +136,18 @@ class ForecastScenario(NameMixin, ORMBase):
             if s._type == stage_type:
                 return s
         raise KeyError(f"{stage_type!r}")
+
+    def clone(self, with_results=False):
+        new = clone(self, with_foreignkeys=False)
+        # XXX(damb): The future borehole/hydraulics cover the entire forecast
+        # period. The data is interpretated accordingly by the models
+        # themselves.
+        new.well = self.well
+
+        for stage in self.stages:
+            new.stages.append(stage.clone(with_results=with_results))
+
+        return new
 
     def reset(self):
         """
@@ -193,6 +219,9 @@ class ForecastStage(ORMBase):
         }
         return stage_map[stage_type](*args, **kwargs)
 
+    def clone(self, with_results=False):
+        return clone(self, with_foreignkeys=False)
+
     def reset(self):
         """
         Resets the stage by deleting all results
@@ -219,6 +248,14 @@ class SeismicityForecastStage(ForecastStage):
     __mapper_args__ = {
         'polymorphic_identity': EStage.SEISMICITY,
     }
+
+    def clone(self, with_results=False):
+        new = clone(self, with_foreignkeys=False)
+
+        for run in self.runs:
+            new.runs.append(run.clone(with_results=with_results))
+
+        return new
 
     def reset(self):
         for run in self.runs:

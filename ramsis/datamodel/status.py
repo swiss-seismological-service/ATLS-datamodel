@@ -12,6 +12,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 
 from ramsis.datamodel.base import ORMBase, UniqueEpochMixin
+from ramsis.datamodel.utils import clone
 
 
 class EStatus(enum.Enum):
@@ -44,6 +45,9 @@ class Status(UniqueEpochMixin, ORMBase):
         self.state = state
         self.info = info
         self.starttime = datetime.datetime.utcnow()
+
+    def clone(self):
+        return clone(self, with_foreignkeys=False)
 
     @hybrid_property
     def finished(self):
