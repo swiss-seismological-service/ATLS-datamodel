@@ -248,7 +248,7 @@ class ForecastStage(ORMBase):
         that, the stage can be re-run
 
         """
-        NotImplementedError('To be implemented by children')
+        raise NotImplementedError
 
 
 class SeismicityForecastStage(ForecastStage):
