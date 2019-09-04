@@ -57,9 +57,15 @@ class Forecast(CreationInfoMixin,
         if isinstance(scenario, ForecastScenario):
             self.scenarios.append(scenario)
 
-    def clone(self, with_results=False, prototype=False):
+    def clone(self, with_results=False):
+        """
+        Clone a forecast.
+
+        :param bool with_results: If :code:`True`, append results and related
+            data while cloning, otherwise results are excluded.
+        """
         new = clone(self, with_foreignkeys=False)
-        new.config['prototype']['enabled'] = prototype
+        new.config['prototype']['enabled'] = False
 
         if with_results:
             new.seismiccatalog = self.seismiccatalog
@@ -138,6 +144,12 @@ class ForecastScenario(NameMixin, ORMBase):
         raise KeyError(f"{stage_type!r}")
 
     def clone(self, with_results=False):
+        """
+        Clone a scenario.
+
+        :param bool with_results: If :code:`True`, append results and related
+            data while cloning, otherwise results are excluded.
+        """
         new = clone(self, with_foreignkeys=False)
         # XXX(damb): The future borehole/hydraulics cover the entire forecast
         # period. The data is interpretated accordingly by the models
@@ -220,6 +232,12 @@ class ForecastStage(ORMBase):
         return stage_map[stage_type](*args, **kwargs)
 
     def clone(self, with_results=False):
+        """
+        Clone a forecast stage.
+
+        :param bool with_results: If :code:`True`, append results and related
+            data while cloning, otherwise results are excluded.
+        """
         return clone(self, with_foreignkeys=False)
 
     def reset(self):
@@ -250,6 +268,12 @@ class SeismicityForecastStage(ForecastStage):
     }
 
     def clone(self, with_results=False):
+        """
+        Clone a seismicity forecast stage.
+
+        :param bool with_results: If :code:`True`, append results and related
+            data while cloning, otherwise results are excluded.
+        """
         new = clone(self, with_foreignkeys=False)
 
         for run in self.runs:

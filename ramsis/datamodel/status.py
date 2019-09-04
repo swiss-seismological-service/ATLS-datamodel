@@ -47,6 +47,9 @@ class Status(UniqueEpochMixin, ORMBase):
         self.starttime = datetime.datetime.utcnow()
 
     def clone(self):
+        """
+        Clone a status.
+        """
         return clone(self, with_foreignkeys=False)
 
     @hybrid_property

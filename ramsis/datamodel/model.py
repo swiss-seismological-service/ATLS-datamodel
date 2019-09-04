@@ -71,6 +71,12 @@ class ModelRun(ORMBase):
     }
 
     def clone(self, with_results=False):
+        """
+        Clone a model run.
+
+        :param bool with_results: If :code:`True`, append results and related
+            data while cloning, otherwise results are excluded.
+        """
         new = clone(self, with_foreignkeys=False)
         new.status = self.status.clone() if with_results else Status()
         return new

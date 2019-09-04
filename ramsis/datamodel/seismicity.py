@@ -82,6 +82,12 @@ class SeismicityModelRun(ModelRun):
     }
 
     def clone(self, with_results=False):
+        """
+        Clone a seismicity model run.
+
+        :param bool with_results: If :code:`True`, append results and related
+            data while cloning, otherwise results are excluded.
+        """
         new = super().clone(with_results=with_results)
         # models are top-level objects; copy by reference
         new.model = self.model
