@@ -52,7 +52,7 @@ class ForecastTestCase(unittest.TestCase):
                                        well=InjectionWell())
 
         fc = Forecast(name='Forecast',
-                      config={'prototype': {'enabled': True}},
+                      config={},
                       scenarios=[fc_scenario, ],
                       starttime=datetime.datetime.utcnow(),
                       endtime=datetime.datetime.utcnow(),
@@ -65,7 +65,6 @@ class ForecastTestCase(unittest.TestCase):
         # Currently, just the sensible attributes are checked.
         self.assertEqual(cloned.seismiccatalog, None)
         self.assertEqual(cloned.well, None)
-        self.assertEqual(cloned.config['prototype']['enabled'], False)
         self.assertEqual(cloned.scenarios[0].well, fc.scenarios[0].well)
         self.assertEqual(cloned.scenarios[0].stages[0].runs[0].status.state,
                          EStatus.PENDING)

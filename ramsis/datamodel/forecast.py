@@ -65,7 +65,6 @@ class Forecast(CreationInfoMixin,
             data while cloning, otherwise results are excluded.
         """
         new = clone(self, with_foreignkeys=False)
-        new.config['prototype']['enabled'] = False
 
         if with_results:
             new.seismiccatalog = self.seismiccatalog
