@@ -57,7 +57,5 @@ class Project(CreationInfoMixin, NameMixin, UniqueOpenEpochMixin, ORMBase):
         """
         super().__init__(**kwargs)
         self.settings = ProjectSettings()
-        if 'starttime' in kwargs:
-            self.settings.forecast_start = kwargs['starttime']
         self.seismiccatalog = SeismicCatalog()
         self.wells = [InjectionWell()]
