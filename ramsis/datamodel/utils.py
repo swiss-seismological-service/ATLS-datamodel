@@ -23,7 +23,7 @@ def clone(obj, with_foreignkeys=False):
     rel_keys = set([c.key for c in mapper.relationships])
     omit = pk_keys | rel_keys
 
-    if with_foreignkeys:
+    if not with_foreignkeys:
         fk_keys = set([c.key for c in mapper.columns if c.foreign_keys])
         omit = omit | fk_keys
 
