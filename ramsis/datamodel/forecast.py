@@ -13,6 +13,7 @@ from sqlalchemy.orm import relationship
 from ramsis.datamodel.base import (ORMBase, NameMixin, CreationInfoMixin,
                                    EpochMixin)
 from ramsis.datamodel.type import JSONEncodedDict
+from ramsis.datamodel.utils import clone
 
 
 class Forecast(CreationInfoMixin,
@@ -26,7 +27,9 @@ class Forecast(CreationInfoMixin,
     their corresponding results) and the real *input* data i.e. both a
     :py:class:`SeismicCatalog` and :py:class:`InjectionWell`.
     """
+    config = Column(MutableDict.as_mutable(JSONEncodedDict))
     enabled = Column(Boolean, default=True)
+
     # relation: Project
     project_id = Column(Integer, ForeignKey('project.id'))
     project = relationship('Project', back_populates='forecasts')
@@ -53,6 +56,24 @@ class Forecast(CreationInfoMixin,
     def append(self, scenario):
         if isinstance(scenario, ForecastScenario):
             self.scenarios.append(scenario)
+
+    def clone(self, with_results=False):
+        """
+        Clone a forecast.
+
+        :param bool with_results: If :code:`True`, append results and related
+            data while cloning, otherwise results are excluded.
+        """
+        new = clone(self, with_foreignkeys=False)
+
+        if with_results:
+            new.seismiccatalog = self.seismiccatalog
+            new.well = self.well
+
+        for scenario in self.scenarios:
+            new.append(scenario.clone(with_results=False))
+
+        return new
 
     def reset(self):
         """
@@ -120,6 +141,24 @@ class ForecastScenario(NameMixin, ORMBase):
             if s._type == stage_type:
                 return s
         raise KeyError(f"{stage_type!r}")
+
+    def clone(self, with_results=False):
+        """
+        Clone a scenario.
+
+        :param bool with_results: If :code:`True`, append results and related
+            data while cloning, otherwise results are excluded.
+        """
+        new = clone(self, with_foreignkeys=False)
+        # XXX(damb): The future borehole/hydraulics cover the entire forecast
+        # period. The data is interpretated accordingly by the models
+        # themselves.
+        new.well = self.well
+
+        for stage in self.stages:
+            new.stages.append(stage.clone(with_results=with_results))
+
+        return new
 
     def reset(self):
         """
@@ -191,6 +230,15 @@ class ForecastStage(ORMBase):
         }
         return stage_map[stage_type](*args, **kwargs)
 
+    def clone(self, with_results=False):
+        """
+        Clone a forecast stage.
+
+        :param bool with_results: If :code:`True`, append results and related
+            data while cloning, otherwise results are excluded.
+        """
+        return clone(self, with_foreignkeys=False)
+
     def reset(self):
         """
         Resets the stage by deleting all results
@@ -199,7 +247,7 @@ class ForecastStage(ORMBase):
         that, the stage can be re-run
 
         """
-        NotImplementedError('To be implemented by children')
+        raise NotImplementedError
 
 
 class SeismicityForecastStage(ForecastStage):
@@ -217,6 +265,20 @@ class SeismicityForecastStage(ForecastStage):
     __mapper_args__ = {
         'polymorphic_identity': EStage.SEISMICITY,
     }
+
+    def clone(self, with_results=False):
+        """
+        Clone a seismicity forecast stage.
+
+        :param bool with_results: If :code:`True`, append results and related
+            data while cloning, otherwise results are excluded.
+        """
+        new = clone(self, with_foreignkeys=False)
+
+        for run in self.runs:
+            new.runs.append(run.clone(with_results=with_results))
+
+        return new
 
     def reset(self):
         for run in self.runs:

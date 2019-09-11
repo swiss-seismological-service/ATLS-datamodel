@@ -10,7 +10,9 @@ from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import relationship
 
 from ramsis.datamodel.base import ORMBase, NameMixin
+from ramsis.datamodel.status import Status
 from ramsis.datamodel.type import JSONEncodedDict
+from ramsis.datamodel.utils import clone
 
 
 class EModel(enum.Enum):
@@ -67,3 +69,14 @@ class ModelRun(ORMBase):
         'polymorphic_identity': 'model_run',
         'polymorphic_on': _type,
     }
+
+    def clone(self, with_results=False):
+        """
+        Clone a model run.
+
+        :param bool with_results: If :code:`True`, append results and related
+            data while cloning, otherwise results are excluded.
+        """
+        new = clone(self, with_foreignkeys=False)
+        new.status = self.status.clone() if with_results else Status()
+        return new

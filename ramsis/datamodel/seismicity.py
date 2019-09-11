@@ -15,14 +15,14 @@ from ramsis.datamodel.model import Model, ModelRun, EModel
 from ramsis.datamodel.type import GUID
 
 
-# FIXME(damb): Maintaining both a SeismicityModel, a SeismicityModelRun and on
+# XXX(damb): Maintaining both a SeismicityModel, a SeismicityModelRun and on
 # top a ForecastStage seems somehow cumbersome. In particular, when every
 # single class ships its own config.
 # Proposed strategy:
 # * SeismicityModel.config provides the default configuration of a concrete
 #   implementation of a seismicity model
-# * SeismicityModelRun.config is the concrete configuration of the model at
-#   when executed
+# * SeismicityModelRun.config is the concrete configuration of the model when
+#   executed
 # * Concrete implementations of a ForecastStage (e.g. SeismicityForecastStage)
 #   sets default parameters using the *config* property for a group of models
 #   from a certain type (e.g. seismicity).
@@ -80,6 +80,25 @@ class SeismicityModelRun(ModelRun):
     __mapper_args__ = {
         'polymorphic_identity': EModel.SEISMICITY,
     }
+
+    def clone(self, with_results=False):
+        """
+        Clone a seismicity model run.
+
+        :param bool with_results: If :code:`True`, append results and related
+            data while cloning, otherwise results are excluded.
+        """
+        new = super().clone(with_results=with_results)
+        # models are top-level objects; copy by reference
+        new.model = self.model
+
+        if not with_results:
+            new.runid = None
+            return new
+
+        # TODO(damb): Copy results
+        raise NotImplementedError
+        return new
 
     def __repr__(self):
         return '<%s(name=%s, url=%s)>' % (type(self).__name__, self.model.name,
