@@ -57,7 +57,22 @@ class Project(CreationInfoMixin, NameMixin, UniqueOpenEpochMixin, ORMBase):
         """
         super().__init__(**kwargs)
         self.settings = ProjectSettings()
-        if 'starttime' in kwargs:
-            self.settings.forecast_start = kwargs['starttime']
         self.seismiccatalog = SeismicCatalog()
         self.wells = [InjectionWell()]
+
+    def forecast_iter(self, filter_cond=None):
+        """
+        Return a forecast iterator.
+
+        :param callable filter_cond: Callable used for forecast filtering. If
+            :code:`None` an iterator over all available forecasts is returned.
+        """
+        if filter_cond is None:
+            def no_filter(f):
+                return True
+
+            filter_cond = no_filter
+
+        for fc in self.forecasts:
+            if filter_cond(fc):
+                yield fc
