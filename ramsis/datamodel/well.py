@@ -216,7 +216,7 @@ class WellSection(PublicIDMixin,
         :returns: Snapshot of the well section
         :rtype: :py:class:`WellSection`
         """
-        snap = clone(self)
+        snap = clone(self, with_foreignkeys=False)
         snap.hydraulics = self.hydraulics.snapshot(filter_cond=filter_cond)
 
         return snap
