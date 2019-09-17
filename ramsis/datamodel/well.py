@@ -3,6 +3,7 @@
 Injection well ORM facilities.
 """
 
+import copy
 import inspect
 
 from sqlalchemy import Column, Integer, Boolean, String, ForeignKey
@@ -138,7 +139,7 @@ class InjectionWell(DeleteMultiParentOrphanMixin(['project',
 
         if self.publicid == other.publicid:
 
-            MUTABLE_ATTRS = _ci_attrs
+            MUTABLE_ATTRS = copy.deepcopy(_ci_attrs)
             for attr in MUTABLE_ATTRS:
                 value = getattr(other, attr)
                 setattr(self, attr, value)
@@ -232,7 +233,7 @@ class WellSection(PublicIDMixin,
 
         if other and self.publicid == other.publicid:
 
-            MUTABLE_ATTRS = _ci_attrs
+            MUTABLE_ATTRS = copy.deepcopy(_ci_attrs)
             MUTABLE_ATTRS.append('endtime')
 
             # update mutable attributes
