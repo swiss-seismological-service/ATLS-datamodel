@@ -150,7 +150,7 @@ class InjectionWell(DeleteMultiParentOrphanMixin(['project',
             for sec in other.sections:
                 _sec = section_lookup_by_publicid(sec.publicid)
                 if _sec is None:
-                    self.sections.append(sec)
+                    self.sections.append(sec.copy())
                 else:
                     _sec.merge(sec)
         elif merge_undefined and not self.publicid:
@@ -223,6 +223,12 @@ class WellSection(PublicIDMixin,
         snap.hydraulics = self.hydraulics.snapshot(filter_cond=filter_cond)
 
         return snap
+
+    def copy(self):
+        """
+        Alias for :py:meth:`snapshot` without filtering conditions.
+        """
+        return self.snapshot()
 
     def merge(self, other):
         """
