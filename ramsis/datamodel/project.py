@@ -42,10 +42,6 @@ class Project(CreationInfoMixin, NameMixin, UniqueOpenEpochMixin, ORMBase):
                                   uselist=False)
     settings = relationship('ProjectSettings', uselist=False)
 
-    # TODO(damb):
-    # * Implement a project factory/builder instead of using/abusing the
-    #   constructor
-
     def __init__(self, **kwargs):
         """
         Project initializer
