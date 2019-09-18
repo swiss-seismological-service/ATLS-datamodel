@@ -210,7 +210,13 @@ class WellSection(PublicIDMixin,
 
     def snapshot(self, filter_cond=None):
         """
-        Create a snapshot of the well section.
+        Create a snapshot of the well section. If available, a snapshot
+        includes hydraulics.
+
+        .. note::
+
+            Snapshotting a well containing an injectionplan is currently not
+            implemented.
 
         :param filter_cond: Callable applied on hydraulic samples when creating
             the snapshot
@@ -220,7 +226,13 @@ class WellSection(PublicIDMixin,
         :rtype: :py:class:`WellSection`
         """
         snap = clone(self, with_foreignkeys=False)
-        snap.hydraulics = self.hydraulics.snapshot(filter_cond=filter_cond)
+
+        if self.hydraulics:
+            snap.hydraulics = self.hydraulics.snapshot(
+                filter_cond=filter_cond)
+
+        if self.injectionplan:
+            raise NotImplementedError
 
         return snap
 
