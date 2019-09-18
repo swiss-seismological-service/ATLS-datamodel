@@ -98,7 +98,8 @@ class InjectionWell(DeleteMultiParentOrphanMixin(['project',
 
     def snapshot(self, section_filter_cond=None, sample_filter_cond=None):
         """
-        Create a snapshot of the injection well.
+        Create a snapshot of the injection well. If available a snapshot
+        implies snapshotting the well's sections.
 
         :param section_filter_cond: Callable applied on well sections when
             creating the snapshot
@@ -112,9 +113,11 @@ class InjectionWell(DeleteMultiParentOrphanMixin(['project',
         """
         snap = type(self)()
         snap.publicid = self.publicid
-        snap.sections = [s.snapshot(filter_cond=sample_filter_cond)
-                         for s in list(filter(section_filter_cond,
-                                              self.sections))]
+
+        if self.sections:
+            snap.sections = [s.snapshot(filter_cond=sample_filter_cond)
+                             for s in list(filter(section_filter_cond,
+                                                  self.sections))]
         return snap
 
     def merge(self, other, merge_undefined=True):
