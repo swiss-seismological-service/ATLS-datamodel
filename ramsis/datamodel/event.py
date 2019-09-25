@@ -309,6 +309,7 @@ class SeismicCatalogAttributeEvents(EntityAttributeEventMixin,
                 def cat_listener(**kwargs):
                     self.cat_modified.emit(kwargs['target'])
 
+                # configure scalar events only
                 self._orm_events = SeismicCatalogAttributeEvents(
                     listener=cat_listener,
                     scalar_identifiers=['set', 'modified'],
