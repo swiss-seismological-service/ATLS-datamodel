@@ -137,8 +137,8 @@ class SeismicCatalog(DeleteMultiParentOrphanMixin(['project', 'forecast']),
         return len(self.events)
 
     def __repr__(self):
-        return "<{}(creationtime={!r}, events={})>".format(
-            type(self).__name__, self.creationinfo_creationtime, len(self))
+        return "<{}(creationtime={!r})>".format(
+            type(self).__name__, self.creationinfo_creationtime)
 
 
 @functools.total_ordering
