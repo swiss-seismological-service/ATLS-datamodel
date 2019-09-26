@@ -4,6 +4,7 @@ Event related test facilities.
 """
 
 import datetime
+import os
 import unittest
 
 from sqlalchemy import event, create_engine
@@ -223,6 +224,11 @@ class AttributeEventsTestCase(unittest.TestCase):
         self.assertFalse(self.emitted)
 
 
+# XXX(damb): Enable SPATIALITE test cases with:
+# $ export RAMSIS_TEST_SPATIALITE="True"; python setup.py test --addopts="-r s"
+@unittest.skipUnless(
+    os.getenv('RAMSIS_TEST_SPATIALITE', 'False') == 'True',
+    "'RAMSIS_TEST_GISDB' envvar not 'True'")
 class InstanceEventsTestCase(unittest.TestCase):
 
     def setUp(self):
@@ -266,3 +272,13 @@ class InstanceEventsTestCase(unittest.TestCase):
 
         self.assertTrue(self.emitted)
         session.close()
+
+
+def suite():
+    suite = unittest.makeSuite(AttributeEventsTestCase, 'test')
+    suite.addTest(
+        unittest.makeSuite(InstanceEventsTestCase, 'test'))
+
+
+if __name__ == '__main__':
+    unittest.main(defaultTest='suite')
