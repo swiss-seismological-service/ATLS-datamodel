@@ -25,14 +25,14 @@ from ramsis.datamodel.project import Project  # noqa
 from ramsis.datamodel.base import ORMBase  # noqa
 
 
-_SCALAR_EVENT_IDENTIFIERS = ('set', 'modified', 'init_scalar')
-_COLLECTION_EVENT_IDENTIFIERS = (
+_SCALAR_ATTR_EVENT_IDENTIFIERS = ('set', 'modified', 'init_scalar')
+_COLLECTION_ATTR_EVENT_IDENTIFIERS = (
     'append', 'bulk_replace', 'dispose_collection', 'init_collection',
     'remove')
 
 
 def create_scalar_attribute_events(
-    targets, listener, identifiers=_SCALAR_EVENT_IDENTIFIERS,
+    targets, listener, identifiers=_SCALAR_ATTR_EVENT_IDENTIFIERS,
         propagate=False):
     """
     Factory for scalar attribute events.
@@ -51,7 +51,7 @@ def create_scalar_attribute_events(
     """
 
     for i in identifiers:
-        if i not in _SCALAR_EVENT_IDENTIFIERS:
+        if i not in _SCALAR_ATTR_EVENT_IDENTIFIERS:
             raise ValueError(f'Invalid identifier: {i!r}')
 
     if not isinstance(targets, list):
@@ -79,7 +79,7 @@ def create_scalar_attribute_events(
 
 
 def create_collection_attribute_events(
-    targets, listener, identifiers=_COLLECTION_EVENT_IDENTIFIERS,
+    targets, listener, identifiers=_COLLECTION_ATTR_EVENT_IDENTIFIERS,
         propagate=False):
     """
     Factory for collection attribute events.
@@ -95,7 +95,7 @@ def create_collection_attribute_events(
     """
 
     for i in identifiers:
-        if i not in _COLLECTION_EVENT_IDENTIFIERS:
+        if i not in _COLLECTION_ATTR_EVENT_IDENTIFIERS:
             raise ValueError(f'Invalid identifier: {i!r}')
 
     if not isinstance(targets, list):
@@ -151,8 +151,8 @@ class AttributeEvents:
 
     def __init__(
         self, target=None, listener=None,
-        scalar_identifiers=_SCALAR_EVENT_IDENTIFIERS,
-        collection_identifiers=_COLLECTION_EVENT_IDENTIFIERS,
+        scalar_identifiers=_SCALAR_ATTR_EVENT_IDENTIFIERS,
+        collection_identifiers=_COLLECTION_ATTR_EVENT_IDENTIFIERS,
             propagate=False):
         """
         :param target: The object instance receiving the event. When passing
