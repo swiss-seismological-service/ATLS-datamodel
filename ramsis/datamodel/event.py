@@ -120,6 +120,28 @@ def create_collection_attribute_events(
     return expanded_targets
 
 
+def create_instance_events(
+    targets, listener, identifiers=['load'], propagate=False):
+    """
+    Factory for instance events.
+
+    :param targets: The object instances receiving the event.
+    :type targets: Mapping instance or list of mapping instances
+    :param callable listener: Callable executed when the signal is received.
+    :type identifiers: Instance event identifiers
+    :param bool propagate: Propagate event listening to subclasses
+    """
+
+    if not isinstance(targets, list):
+        targets = [targets]
+
+    for t, i in product(targets, identifiers):
+        event.listen(t, i, listener, propagate=propagate, named=True)
+
+    return targets
+
+
+# ----------------------------------------------------------------------------
 class AttributeEvents:
     """
     Base class for attribute events.
