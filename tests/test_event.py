@@ -6,12 +6,14 @@ Event related test facilities.
 import datetime
 import unittest
 
-from sqlalchemy import event
+from sqlalchemy import event, create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.sql import select, func
 
 from ramsis.datamodel.base import ORMBase  # noqa
 from ramsis.datamodel.event import (
     create_scalar_attribute_events, create_collection_attribute_events,
-    SeismicCatalogAttributeEvents)
+    create_instance_events, SeismicCatalogAttributeEvents)
 from ramsis.datamodel.forecast import (  # noqa
     Forecast, ForecastScenario, ForecastStage, SeismicityForecastStage,
     SeismicitySkillStage, HazardStage, RiskStage)
@@ -26,6 +28,15 @@ from ramsis.datamodel.seismics import SeismicCatalog, SeismicEvent  # noqa
 from ramsis.datamodel.settings import ProjectSettings  # noqa
 from ramsis.datamodel.status import Status  # noqa
 from ramsis.datamodel.well import InjectionWell, WellSection  # noqa
+
+
+def load_spatialite(dbapi_conn, connection_record):
+    """
+    Load spatialite extention.
+    """
+    # XXX(damb): sudo apt-get install libsqlite3-mod-spatialite
+    dbapi_conn.enable_load_extension(True)
+    dbapi_conn.load_extension('/usr/lib/x86_64-linux-gnu/mod_spatialite.so')
 
 
 class AttributeEventsTestCase(unittest.TestCase):
@@ -210,3 +221,48 @@ class AttributeEventsTestCase(unittest.TestCase):
             quakeml=b'')
         cat.events = [e, ]
         self.assertFalse(self.emitted)
+
+
+class InstanceEventsTestCase(unittest.TestCase):
+
+    def setUp(self):
+        self.engine = create_engine('sqlite://')
+        event.listen(self.engine, 'connect', load_spatialite)
+
+        conn = self.engine.connect()
+        conn.execute(select([func.InitSpatialMetaData()]))
+        conn.close()
+
+        # init DB
+        ORMBase.metadata.create_all(self.engine)
+
+        self.make_session = sessionmaker(bind=self.engine)
+
+        self.emitted = False
+
+    def tearDown(self):
+        self.emitted = None
+
+    def test_seismic_catalog_instance_load(self):
+
+        def listener(**kwargs):
+            self.emitted = True
+
+        create_instance_events(
+            SeismicCatalog, listener, ['load'], propagate=False)
+
+        # create seismic catalog
+        session = self.make_session()
+        cat = SeismicCatalog(creationinfo_author='ed')
+        session.add(cat)
+        session.commit()
+        session.close()
+
+        # query it from the DB
+        session = self.make_session()
+        cat = session.query(SeismicCatalog).\
+            filter_by(creationinfo_author='ed').first()
+        session.close()
+
+        self.assertTrue(self.emitted)
+        session.close()
