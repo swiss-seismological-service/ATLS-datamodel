@@ -316,11 +316,10 @@ class SeismicCatalogAttributeEvents(EntityAttributeEventMixin,
                     collection_identifiers=[])
 
                 self._orm_events.listen()
+                self.cat_modified.connect(self._on_catalog_modified)
 
             def _on_catalog_modified(self, value):
                 print(f'Catalog modified: {value}')
-
-
     """
 
     TARGET = SeismicCatalog
