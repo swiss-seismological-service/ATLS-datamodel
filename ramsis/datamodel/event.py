@@ -121,7 +121,7 @@ def create_collection_attribute_events(
 
 
 def create_instance_events(
-    targets, listener, identifiers=['load'], propagate=False):
+        targets, listener, identifiers=['load'], propagate=False):
     """
     Factory for instance events.
 
