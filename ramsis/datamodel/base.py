@@ -6,7 +6,8 @@ import datetime
 import enum
 import functools
 
-from sqlalchemy import Column, Boolean, Integer, Float, String, DateTime, event
+from sqlalchemy import (
+    Column, Boolean, Integer, Float, String, DateTime, event, inspect)
 from sqlalchemy.ext.declarative import declared_attr, declarative_base
 from sqlalchemy.orm import Session
 
@@ -310,7 +311,8 @@ def DeleteMultiParentOrphanMixin(parent_relationships):
             @event.listens_for(Session, 'after_flush')
             def delete_orphans(session, _):
                 for orphan in (i for i in session.dirty | session.new
-                               if isinstance(i, cls) and is_orphaned(i)):
+                        if isinstance(i, cls) and is_orphaned(i) and
+                        inspect(i).persistent):
                     session.delete(orphan)
 
     return Mixin
