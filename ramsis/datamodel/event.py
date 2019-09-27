@@ -1,7 +1,11 @@
 # Copyright 2019, ETH Zurich - Swiss Seismological Service SED
 """
 ORM event and signal facilities.
+
+The facilities are indented to simplify the (bulk) configuration and the setup
+of ORM level event listeners.
 """
+
 from itertools import product
 
 from sqlalchemy import event
