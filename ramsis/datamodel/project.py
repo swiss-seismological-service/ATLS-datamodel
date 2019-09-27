@@ -9,8 +9,6 @@ from sqlalchemy.orm import relationship
 
 from ramsis.datamodel.base import (ORMBase, CreationInfoMixin, NameMixin,
                                    UniqueOpenEpochMixin)
-from ramsis.datamodel.seismics import SeismicCatalog
-from ramsis.datamodel.well import InjectionWell
 from ramsis.datamodel.settings import ProjectSettings
 
 
@@ -44,10 +42,6 @@ class Project(CreationInfoMixin, NameMixin, UniqueOpenEpochMixin, ORMBase):
                                   uselist=False)
     settings = relationship('ProjectSettings', uselist=False)
 
-    # TODO(damb):
-    # * Implement a project factory/builder instead of using/abusing the
-    #   constructor
-
     def __init__(self, **kwargs):
         """
         Project initializer
@@ -57,8 +51,6 @@ class Project(CreationInfoMixin, NameMixin, UniqueOpenEpochMixin, ORMBase):
         """
         super().__init__(**kwargs)
         self.settings = ProjectSettings()
-        self.seismiccatalog = SeismicCatalog()
-        self.wells = [InjectionWell()]
 
     def forecast_iter(self, filter_cond=None):
         """

@@ -3,6 +3,7 @@
 Injection well ORM facilities.
 """
 
+import copy
 import inspect
 
 from sqlalchemy import Column, Integer, Boolean, String, ForeignKey
@@ -97,7 +98,8 @@ class InjectionWell(DeleteMultiParentOrphanMixin(['project',
 
     def snapshot(self, section_filter_cond=None, sample_filter_cond=None):
         """
-        Create a snapshot of the injection well.
+        Create a snapshot of the injection well. If available a snapshot
+        implies snapshotting the well's sections.
 
         :param section_filter_cond: Callable applied on well sections when
             creating the snapshot
@@ -111,9 +113,11 @@ class InjectionWell(DeleteMultiParentOrphanMixin(['project',
         """
         snap = type(self)()
         snap.publicid = self.publicid
-        snap.sections = [s.snapshot(filter_cond=sample_filter_cond)
-                         for s in list(filter(section_filter_cond,
-                                              self.sections))]
+
+        if self.sections:
+            snap.sections = [s.snapshot(filter_cond=sample_filter_cond)
+                             for s in list(filter(section_filter_cond,
+                                                  self.sections))]
         return snap
 
     def merge(self, other, merge_undefined=True):
@@ -138,7 +142,7 @@ class InjectionWell(DeleteMultiParentOrphanMixin(['project',
 
         if self.publicid == other.publicid:
 
-            MUTABLE_ATTRS = _ci_attrs
+            MUTABLE_ATTRS = copy.deepcopy(_ci_attrs)
             for attr in MUTABLE_ATTRS:
                 value = getattr(other, attr)
                 setattr(self, attr, value)
@@ -146,7 +150,7 @@ class InjectionWell(DeleteMultiParentOrphanMixin(['project',
             for sec in other.sections:
                 _sec = section_lookup_by_publicid(sec.publicid)
                 if _sec is None:
-                    self.sections.append(sec)
+                    self.sections.append(sec.copy())
                 else:
                     _sec.merge(sec)
         elif merge_undefined and not self.publicid:
@@ -206,7 +210,13 @@ class WellSection(PublicIDMixin,
 
     def snapshot(self, filter_cond=None):
         """
-        Create a snapshot of the well section.
+        Create a snapshot of the well section. If available, a snapshot
+        includes hydraulics.
+
+        .. note::
+
+            Snapshotting a well containing an injectionplan is currently not
+            implemented.
 
         :param filter_cond: Callable applied on hydraulic samples when creating
             the snapshot
@@ -215,10 +225,22 @@ class WellSection(PublicIDMixin,
         :returns: Snapshot of the well section
         :rtype: :py:class:`WellSection`
         """
-        snap = clone(self)
-        snap.hydraulics = self.hydraulics.snapshot(filter_cond=filter_cond)
+        snap = clone(self, with_foreignkeys=False)
+
+        if self.hydraulics:
+            snap.hydraulics = self.hydraulics.snapshot(
+                filter_cond=filter_cond)
+
+        if self.injectionplan:
+            raise NotImplementedError
 
         return snap
+
+    def copy(self):
+        """
+        Alias for :py:meth:`snapshot` without filtering conditions.
+        """
+        return self.snapshot()
 
     def merge(self, other):
         """
@@ -232,7 +254,7 @@ class WellSection(PublicIDMixin,
 
         if other and self.publicid == other.publicid:
 
-            MUTABLE_ATTRS = _ci_attrs
+            MUTABLE_ATTRS = copy.deepcopy(_ci_attrs)
             MUTABLE_ATTRS.append('endtime')
 
             # update mutable attributes
