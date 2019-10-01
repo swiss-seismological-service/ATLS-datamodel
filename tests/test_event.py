@@ -228,7 +228,7 @@ class AttributeEventsTestCase(unittest.TestCase):
 # $ export RAMSIS_TEST_SPATIALITE="True"; python setup.py test --addopts="-r s"
 @unittest.skipUnless(
     os.getenv('RAMSIS_TEST_SPATIALITE', 'False') == 'True',
-    "'RAMSIS_TEST_GISDB' envvar not 'True'")
+    "'RAMSIS_TEST_SPATIALITE' envvar not 'True'")
 class InstanceEventsTestCase(unittest.TestCase):
 
     def setUp(self):
