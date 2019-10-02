@@ -10,14 +10,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.event import listen
 from sqlalchemy.sql import select, func
 
-from ramsis.datamodel.status import Status # noqa
-from ramsis.datamodel.seismicity import SeismicityModel # noqa
-from ramsis.datamodel.forecast import Forecast # noqa
-from ramsis.datamodel.seismics import SeismicCatalog # noqa
-from ramsis.datamodel.well import InjectionWell # noqa
-from ramsis.datamodel.settings import ProjectSettings # noqa
-from ramsis.datamodel.project import Project # noqa
-from ramsis.datamodel.base import ORMBase
+import ramsis.datamodel as dm
 
 
 def load_spatialite(dbapi_conn, connection_record):
@@ -47,7 +40,7 @@ class GISDBTestCase(unittest.TestCase):
         conn.close()
 
     def test_create_tables(self):
-        self.assertIsNone(ORMBase.metadata.create_all(self.engine))
+        self.assertIsNone(dm.ORMBase.metadata.create_all(self.engine))
 
 
 def suite():
