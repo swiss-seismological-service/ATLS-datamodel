@@ -28,8 +28,6 @@ def load_spatialite(dbapi_conn, connection_record):
     dbapi_conn.enable_load_extension(True)
     dbapi_conn.load_extension('/usr/lib/x86_64-linux-gnu/mod_spatialite.so')
 
-# load_spatialite ()
-
 
 # XXX(damb): Enable SPATIALITE test cases with:
 # $ export RAMSIS_TEST_SPATIALITE="True"; python setup.py test --addopts="-r s"
