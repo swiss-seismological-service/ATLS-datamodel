@@ -7,15 +7,7 @@ import datetime
 import unittest
 import uuid
 
-from ramsis.datamodel.status import Status  # noqa
-from ramsis.datamodel.seismicity import SeismicityModel  # noqa
-from ramsis.datamodel.forecast import Forecast  # noqa
-from ramsis.datamodel.seismics import SeismicCatalog, SeismicEvent  # noqa
-from ramsis.datamodel.well import InjectionWell, WellSection  # noqa
-from ramsis.datamodel.hydraulics import (  # noqa
-    Hydraulics, InjectionPlan, HydraulicSample)  # noqa
-from ramsis.datamodel.settings import ProjectSettings  # noqa
-from ramsis.datamodel.project import Project  # noqa
+import ramsis.datamodel as dm
 
 
 class InjectionWellTestCase(unittest.TestCase):
@@ -25,23 +17,23 @@ class InjectionWellTestCase(unittest.TestCase):
 
     def test_longitude(self):
         reference_result = 8.925293642
-        bh = InjectionWell()
-        s0 = WellSection(toplongitude_value=reference_result,
-                         toplatitude_value=46.90669014,
-                         topdepth_value=0,
-                         bottomlongitude_value=9,
-                         bottomlatitude_value=47,
-                         bottomdepth_value=500,
-                         holediameter_value=0.3,
-                         casingdiameter_value=0.25)
-        s1 = WellSection(toplongitude_value=9,
-                         toplatitude_value=47,
-                         topdepth_value=500,
-                         bottomlongitude_value=9.01,
-                         bottomlatitude_value=47.01,
-                         bottomdepth_value=1500,
-                         holediameter_value=0.25,
-                         casingdiameter_value=0)
+        bh = dm.InjectionWell()
+        s0 = dm.WellSection(toplongitude_value=reference_result,
+                            toplatitude_value=46.90669014,
+                            topdepth_value=0,
+                            bottomlongitude_value=9,
+                            bottomlatitude_value=47,
+                            bottomdepth_value=500,
+                            holediameter_value=0.3,
+                            casingdiameter_value=0.25)
+        s1 = dm.WellSection(toplongitude_value=9,
+                            toplatitude_value=47,
+                            topdepth_value=500,
+                            bottomlongitude_value=9.01,
+                            bottomlatitude_value=47.01,
+                            bottomdepth_value=1500,
+                            holediameter_value=0.25,
+                            casingdiameter_value=0)
 
         bh.sections = [s0, s1]
 
@@ -49,23 +41,23 @@ class InjectionWellTestCase(unittest.TestCase):
 
     def test_latitude(self):
         reference_result = 46.90669014
-        bh = InjectionWell()
-        s0 = WellSection(toplongitude_value=8.925293642,
-                         toplatitude_value=reference_result,
-                         topdepth_value=0,
-                         bottomlongitude_value=9,
-                         bottomlatitude_value=47,
-                         bottomdepth_value=500,
-                         holediameter_value=0.3,
-                         casingdiameter_value=0.25)
-        s1 = WellSection(toplongitude_value=9,
-                         toplatitude_value=47,
-                         topdepth_value=500,
-                         bottomlongitude_value=9.01,
-                         bottomlatitude_value=47.01,
-                         bottomdepth_value=1500,
-                         holediameter_value=0.25,
-                         casingdiameter_value=0)
+        bh = dm.InjectionWell()
+        s0 = dm.WellSection(toplongitude_value=8.925293642,
+                            toplatitude_value=reference_result,
+                            topdepth_value=0,
+                            bottomlongitude_value=9,
+                            bottomlatitude_value=47,
+                            bottomdepth_value=500,
+                            holediameter_value=0.3,
+                            casingdiameter_value=0.25)
+        s1 = dm.WellSection(toplongitude_value=9,
+                            toplatitude_value=47,
+                            topdepth_value=500,
+                            bottomlongitude_value=9.01,
+                            bottomlatitude_value=47.01,
+                            bottomdepth_value=1500,
+                            holediameter_value=0.25,
+                            casingdiameter_value=0)
 
         bh.sections = [s0, s1]
 
@@ -73,23 +65,23 @@ class InjectionWellTestCase(unittest.TestCase):
 
     def test_depth(self):
         reference_result = 1500
-        bh = InjectionWell()
-        s0 = WellSection(toplongitude_value=8.925293642,
-                         toplatitude_value=46.90669014,
-                         topdepth_value=0,
-                         bottomlongitude_value=9,
-                         bottomlatitude_value=47,
-                         bottomdepth_value=500,
-                         holediameter_value=0.3,
-                         casingdiameter_value=0.25)
-        s1 = WellSection(toplongitude_value=9,
-                         toplatitude_value=47,
-                         topdepth_value=500,
-                         bottomlongitude_value=9.01,
-                         bottomlatitude_value=47.01,
-                         bottomdepth_value=reference_result,
-                         holediameter_value=0.25,
-                         casingdiameter_value=0)
+        bh = dm.InjectionWell()
+        s0 = dm.WellSection(toplongitude_value=8.925293642,
+                            toplatitude_value=46.90669014,
+                            topdepth_value=0,
+                            bottomlongitude_value=9,
+                            bottomlatitude_value=47,
+                            bottomdepth_value=500,
+                            holediameter_value=0.3,
+                            casingdiameter_value=0.25)
+        s1 = dm.WellSection(toplongitude_value=9,
+                            toplatitude_value=47,
+                            topdepth_value=500,
+                            bottomlongitude_value=9.01,
+                            bottomlatitude_value=47.01,
+                            bottomdepth_value=reference_result,
+                            holediameter_value=0.25,
+                            casingdiameter_value=0)
 
         bh.sections = [s0, s1]
 
@@ -97,23 +89,23 @@ class InjectionWellTestCase(unittest.TestCase):
 
     def test_injectionpoint(self):
         reference_result = (9, 47, 500)
-        bh = InjectionWell()
-        s0 = WellSection(toplongitude_value=8.925293642,
-                         toplatitude_value=46.90669014,
-                         topdepth_value=0,
-                         bottomlongitude_value=9,
-                         bottomlatitude_value=47,
-                         bottomdepth_value=500,
-                         holediameter_value=0.3,
-                         casingdiameter_value=0.25)
-        s1 = WellSection(toplongitude_value=9,
-                         toplatitude_value=47,
-                         topdepth_value=500,
-                         bottomlongitude_value=9.01,
-                         bottomlatitude_value=47.01,
-                         bottomdepth_value=1500,
-                         holediameter_value=0.25,
-                         casingdiameter_value=0)
+        bh = dm.InjectionWell()
+        s0 = dm.WellSection(toplongitude_value=8.925293642,
+                            toplatitude_value=46.90669014,
+                            topdepth_value=0,
+                            bottomlongitude_value=9,
+                            bottomlatitude_value=47,
+                            bottomdepth_value=500,
+                            holediameter_value=0.3,
+                            casingdiameter_value=0.25)
+        s1 = dm.WellSection(toplongitude_value=9,
+                            toplatitude_value=47,
+                            topdepth_value=500,
+                            bottomlongitude_value=9.01,
+                            bottomlatitude_value=47.01,
+                            bottomdepth_value=1500,
+                            holediameter_value=0.25,
+                            casingdiameter_value=0)
 
         bh.sections = [s0, s1]
 
@@ -125,20 +117,20 @@ class InjectionWellTestCase(unittest.TestCase):
         num_samples = 7
         delta_flow = 0.1
         samples = [
-            HydraulicSample(datetime_value=dt + i * interval,
-                            topflow_value=i,
-                            bottomflow_value=i - delta_flow)
+            dm.HydraulicSample(datetime_value=dt + i * interval,
+                               topflow_value=i,
+                               bottomflow_value=i - delta_flow)
             for i in range(num_samples)]
-        s0 = WellSection(toplongitude_value=8.925293642,
-                         toplatitude_value=46.90669014,
-                         topdepth_value=0,
-                         bottomlongitude_value=9,
-                         bottomlatitude_value=47,
-                         bottomdepth_value=500,
-                         holediameter_value=0.3,
-                         casingdiameter_value=0.25,
-                         hydraulics=Hydraulics(samples=samples))
-        bh = InjectionWell(
+        s0 = dm.WellSection(toplongitude_value=8.925293642,
+                            toplatitude_value=46.90669014,
+                            topdepth_value=0,
+                            bottomlongitude_value=9,
+                            bottomlatitude_value=47,
+                            bottomdepth_value=500,
+                            holediameter_value=0.3,
+                            casingdiameter_value=0.25,
+                            hydraulics=dm.Hydraulics(samples=samples))
+        bh = dm.InjectionWell(
             publicid=str(uuid.uuid4()),
             sections=[s0, ])
 
@@ -159,20 +151,20 @@ class InjectionWellTestCase(unittest.TestCase):
         num_samples = 7
         delta_flow = 0.1
         samples = [
-            HydraulicSample(datetime_value=dt + i * interval,
-                            topflow_value=i,
-                            bottomflow_value=i - delta_flow)
+            dm.HydraulicSample(datetime_value=dt + i * interval,
+                               topflow_value=i,
+                               bottomflow_value=i - delta_flow)
             for i in range(num_samples)]
-        s0 = WellSection(toplongitude_value=8.925293642,
-                         toplatitude_value=46.90669014,
-                         topdepth_value=0,
-                         bottomlongitude_value=9,
-                         bottomlatitude_value=47,
-                         bottomdepth_value=500,
-                         holediameter_value=0.3,
-                         casingdiameter_value=0.25,
-                         hydraulics=Hydraulics(samples=samples))
-        bh = InjectionWell(
+        s0 = dm.WellSection(toplongitude_value=8.925293642,
+                            toplatitude_value=46.90669014,
+                            topdepth_value=0,
+                            bottomlongitude_value=9,
+                            bottomlatitude_value=47,
+                            bottomdepth_value=500,
+                            holediameter_value=0.3,
+                            casingdiameter_value=0.25,
+                            hydraulics=dm.Hydraulics(samples=samples))
+        bh = dm.InjectionWell(
             publicid=str(uuid.uuid4()),
             sections=[s0, ])
 
@@ -198,29 +190,29 @@ class InjectionWellTestCase(unittest.TestCase):
         num_samples = 7
         delta_flow = 0.1
         samples = [
-            HydraulicSample(datetime_value=dt + i * interval,
-                            topflow_value=i,
-                            bottomflow_value=i - delta_flow)
+            dm.HydraulicSample(datetime_value=dt + i * interval,
+                               topflow_value=i,
+                               bottomflow_value=i - delta_flow)
             for i in range(num_samples)]
-        s0 = WellSection(toplongitude_value=8.925293642,
-                         toplatitude_value=46.90669014,
-                         topdepth_value=0,
-                         bottomlongitude_value=9,
-                         bottomlatitude_value=47,
-                         bottomdepth_value=500,
-                         holediameter_value=0.3,
-                         casingdiameter_value=0.25,
-                         hydraulics=Hydraulics(samples=samples))
-        s1 = WellSection(toplongitude_value=9,
-                         toplatitude_value=47,
-                         topdepth_value=500,
-                         bottomlongitude_value=9.01,
-                         bottomlatitude_value=47.01,
-                         bottomdepth_value=1500,
-                         holediameter_value=0.25,
-                         casingdiameter_value=0)
+        s0 = dm.WellSection(toplongitude_value=8.925293642,
+                            toplatitude_value=46.90669014,
+                            topdepth_value=0,
+                            bottomlongitude_value=9,
+                            bottomlatitude_value=47,
+                            bottomdepth_value=500,
+                            holediameter_value=0.3,
+                            casingdiameter_value=0.25,
+                            hydraulics=dm.Hydraulics(samples=samples))
+        s1 = dm.WellSection(toplongitude_value=9,
+                            toplatitude_value=47,
+                            topdepth_value=500,
+                            bottomlongitude_value=9.01,
+                            bottomlatitude_value=47.01,
+                            bottomdepth_value=1500,
+                            holediameter_value=0.25,
+                            casingdiameter_value=0)
 
-        bh = InjectionWell(
+        bh = dm.InjectionWell(
             publicid=str(uuid.uuid4()),
             sections=[s0, s1, ])
 
@@ -246,11 +238,11 @@ class InjectionWellTestCase(unittest.TestCase):
         dt = datetime.datetime(2020, 1, 1)
         delta = datetime.timedelta(days=365)
 
-        bh0 = InjectionWell(
+        bh0 = dm.InjectionWell(
             publicid=bh_id,
             creationinfo_creationtime=dt)
 
-        bh1 = InjectionWell(
+        bh1 = dm.InjectionWell(
             publicid=bh_id,
             creationinfo_creationtime=dt + delta)
 
@@ -264,18 +256,18 @@ class InjectionWellTestCase(unittest.TestCase):
         delta = datetime.timedelta(days=365)
 
         sec_id = str(uuid.uuid4())
-        s0 = WellSection(publicid=sec_id,
-                         starttime=dt,
-                         endtime=None)
-        s1 = WellSection(publicid=sec_id,
-                         starttime=dt,
-                         endtime=dt + delta)
+        s0 = dm.WellSection(publicid=sec_id,
+                            starttime=dt,
+                            endtime=None)
+        s1 = dm.WellSection(publicid=sec_id,
+                            starttime=dt,
+                            endtime=dt + delta)
 
-        bh0 = InjectionWell(
+        bh0 = dm.InjectionWell(
             publicid=bh_id,
             sections=[s0, ])
 
-        bh1 = InjectionWell(
+        bh1 = dm.InjectionWell(
             publicid=bh_id,
             sections=[s1, ])
 
@@ -289,19 +281,19 @@ class InjectionWellTestCase(unittest.TestCase):
         delta = datetime.timedelta(days=365)
 
         sec_id0 = str(uuid.uuid4())
-        s0 = WellSection(publicid=sec_id0,
-                         starttime=dt,
-                         endtime=None)
+        s0 = dm.WellSection(publicid=sec_id0,
+                            starttime=dt,
+                            endtime=None)
         sec_id1 = str(uuid.uuid4())
-        s1 = WellSection(publicid=sec_id1,
-                         starttime=dt + delta,
-                         endtime=None)
+        s1 = dm.WellSection(publicid=sec_id1,
+                            starttime=dt + delta,
+                            endtime=None)
 
-        bh0 = InjectionWell(
+        bh0 = dm.InjectionWell(
             publicid=bh_id,
             sections=[s0, ])
 
-        bh1 = InjectionWell(
+        bh1 = dm.InjectionWell(
             publicid=bh_id,
             sections=[s1, ])
 
@@ -310,23 +302,23 @@ class InjectionWellTestCase(unittest.TestCase):
         self.assertEqual(len(bh0.sections), 2)
 
     def test_merge_to_empty(self):
-        bh0 = InjectionWell()
+        bh0 = dm.InjectionWell()
 
         bh_id = str(uuid.uuid4())
         sec_id = str(uuid.uuid4())
         dt = datetime.datetime(2020, 1, 1)
-        s0 = WellSection(publicid=sec_id,
-                         starttime=dt,
-                         endtime=None,
-                         toplongitude_value=8.925293642,
-                         toplatitude_value=46.90669014,
-                         topdepth_value=0,
-                         bottomlongitude_value=9,
-                         bottomlatitude_value=47,
-                         bottomdepth_value=500,
-                         holediameter_value=0.3,
-                         casingdiameter_value=0.25)
-        bh1 = InjectionWell(
+        s0 = dm.WellSection(publicid=sec_id,
+                            starttime=dt,
+                            endtime=None,
+                            toplongitude_value=8.925293642,
+                            toplatitude_value=46.90669014,
+                            topdepth_value=0,
+                            bottomlongitude_value=9,
+                            bottomlatitude_value=47,
+                            bottomdepth_value=500,
+                            holediameter_value=0.3,
+                            casingdiameter_value=0.25)
+        bh1 = dm.InjectionWell(
             publicid=bh_id,
             sections=[s0, ])
 
@@ -348,34 +340,34 @@ class WellSectionTestCase(unittest.TestCase):
         num_samples = 7
         delta_flow = 0.1
         samples = [
-            HydraulicSample(datetime_value=dt + i * interval,
-                            topflow_value=i,
-                            bottomflow_value=i - delta_flow)
+            dm.HydraulicSample(datetime_value=dt + i * interval,
+                               topflow_value=i,
+                               bottomflow_value=i - delta_flow)
             for i in range(num_samples)]
         sec_id = str(uuid.uuid4())
-        s0 = WellSection(publicid=sec_id,
-                         starttime=dt,
-                         endtime=None,
-                         toplongitude_value=8.925293642,
-                         toplatitude_value=46.90669014,
-                         topdepth_value=0,
-                         bottomlongitude_value=9,
-                         bottomlatitude_value=47,
-                         bottomdepth_value=500,
-                         holediameter_value=0.3,
-                         casingdiameter_value=0.25,
-                         hydraulics=Hydraulics(samples=samples))
-        s1 = WellSection(publicid=sec_id,
-                         starttime=dt,
-                         endtime=dt + (num_samples - 1) * interval,
-                         toplongitude_value=8.925293642,
-                         toplatitude_value=46.90669014,
-                         topdepth_value=0,
-                         bottomlongitude_value=9,
-                         bottomlatitude_value=47,
-                         bottomdepth_value=500,
-                         holediameter_value=0.3,
-                         casingdiameter_value=0.25)
+        s0 = dm.WellSection(publicid=sec_id,
+                            starttime=dt,
+                            endtime=None,
+                            toplongitude_value=8.925293642,
+                            toplatitude_value=46.90669014,
+                            topdepth_value=0,
+                            bottomlongitude_value=9,
+                            bottomlatitude_value=47,
+                            bottomdepth_value=500,
+                            holediameter_value=0.3,
+                            casingdiameter_value=0.25,
+                            hydraulics=dm.Hydraulics(samples=samples))
+        s1 = dm.WellSection(publicid=sec_id,
+                            starttime=dt,
+                            endtime=dt + (num_samples - 1) * interval,
+                            toplongitude_value=8.925293642,
+                            toplatitude_value=46.90669014,
+                            topdepth_value=0,
+                            bottomlongitude_value=9,
+                            bottomlatitude_value=47,
+                            bottomdepth_value=500,
+                            holediameter_value=0.3,
+                            casingdiameter_value=0.25)
 
         s0.merge(s1)
 
@@ -388,43 +380,43 @@ class WellSectionTestCase(unittest.TestCase):
         num_samples = 7
         delta_flow = 0.1
         samples0 = [
-            HydraulicSample(datetime_value=dt0 + i * interval,
-                            topflow_value=i,
-                            bottomflow_value=i - delta_flow)
+            dm.HydraulicSample(datetime_value=dt0 + i * interval,
+                               topflow_value=i,
+                               bottomflow_value=i - delta_flow)
             for i in range(num_samples)]
 
         dt1 = datetime.datetime(2021, 1, 1)
         samples1 = [
-            HydraulicSample(datetime_value=dt1 + i * interval,
-                            topflow_value=i,
-                            bottomflow_value=i - delta_flow)
+            dm.HydraulicSample(datetime_value=dt1 + i * interval,
+                               topflow_value=i,
+                               bottomflow_value=i - delta_flow)
             for i in range(num_samples)]
 
         sec_id = str(uuid.uuid4())
-        s0 = WellSection(publicid=sec_id,
-                         starttime=dt0,
-                         endtime=None,
-                         toplongitude_value=8.925293642,
-                         toplatitude_value=46.90669014,
-                         topdepth_value=0,
-                         bottomlongitude_value=9,
-                         bottomlatitude_value=47,
-                         bottomdepth_value=500,
-                         holediameter_value=0.3,
-                         casingdiameter_value=0.25,
-                         hydraulics=Hydraulics(samples=samples0))
-        s1 = WellSection(publicid=sec_id,
-                         starttime=dt1,
-                         endtime=None,
-                         toplongitude_value=8.925293642,
-                         toplatitude_value=46.90669014,
-                         topdepth_value=0,
-                         bottomlongitude_value=9,
-                         bottomlatitude_value=47,
-                         bottomdepth_value=500,
-                         holediameter_value=0.3,
-                         casingdiameter_value=0.25,
-                         hydraulics=Hydraulics(samples=samples1))
+        s0 = dm.WellSection(publicid=sec_id,
+                            starttime=dt0,
+                            endtime=None,
+                            toplongitude_value=8.925293642,
+                            toplatitude_value=46.90669014,
+                            topdepth_value=0,
+                            bottomlongitude_value=9,
+                            bottomlatitude_value=47,
+                            bottomdepth_value=500,
+                            holediameter_value=0.3,
+                            casingdiameter_value=0.25,
+                            hydraulics=dm.Hydraulics(samples=samples0))
+        s1 = dm.WellSection(publicid=sec_id,
+                            starttime=dt1,
+                            endtime=None,
+                            toplongitude_value=8.925293642,
+                            toplatitude_value=46.90669014,
+                            topdepth_value=0,
+                            bottomlongitude_value=9,
+                            bottomlatitude_value=47,
+                            bottomdepth_value=500,
+                            holediameter_value=0.3,
+                            casingdiameter_value=0.25,
+                            hydraulics=dm.Hydraulics(samples=samples1))
 
         s0.merge(s1)
 

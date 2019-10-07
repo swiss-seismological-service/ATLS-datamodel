@@ -6,16 +6,9 @@ Seismics related test facilities.
 import datetime
 import unittest
 
+import ramsis.datamodel as dm
+
 from ramsis.datamodel.status import EStatus, Status  # noqa
-from ramsis.datamodel.seismicity import (
-    SeismicityModel, SeismicityModelRun, ReservoirSeismicityPrediction)  # noqa
-from ramsis.datamodel.forecast import (
-    Forecast, ForecastScenario, SeismicityForecastStage) # noqa
-from ramsis.datamodel.seismics import SeismicCatalog, SeismicEvent  # noqa
-from ramsis.datamodel.well import InjectionWell, WellSection  # noqa
-from ramsis.datamodel.hydraulics import Hydraulics, InjectionPlan  # noqa
-from ramsis.datamodel.settings import ProjectSettings  # noqa
-from ramsis.datamodel.project import Project  # noqa
 
 
 class ForecastTestCase(unittest.TestCase):
@@ -24,17 +17,17 @@ class ForecastTestCase(unittest.TestCase):
     """
 
     def test_clone_without_results(self):
-        model = SeismicityModel(
+        model = dm.SeismicityModel(
             name='EM1.1',
             enabled=True,
             sfmwid='EM1',
             url='http://localhost:5000',
             config={'foo': 42})
 
-        model_run = SeismicityModelRun(
+        model_run = dm.SeismicityModelRun(
             model=model,
-            status=Status(state=EStatus.COMPLETE),
-            result=ReservoirSeismicityPrediction(
+            status=dm.Status(state=EStatus.COMPLETE),
+            result=dm.ReservoirSeismicityPrediction(
                 geom=('POLYHEDRALSURFACE Z '
                       '(((0 0 0, 0 2 0, 2 2 0, 2 0 0, 0 0 0)),'
                       '((0 0 0, 0 2 0, 0 2 2, 0 0 2, 0 0 0)),'
@@ -43,21 +36,21 @@ class ForecastTestCase(unittest.TestCase):
                       '((2 2 2, 2 0 2, 2 0 0, 2 2 0, 2 2 2)),'
                       '((2 2 2, 2 2 0, 0 2 0, 0 2 2, 2 2 2)))')))
 
-        fc_stage = SeismicityForecastStage(
+        fc_stage = dm.SeismicityForecastStage(
             config={},
             enabled=True,
             runs=[model_run, ])
 
-        fc_scenario = ForecastScenario(stages=[fc_stage, ],
-                                       well=InjectionWell())
+        fc_scenario = dm.ForecastScenario(stages=[fc_stage, ],
+                                          well=dm.InjectionWell())
 
-        fc = Forecast(name='Forecast',
-                      config={},
-                      scenarios=[fc_scenario, ],
-                      starttime=datetime.datetime.utcnow(),
-                      endtime=datetime.datetime.utcnow(),
-                      seismiccatalog=SeismicCatalog(),
-                      well=InjectionWell())
+        fc = dm.Forecast(name='Forecast',
+                         config={},
+                         scenarios=[fc_scenario, ],
+                         starttime=datetime.datetime.utcnow(),
+                         endtime=datetime.datetime.utcnow(),
+                         seismiccatalog=dm.SeismicCatalog(),
+                         well=dm.InjectionWell())
 
         cloned = fc.clone(with_results=False)
 
@@ -67,5 +60,5 @@ class ForecastTestCase(unittest.TestCase):
         self.assertEqual(cloned.well, None)
         self.assertEqual(cloned.scenarios[0].well, fc.scenarios[0].well)
         self.assertEqual(cloned.scenarios[0].stages[0].runs[0].status.state,
-                         EStatus.PENDING)
+                         dm.EStatus.PENDING)
         self.assertEqual(cloned.scenarios[0].stages[0].runs[0].result, None)
