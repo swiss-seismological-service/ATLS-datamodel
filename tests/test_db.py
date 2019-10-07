@@ -5,7 +5,6 @@ General purpose DB test facilities.
 
 import os
 import unittest
-import tempfile
 
 from sqlalchemy import create_engine
 from sqlalchemy.event import listen
@@ -32,26 +31,22 @@ def load_spatialite(dbapi_conn, connection_record):
 # load_spatialite ()
 
 
-# XXX(damb): Enable GISDB test cases with:
-# $ export RAMSIS_TEST_GISDB="True"; python setup.py test --addopts="-r s"
+# XXX(damb): Enable SPATIALITE test cases with:
+# $ export RAMSIS_TEST_SPATIALITE="True"; python setup.py test --addopts="-r s"
 @unittest.skipUnless(
-    os.getenv('RAMSIS_TEST_GISDB', 'False') == 'True',
-    "'RAMSIS_TEST_GISDB' envvar not 'True'")
+    os.getenv('RAMSIS_TEST_SPATIALITE', 'False') == 'True',
+    "'RAMSIS_TEST_SPATIALITE' envvar not 'True'")
 class GISDBTestCase(unittest.TestCase):
 
     def setUp(self):
-        _, self.path_db = tempfile.mkstemp(dir=tempfile.gettempdir())
         # XXX(damb): see:
         # https://geoalchemy-2.readthedocs.io/en/latest/spatialite_tutorial.html
-        self.engine = create_engine('sqlite:///{}'.format(self.path_db))
+        self.engine = create_engine('sqlite://')
         listen(self.engine, 'connect', load_spatialite)
 
         conn = self.engine.connect()
         conn.execute(select([func.InitSpatialMetaData()]))
         conn.close()
-
-    def tearDown(self):
-        os.remove(self.path_db)
 
     def test_create_tables(self):
         self.assertIsNone(ORMBase.metadata.create_all(self.engine))
