@@ -114,6 +114,7 @@ class InjectionWell(DeleteMultiParentOrphanMixin(['project',
         """
         snap = type(self)()
         snap.publicid = self.publicid
+        snap.altitude_value = self.altitude_value
 
         if self.sections:
             snap.sections = [s.snapshot(filter_cond=sample_filter_cond)
