@@ -139,7 +139,7 @@ class ReservoirSeismicityPrediction(ORMBase):
     # reference: self (Adjacency List Relationships)
     parent_id = Column(Integer,
                        ForeignKey('reservoirseismicityprediction.id'))
-    children = relationship(
+    sub_geometries = relationship(
         'ReservoirSeismicityPrediction',
         backref=backref('parent', remote_side=[id]),
         cascade="all, delete-orphan")
