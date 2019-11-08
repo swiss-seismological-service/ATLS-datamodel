@@ -27,8 +27,8 @@ class InjectionWell(DeleteMultiParentOrphanMixin(['project',
                                                   'scenario']),
                     PublicIDMixin,
                     CreationInfoMixin,
-                    RealQuantityMixin('bedrockdepth', optional=True),
                     RealQuantityMixin('altitude', optional=False),
+                    RealQuantityMixin('bedrockz', optional=True),
                     ORMBase):
     """
     ORM injection well representation.
@@ -54,27 +54,27 @@ class InjectionWell(DeleteMultiParentOrphanMixin(['project',
                             cascade='all, delete-orphan')
 
     @hybrid_property
-    def longitude(self):
+    def x(self):
         if not self.sections:
             return None
-        # min topdepth defines top-section
+        # min topz defines top-section
         return min([s for s in self.sections],
-                   key=lambda x: x.topdepth_value).toplongitude_value
+                   key=lambda x: x.topz_value).topx_value
 
     @hybrid_property
-    def latitude(self):
+    def y(self):
         if not self.sections:
             return None
-        # min topdepth defines top-section
+        # min topz defines top-section
         return min([s for s in self.sections],
-                   key=lambda x: x.topdepth_value).toplatitude_value
+                   key=lambda x: x.topz_value).topy_value
 
     @hybrid_property
-    def depth(self):
+    def z(self):
         if not self.sections:
             return None
-        # max bottomdepth defines bottom-section
-        return max([s.bottomdepth_value for s in self.sections])
+        # max bottomz defines bottom-section
+        return max([s.bottomz_value for s in self.sections])
 
     @hybrid_property
     def injectionpoint(self):
@@ -88,14 +88,14 @@ class InjectionWell(DeleteMultiParentOrphanMixin(['project',
         """
         isection = min([s for s in self.sections
                        if s.casingdiameter_value and not s.bottomclosed],
-                       key=lambda x: x.bottomdepth_value, default=None)
+                       key=lambda x: x.bottomz_value, default=None)
 
         if not isection:
             raise ValueError('Cased borehole has a closed bottom.')
 
-        return (isection.bottomlongitude_value,
-                isection.bottomlatitude_value,
-                isection.bottomdepth_value)
+        return (isection.bottomx_value,
+                isection.bottomy_value,
+                isection.bottomz_value)
 
     def snapshot(self, section_filter_cond=None, sample_filter_cond=None):
         """
@@ -169,20 +169,20 @@ class InjectionWell(DeleteMultiParentOrphanMixin(['project',
         return self.sections[item] if self.sections else None
 
     def __repr__(self):
-        return ("<{}(publicid={!r}, longitude={}, latitude={}, "
-                "depth={})>").format(type(self).__name__, self.publicid,
-                                     self.longitude, self.latitude, self.depth)
+        return ("<{}(publicid={!r}, x={}, y={}, "
+                "z={})>").format(type(self).__name__, self.publicid,
+                                     self.x, self.y, self.z)
 
 
 class WellSection(PublicIDMixin,
                   CreationInfoMixin,
                   UniqueOpenEpochMixin,
-                  RealQuantityMixin('toplongitude'),
-                  RealQuantityMixin('toplatitude'),
-                  RealQuantityMixin('topdepth'),
-                  RealQuantityMixin('bottomlongitude'),
-                  RealQuantityMixin('bottomlatitude'),
-                  RealQuantityMixin('bottomdepth'),
+                  RealQuantityMixin('topx'),
+                  RealQuantityMixin('topy'),
+                  RealQuantityMixin('topz'),
+                  RealQuantityMixin('bottomx'),
+                  RealQuantityMixin('bottomy'),
+                  RealQuantityMixin('bottomz'),
                   RealQuantityMixin('holediameter', optional=True),
                   RealQuantityMixin('casingdiameter', optional=True),
                   ORMBase):
