@@ -171,7 +171,7 @@ class InjectionWell(DeleteMultiParentOrphanMixin(['project',
     def __repr__(self):
         return ("<{}(publicid={!r}, x={}, y={}, "
                 "z={})>").format(type(self).__name__, self.publicid,
-                                     self.x, self.y, self.z)
+                                 self.x, self.y, self.z)
 
 
 class WellSection(PublicIDMixin,
