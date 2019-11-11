@@ -28,7 +28,7 @@ class InjectionWell(DeleteMultiParentOrphanMixin(['project',
                     PublicIDMixin,
                     CreationInfoMixin,
                     RealQuantityMixin('altitude', optional=False),
-                    RealQuantityMixin('bedrockz', optional=True),
+                    RealQuantityMixin('bedrockdepth', optional=True),
                     ORMBase):
     """
     ORM injection well representation.
