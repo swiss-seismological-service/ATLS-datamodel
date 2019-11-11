@@ -28,6 +28,7 @@ class InjectionWell(DeleteMultiParentOrphanMixin(['project',
                     PublicIDMixin,
                     CreationInfoMixin,
                     RealQuantityMixin('bedrockdepth', optional=True),
+                    RealQuantityMixin('altitude', optional=False),
                     ORMBase):
     """
     ORM injection well representation.
@@ -113,6 +114,7 @@ class InjectionWell(DeleteMultiParentOrphanMixin(['project',
         """
         snap = type(self)()
         snap.publicid = self.publicid
+        snap.altitude_value = self.altitude_value
 
         if self.sections:
             snap.sections = [s.snapshot(filter_cond=sample_filter_cond)
