@@ -22,7 +22,7 @@ class SeismicCatalog(DeleteMultiParentOrphanMixin(['project', 'forecast']),
     """
     # relation: Project
     project_id = Column(Integer, ForeignKey('project.id'))
-    project = relationship('Project', back_populates='seismiccatalog')
+    project = relationship('Project', back_populates='seismiccatalogs')
     # relation: Forecast
     forecast_id = Column(Integer, ForeignKey('forecast.id'))
     forecast = relationship('Forecast',

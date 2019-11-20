@@ -29,16 +29,16 @@ class Forecast(CreationInfoMixin,
     """
     config = Column(MutableDict.as_mutable(JSONEncodedDict))
     enabled = Column(Boolean, default=True)
+    status = relationship('Status', back_populates='forecast',
+                          uselist=False, cascade='all, delete-orphan')
 
     # relation: Project
     project_id = Column(Integer, ForeignKey('project.id'))
     project = relationship('Project', back_populates='forecasts')
-    seismiccatalog = relationship('SeismicCatalog',
-                                  uselist=False,
+    seismiccatalog = relationship('SeismicCatalog', uselist=True,
                                   back_populates='forecast',
                                   cascade='all')
-    well = relationship('InjectionWell',
-                        uselist=False,
+    well = relationship('InjectionWell', uselist=True,
                         back_populates='forecast',
                         cascade='all')
     scenarios = relationship('ForecastScenario',
@@ -65,7 +65,6 @@ class Forecast(CreationInfoMixin,
             data while cloning, otherwise results are excluded.
         """
         new = clone(self, with_foreignkeys=False)
-
         if with_results:
             new.seismiccatalog = self.seismiccatalog
             new.well = self.well
@@ -84,7 +83,7 @@ class Forecast(CreationInfoMixin,
         After reset a forecast can be re-run.
 
         """
-        self.seismiccatalog = None
+        self.seismiccatalog = []
         for scenario in self.scenarios:
             scenario.reset()
 
@@ -108,6 +107,8 @@ class ForecastScenario(NameMixin, ORMBase):
     """
     config = Column(MutableDict.as_mutable(JSONEncodedDict))
     enabled = Column(Boolean, default=True)
+    status = relationship('Status', back_populates='scenario',
+                          uselist=False, cascade='all, delete-orphan')
 
     reservoirgeom = Column(Geometry(geometry_type='GEOMETRYZ',
                                     dimension=3,
@@ -119,8 +120,8 @@ class ForecastScenario(NameMixin, ORMBase):
     forecast = relationship('Forecast', back_populates='scenarios')
     # relation: InjectionWell
     well = relationship('InjectionWell',
-                        uselist=False,
                         back_populates='scenario',
+                        uselist=False,
                         cascade='all')
     # XXX(damb): How to perform the cascade?
     # cascade='all, delete-orphan')
@@ -196,6 +197,8 @@ class ForecastStage(ORMBase):
     """
     config = Column(MutableDict.as_mutable(JSONEncodedDict))
     enabled = Column(Boolean, default=True)
+    status = relationship('Status', back_populates='stage',
+                          uselist=False, cascade='all, delete-orphan')
     _type = Column(sqlalchemy.Enum(EStage))
 
     scenario_id = Column(Integer, ForeignKey('forecastscenario.id'))

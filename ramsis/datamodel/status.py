@@ -20,6 +20,7 @@ class EStatus(enum.Enum):
     RUNNING = 1
     ERROR = 2
     COMPLETE = 3
+    DISPATCHED = 4
 
 
 class Status(UniqueEpochMixin, ORMBase):
@@ -40,6 +41,18 @@ class Status(UniqueEpochMixin, ORMBase):
     # relation: ModelRun
     run_id = Column(Integer, ForeignKey('modelrun.id'))
     run = relationship('ModelRun', back_populates='status')
+
+    # relation: Forecast
+    forecast_id = Column(Integer, ForeignKey('forecast.id'))
+    forecast = relationship('Forecast', back_populates='status')
+
+    # relation: ForecastScenario
+    scenario_id = Column(Integer, ForeignKey('forecastscenario.id'))
+    scenario = relationship('ForecastScenario', back_populates='status')
+
+    # relation: ForecastStage
+    stage_id = Column(Integer, ForeignKey('forecaststage.id'))
+    stage = relationship('ForecastStage', back_populates='status')
 
     def __init__(self, state=EStatus.PENDING, info=None):
         self.state = state

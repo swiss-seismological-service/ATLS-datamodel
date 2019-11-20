@@ -6,6 +6,7 @@ Project related ORM facilities.
 from geoalchemy2 import Geometry
 from sqlalchemy import Column, String
 from sqlalchemy.orm import relationship
+from sqlalchemy.ext.hybrid import hybrid_property
 
 from ramsis.datamodel.base import (ORMBase, CreationInfoMixin, NameMixin,
                                    UniqueOpenEpochMixin)
@@ -31,15 +32,16 @@ class Project(CreationInfoMixin, NameMixin, UniqueOpenEpochMixin, ORMBase):
     # relationships
     wells = relationship('InjectionWell',
                          back_populates='project',
+                         uselist=True,
                          cascade='all')
     forecasts = relationship('Forecast',
                              order_by='Forecast.starttime',
                              back_populates='project',
                              cascade='all, delete-orphan')
-    seismiccatalog = relationship('SeismicCatalog',
-                                  back_populates='project',
-                                  cascade='all',
-                                  uselist=False)
+    seismiccatalogs = relationship('SeismicCatalog',
+                                   back_populates='project',
+                                   cascade='all',
+                                   uselist=True)
     settings = relationship('ProjectSettings', uselist=False)
 
     def __init__(self, **kwargs):
@@ -68,3 +70,21 @@ class Project(CreationInfoMixin, NameMixin, UniqueOpenEpochMixin, ORMBase):
         for fc in self.forecasts:
             if filter_cond(fc):
                 yield fc
+
+    @hybrid_property
+    def seismiccatalog(self):
+        catalogs = [w for w in self.seismiccatalogs if w.project_id == self.id]
+        if catalogs:
+            catalog = max(catalogs, key=lambda x: x.creationinfo_creationtime)
+        else:
+            catalog = None
+        return catalog
+
+    @hybrid_property
+    def well(self):
+        wells = [w for w in self.wells if w.project_id == self.id]
+        if wells:
+            well = max(wells, key=lambda x: x.creationinfo_creationtime)
+        else:
+            well = None
+        return well
