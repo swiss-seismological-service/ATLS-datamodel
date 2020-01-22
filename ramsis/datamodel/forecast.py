@@ -3,7 +3,6 @@
 Forecast related ORM facilities.
 """
 from enum import Enum
-from geoalchemy2 import Geometry
 import sqlalchemy
 from sqlalchemy import Column, Boolean, Integer, ForeignKey
 from sqlalchemy.ext.mutable import MutableDict
@@ -110,10 +109,7 @@ class ForecastScenario(NameMixin, ORMBase):
     status = relationship('Status', back_populates='scenario',
                           uselist=False, cascade='all, delete-orphan')
 
-    reservoirgeom = Column(Geometry(geometry_type='GEOMETRYZ',
-                                    dimension=3,
-                                    management=True),
-                           nullable=False)
+    reservoirgeom = Column(MutableDict.as_mutable(JSONEncodedDict))
 
     # relation: Forecast
     forecast_id = Column(Integer, ForeignKey('forecast.id'))
