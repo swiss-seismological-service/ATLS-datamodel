@@ -28,13 +28,13 @@ class ForecastTestCase(unittest.TestCase):
             model=model,
             status=dm.Status(state=EStatus.COMPLETE),
             result=dm.ReservoirSeismicityPrediction(
-                geom=('POLYHEDRALSURFACE Z '
-                      '(((0 0 0, 0 2 0, 2 2 0, 2 0 0, 0 0 0)),'
-                      '((0 0 0, 0 2 0, 0 2 2, 0 0 2, 0 0 0)),'
-                      '((0 0 0, 2 0 0, 2 0 2, 0 0 2, 0 0 0)),'
-                      '((2 2 2, 2 0 2, 0 0 2, 0 2 2, 2 2 2)),'
-                      '((2 2 2, 2 0 2, 2 0 0, 2 2 0, 2 2 2)),'
-                      '((2 2 2, 2 2 0, 0 2 0, 0 2 2, 2 2 2)))')))
+                x_min=-1000,
+                x_max=1000,
+                y_min=-1000,
+                y_max=1000,
+                z_min=-2000,
+                z_max=0
+                ))
 
         fc_stage = dm.SeismicityForecastStage(
             config={},
@@ -49,15 +49,15 @@ class ForecastTestCase(unittest.TestCase):
                          scenarios=[fc_scenario, ],
                          starttime=datetime.datetime.utcnow(),
                          endtime=datetime.datetime.utcnow(),
-                         seismiccatalog=dm.SeismicCatalog(),
-                         well=dm.InjectionWell())
+                         seismiccatalog=[dm.SeismicCatalog()],
+                         well=[dm.InjectionWell()])
 
         cloned = fc.clone(with_results=False)
 
         # FIXME(damb): Instead implement Forecast.__eq__ and make use of it
         # Currently, just the sensible attributes are checked.
-        self.assertEqual(cloned.seismiccatalog, None)
-        self.assertEqual(cloned.well, None)
+        self.assertEqual(cloned.seismiccatalog, [])
+        self.assertEqual(cloned.well, [])
         self.assertEqual(cloned.scenarios[0].well, fc.scenarios[0].well)
         self.assertEqual(cloned.scenarios[0].stages[0].runs[0].status.state,
                          dm.EStatus.PENDING)
