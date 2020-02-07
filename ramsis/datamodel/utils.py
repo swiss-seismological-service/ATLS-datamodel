@@ -4,6 +4,7 @@ General purpose utils.
 """
 
 from sqlalchemy.orm import class_mapper
+from sqlalchemy.orm.exc import DetachedInstanceError
 
 
 def clone(obj, with_foreignkeys=False):
@@ -32,7 +33,7 @@ def clone(obj, with_foreignkeys=False):
         try:
             value = getattr(obj, attr)
             setattr(new, attr, value)
-        except AttributeError:
+        except AttributeError or DetachedInstanceError:
             pass
 
     return new

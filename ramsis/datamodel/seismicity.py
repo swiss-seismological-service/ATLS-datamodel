@@ -4,9 +4,7 @@ Seismicity prediction related ORM facilities.
 """
 import functools
 
-from geoalchemy2 import Geometry
-
-from sqlalchemy import Column, String, Integer, ForeignKey
+from sqlalchemy import Column, String, Integer, Float, ForeignKey
 from sqlalchemy.orm import relationship, backref, class_mapper
 
 from ramsis.datamodel.base import (ORMBase, RealQuantityMixin,
@@ -124,10 +122,13 @@ class ReservoirSeismicityPrediction(ORMBase):
     # XXX(damb): The attribute rate_uncertainty should be used to express the
     # concept of a rate_propability.
     id = Column(Integer, primary_key=True)
-    geom = Column(Geometry(geometry_type='GEOMETRYZ',
-                           dimension=3,
-                           management=True),
-                  nullable=False)
+
+    x_min = Column(Float)
+    x_max = Column(Float)
+    y_min = Column(Float)
+    y_max = Column(Float)
+    z_min = Column(Float)
+    z_max = Column(Float)
 
     # relation: SeismicityPredictionSample
     samples = relationship('SeismicityPredictionBin',
@@ -150,12 +151,11 @@ class ReservoirSeismicityPrediction(ORMBase):
             yield c
 
     def __lt__(self, other):
-        # FIXME(damb): geom comparison corresponds to a string comparison;
-        # An improved implementation would be a volume comparison.
-        # FIXME(damb): Does not consider children, yet.
+        # (sarsonl) have removed comparison of geometry,
+        # what is this function used for? Update as required.
         if isinstance(other, ReservoirSeismicityPrediction):
-            return ((self.geom, self.samples) <
-                    (other.geom, self.samples))
+            return ((self.samples) <
+                    (self.samples))
 
         raise ValueError
 

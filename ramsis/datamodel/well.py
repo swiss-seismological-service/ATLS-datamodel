@@ -9,6 +9,7 @@ import inspect
 from sqlalchemy import Column, Integer, Boolean, String, ForeignKey
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
+from sqlalchemy.orm.exc import DetachedInstanceError
 
 from ramsis.datamodel.base import (ORMBase, CreationInfoMixin, PublicIDMixin,
                                    UniqueOpenEpochMixin, RealQuantityMixin,
@@ -115,6 +116,7 @@ class InjectionWell(DeleteMultiParentOrphanMixin(['project',
         snap = type(self)()
         snap.publicid = self.publicid
         snap.altitude_value = self.altitude_value
+        snap.bedrockdepth_value = self.bedrockdepth_value
 
         if self.sections:
             snap.sections = [s.snapshot(filter_cond=sample_filter_cond)
@@ -229,12 +231,18 @@ class WellSection(PublicIDMixin,
         """
         snap = clone(self, with_foreignkeys=False)
 
-        if self.hydraulics:
-            snap.hydraulics = self.hydraulics.snapshot(
-                filter_cond=filter_cond)
+        try:
+            if self.hydraulics:
+                snap.hydraulics = self.hydraulics.snapshot(
+                    filter_cond=filter_cond)
+        except DetachedInstanceError:
+            pass
 
-        if self.injectionplan:
-            raise NotImplementedError
+        try:
+            if self.injectionplan:
+                snap.injectionplan = self.injectionplan.snapshot()
+        except DetachedInstanceError:
+            pass
 
         return snap
 
@@ -259,12 +267,18 @@ class WellSection(PublicIDMixin,
             MUTABLE_ATTRS = copy.deepcopy(_ci_attrs)
             MUTABLE_ATTRS.append('endtime')
 
-            # update mutable attributes
-            for attr in MUTABLE_ATTRS:
-                value = getattr(other, attr)
-                setattr(self, attr, value)
+            try:
+                # update mutable attributes
+                for attr in MUTABLE_ATTRS:
+                    value = getattr(other, attr)
+                    setattr(self, attr, value)
+            except DetachedInstanceError:
+                pass
 
-            if self.hydraulics:
-                self.hydraulics.merge(other.hydraulics)
-            elif other.hydraulics:
-                self.hydraulics = other.hydraulics.snapshot()
+            try:
+                if self.hydraulics:
+                    self.hydraulics.merge(other.hydraulics)
+                elif other.hydraulics:
+                    self.hydraulics = other.hydraulics.snapshot()
+            except DetachedInstanceError:
+                pass

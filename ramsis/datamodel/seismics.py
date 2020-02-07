@@ -7,6 +7,7 @@ import functools
 from sqlalchemy import Column
 from sqlalchemy import Integer, ForeignKey, LargeBinary
 from sqlalchemy.orm import relationship, class_mapper
+from sqlalchemy.orm.exc import DetachedInstanceError
 
 from ramsis.datamodel.base import (ORMBase, CreationInfoMixin,
                                    RealQuantityMixin, TimeQuantityMixin,
@@ -54,7 +55,10 @@ class SeismicCatalog(DeleteMultiParentOrphanMixin(['project', 'forecast']),
             filter_cond = no_filter
 
         snap = type(self)()
-        snap.events = [e.copy() for e in self.events if filter_cond(e)]
+        try:
+            snap.events = [e.copy() for e in self.events if filter_cond(e)]
+        except DetachedInstanceError:
+            pass
         return snap
 
     def reduce(self, filter_cond=None):
