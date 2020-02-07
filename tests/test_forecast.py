@@ -33,8 +33,7 @@ class ForecastTestCase(unittest.TestCase):
                 y_min=-1000,
                 y_max=1000,
                 z_min=-2000,
-                z_max=0
-                ))
+                z_max=0))
 
         fc_stage = dm.SeismicityForecastStage(
             config={},
