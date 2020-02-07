@@ -3,8 +3,7 @@
 Project related ORM facilities.
 """
 
-from geoalchemy2 import Geometry
-from sqlalchemy import Column, String
+from sqlalchemy import Column, String, Float
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.hybrid import hybrid_property
 
@@ -20,10 +19,8 @@ class Project(CreationInfoMixin, NameMixin, UniqueOpenEpochMixin, ORMBase):
     """
     description = Column(String)
     # XXX(damb): Should be nullable.
-    referencepoint = Column(Geometry(geometry_type='POINTZ',
-                                     dimension=3,
-                                     management=True),
-                            )
+    referencepoint_x = Column(Float, nullable=False)
+    referencepoint_y = Column(Float, nullable=False)
     # XXX(damb): Spatial reference system in Proj4 notation representing the
     # local coordinate system;
     # see also: https://www.gdal.org/classOGRSpatialReference.html

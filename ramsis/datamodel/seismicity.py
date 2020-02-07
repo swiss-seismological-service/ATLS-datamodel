@@ -151,12 +151,11 @@ class ReservoirSeismicityPrediction(ORMBase):
             yield c
 
     def __lt__(self, other):
-        # FIXME(damb): geom comparison corresponds to a string comparison;
-        # An improved implementation would be a volume comparison.
-        # FIXME(damb): Does not consider children, yet.
+        # (sarsonl) have removed comparison of geometry,
+        # what is this function used for? Update as required.
         if isinstance(other, ReservoirSeismicityPrediction):
-            return ((self.geom, self.samples) <
-                    (other.geom, self.samples))
+            return ((self.samples) <
+                    (self.samples))
 
         raise ValueError
 

@@ -5,6 +5,7 @@ Hydraulics related ORM facilities.
 
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship, class_mapper
+from sqlalchemy.orm.exc import DetachedInstanceError
 
 from ramsis.datamodel.base import (ORMBase, CreationInfoMixin,
                                    RealQuantityMixin, TimeQuantityMixin,
@@ -52,7 +53,10 @@ class Hydraulics(CreationInfoMixin, ORMBase):
             filter_cond = no_filter
 
         snap = type(self)()
-        snap.samples = [s.copy() for s in self.samples if filter_cond(s)]
+        try:
+            snap.samples = [s.copy() for s in self.samples if filter_cond(s)]
+        except DetachedInstanceError:
+            pass
 
         return snap
 
@@ -175,6 +179,34 @@ class InjectionPlan(CreationInfoMixin, ORMBase):
         return '<%s(creationtime=%s, samples=%d)>' % (
             type(self).__name__, self.creationinfo_creationtime,
             len(self.samples))
+
+    def snapshot(self, filter_cond=None):
+        """
+        Snapshot hydraulics.
+
+        :param filter_cond: Filter conditions applied to samples when
+            performing the snapshot.
+        :type filter_cond: callable or None
+
+        :returns: Snapshot of hydraulics
+        :rtype: :py:class:`Hydraulics`
+        """
+        assert callable(filter_cond) or filter_cond is None, \
+            f"Invalid filter_cond: {filter_cond!r}"
+
+        if filter_cond is None:
+            def no_filter(s):
+                return True
+
+            filter_cond = no_filter
+
+        snap = type(self)()
+        try:
+            snap.samples = [s.copy() for s in self.samples if filter_cond(s)]
+        except DetachedInstanceError:
+            pass
+
+        return snap
 
 
 class HydraulicSample(DeleteMultiParentOrphanMixin(['injectionplan',
