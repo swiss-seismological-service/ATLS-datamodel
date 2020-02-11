@@ -6,6 +6,7 @@ import functools
 
 from sqlalchemy import Column, String, Integer, Float, ForeignKey
 from sqlalchemy.orm import relationship, backref, class_mapper
+from sqlalchemy.orm.exc import DetachedInstanceError
 
 from ramsis.datamodel.base import (ORMBase, RealQuantityMixin,
                                    UniqueFiniteEpochMixin)
@@ -101,6 +102,36 @@ class SeismicityModelRun(ModelRun):
     def __repr__(self):
         return '<%s(name=%s, url=%s)>' % (type(self).__name__, self.model.name,
                                           self.model.url)
+
+    def snapshot(self):
+        """
+        Create a snapshot of the catalog.
+
+        :param filter_cond: Callable applied on catalog events when creating
+            the snapshot
+        :type filter_cond: callable or None
+
+        :returns: Snapshot of the catalog
+        :rtype: :py:class:`SeismicCatalog`
+        """
+        def try_detached(attr_name, snap):
+            try:
+                setattr(snap, attr_name, getattr(self, attr_name))
+            except DetachedInstanceError:
+                pass
+            return snap
+
+        snap = type(self)()
+        for attr_name in ["model",
+                          "model_id",
+                          "forecaststage_id",
+                          "forecaststage",
+                          "runid",
+                          "config",
+                          "enabled",
+                          "_type"]:
+            snap = try_detached(attr_name, snap)
+        return snap
 
 
 @functools.total_ordering
