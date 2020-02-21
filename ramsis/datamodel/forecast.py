@@ -3,6 +3,7 @@
 Forecast related ORM facilities.
 """
 from enum import Enum
+import itertools
 import sqlalchemy
 from sqlalchemy import Column, Boolean, Integer, ForeignKey
 from sqlalchemy.ext.mutable import MutableDict
@@ -13,6 +14,7 @@ from ramsis.datamodel.base import (ORMBase, NameMixin, CreationInfoMixin,
                                    EpochMixin)
 from ramsis.datamodel.type import JSONEncodedDict
 from ramsis.datamodel.utils import clone
+from ramsis.datamodel.hazard import HazardModel
 
 
 class Forecast(CreationInfoMixin,
@@ -248,6 +250,16 @@ class ForecastStage(ORMBase):
         """
         raise NotImplementedError
 
+    @hybrid_property
+    def result_times(self):
+        result_times = [run.result_times for run in self.runs]
+        retval = list(set(itertools.chain(*result_times)))
+        if not retval:
+            raise ValueError("Seismicity run results contains no samples. "
+                    "SeismicityStage.id: {self.id}")
+        return retval
+
+
 
 class SeismicityForecastStage(ForecastStage):
     """
@@ -313,6 +325,12 @@ class HazardStage(ForecastStage):
     # TODO LH: Implement
     __tablename__ = 'hazardstage'
     id = Column(Integer, ForeignKey('forecaststage.id'), primary_key=True)
+
+    runs = relationship('HazardModelRun',
+                        back_populates='forecaststage',
+                        cascade='all, delete-orphan')
+    model_id = Column(Integer, ForeignKey("hazardmodel.id"))
+    model = relationship(HazardModel)
 
     __mapper_args__ = {
         'polymorphic_identity': EStage.HAZARD,
