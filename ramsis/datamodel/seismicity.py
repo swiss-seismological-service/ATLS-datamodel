@@ -6,7 +6,8 @@ import functools
 import itertools
 
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
-from sqlalchemy import Column, String, Integer, Float, ForeignKey, Table, UniqueConstraint
+from sqlalchemy import (Column, String, Integer, Float,
+                        ForeignKey, Table, UniqueConstraint)
 from sqlalchemy.orm import relationship, backref, class_mapper
 from sqlalchemy.orm.exc import DetachedInstanceError
 
@@ -14,7 +15,6 @@ from ramsis.datamodel.base import (ORMBase, RealQuantityMixin,
                                    UniqueFiniteEpochMixin)
 from ramsis.datamodel.model import Model, ModelRun, EModel
 from ramsis.datamodel.type import GUID
-#from ramsis.datamodel.hazard import HazardModelRun
 
 
 # XXX(damb): Maintaining both a SeismicityModel, a SeismicityModelRun and on
@@ -57,11 +57,16 @@ class SeismicityModel(Model):
         return '<%s(name=%s, url=%s)>' % (type(self).__name__, self.name,
                                           self.url)
 
-association_table = Table('association', ORMBase.metadata,
-    Column('seismicitymodelrun_id', Integer, ForeignKey('seismicitymodelrun.id')),
-    Column('hazardmodelrun_id', Integer, ForeignKey('hazardmodelrun.id')),
-    UniqueConstraint('seismicitymodelrun_id', 'hazardmodelrun_id', name='UC_hazard_id_seismicity_id')
-)
+
+hazard_seismicity_association = Table(
+    'association', ORMBase.metadata,
+    Column('seismicitymodelrun_id', Integer,
+           ForeignKey('seismicitymodelrun.id')),
+    Column('hazardmodelrun_id', Integer,
+           ForeignKey('hazardmodelrun.id')),
+    UniqueConstraint('seismicitymodelrun_id', 'hazardmodelrun_id',
+                     name='UC_hazard_id_seismicity_id'))
+
 
 class SeismicityModelRun(ModelRun):
     """
@@ -74,12 +79,14 @@ class SeismicityModelRun(ModelRun):
     # relation: SeismicityModel
     model_id = Column(Integer, ForeignKey('seismicitymodel.id'))
     model = relationship('SeismicityModel',
-                         back_populates='runs')
+                         back_populates='runs',
+                         lazy="joined")
     # relation: SeismicityForecastStage
     forecaststage_id = Column(Integer,
                               ForeignKey('seismicityforecaststage.id'))
     forecaststage = relationship('SeismicityForecastStage',
-                                 back_populates='runs')
+                                 back_populates='runs',
+                                 lazy="joined")
 
     result = relationship('ReservoirSeismicityPrediction',
                           back_populates='modelrun',
@@ -87,8 +94,8 @@ class SeismicityModelRun(ModelRun):
                           cascade='all, delete-orphan')
     weight = Column(Float)
     hazardruns = relationship('HazardModelRun',
-                             back_populates='seismicitymodelruns',
-                             secondary=association_table)
+                              back_populates='seismicitymodelruns',
+                              secondary=hazard_seismicity_association)
     __mapper_args__ = {
         'polymorphic_identity': EModel.SEISMICITY,
         'inherit_condition': id == ModelRun.id,
@@ -152,12 +159,14 @@ class SeismicityModelRun(ModelRun):
         if self.result.samples:
             retval = self.result.result_times
         elif self.result.children:
-            all_result_times = [child.result_times for child in self.result.children]
+            all_result_times = [child.result_times for child in
+                                self.result.children]
             retval = list(set(itertools.chain(*all_result_times)))
         else:
             raise ValueError("Seismicity result contains no samples. "
-                    "SeismicityModelRun.id: {self.id}")
+                             "SeismicityModelRun.id: {self.id}")
         return retval
+
 
 @functools.total_ordering
 class ReservoirSeismicityPrediction(ORMBase):
@@ -199,7 +208,7 @@ class ReservoirSeismicityPrediction(ORMBase):
     children = relationship(
         'ReservoirSeismicityPrediction',
         backref=backref('parent', remote_side=[id]),
-        cascade="all, delete-orphan")
+        cascade="all, delete-orphan", lazy="joined")
 
     @hybrid_property
     def result_times(self):
@@ -214,9 +223,8 @@ class ReservoirSeismicityPrediction(ORMBase):
     @hybrid_method
     def matching_timeperiod(self, starttime, endtime):
         for sample in self.samples:
-            print("sample in self.samples: ", sample.starttime, sample.endtime, starttime, endtime)
             if (sample.starttime == starttime and
-                sample.endtime == endtime):
+                    sample.endtime == endtime):
                 return sample
 
     def __iter__(self):

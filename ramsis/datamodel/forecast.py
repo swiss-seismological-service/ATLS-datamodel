@@ -31,11 +31,12 @@ class Forecast(CreationInfoMixin,
     config = Column(MutableDict.as_mutable(JSONEncodedDict))
     enabled = Column(Boolean, default=True)
     status = relationship('Status', back_populates='forecast',
-                          uselist=False, cascade='all, delete-orphan')
+                          uselist=False, cascade='all, delete-orphan', lazy="joined")
 
     # relation: Project
     project_id = Column(Integer, ForeignKey('project.id'))
-    project = relationship('Project', back_populates='forecasts')
+    project = relationship('Project', back_populates='forecasts',
+                              lazy="joined")
     seismiccatalog = relationship('SeismicCatalog', uselist=True,
                                   back_populates='forecast',
                                   cascade='all')
@@ -109,13 +110,13 @@ class ForecastScenario(NameMixin, ORMBase):
     config = Column(MutableDict.as_mutable(JSONEncodedDict))
     enabled = Column(Boolean, default=True)
     status = relationship('Status', back_populates='scenario',
-                          uselist=False, cascade='all, delete-orphan')
+                          uselist=False, cascade='all, delete-orphan', lazy="joined")
 
     reservoirgeom = Column(MutableDict.as_mutable(JSONEncodedDict))
 
     # relation: Forecast
     forecast_id = Column(Integer, ForeignKey('forecast.id'))
-    forecast = relationship('Forecast', back_populates='scenarios')
+    forecast = relationship('Forecast', back_populates='scenarios', lazy="joined")
     # relation: InjectionWell
     well = relationship('InjectionWell',
                         back_populates='scenario',
@@ -196,11 +197,11 @@ class ForecastStage(ORMBase):
     config = Column(MutableDict.as_mutable(JSONEncodedDict))
     enabled = Column(Boolean, default=True)
     status = relationship('Status', back_populates='stage',
-                          uselist=False, cascade='all, delete-orphan')
+                          uselist=False, cascade='all, delete-orphan', lazy="joined")
     _type = Column(sqlalchemy.Enum(EStage))
 
     scenario_id = Column(Integer, ForeignKey('forecastscenario.id'))
-    scenario = relationship('ForecastScenario', back_populates='stages')
+    scenario = relationship('ForecastScenario', back_populates='stages', lazy="joined")
 
     # TODO(damb): Calculation status needs to be introduced for forecast
     # stages.
@@ -271,7 +272,8 @@ class SeismicityForecastStage(ForecastStage):
 
     runs = relationship('SeismicityModelRun',
                         back_populates='forecaststage',
-                        cascade='all, delete-orphan')
+                        cascade='all, delete-orphan',
+                        lazy="joined")
 
     __mapper_args__ = {
         'polymorphic_identity': EStage.SEISMICITY,
@@ -322,15 +324,15 @@ class HazardStage(ForecastStage):
     Concrete :py:class:`ForecastStage` container for hazard computations
 
     """
-    # TODO LH: Implement
     __tablename__ = 'hazardstage'
     id = Column(Integer, ForeignKey('forecaststage.id'), primary_key=True)
 
     runs = relationship('HazardModelRun',
                         back_populates='forecaststage',
-                        cascade='all, delete-orphan')
+                        cascade='all, delete-orphan',
+                        lazy="joined")
     model_id = Column(Integer, ForeignKey("hazardmodel.id"))
-    model = relationship(HazardModel)
+    model = relationship(HazardModel, lazy="joined")
 
     __mapper_args__ = {
         'polymorphic_identity': EStage.HAZARD,
