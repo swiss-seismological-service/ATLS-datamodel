@@ -126,14 +126,14 @@ class SeismicityModelRun(ModelRun):
 
     def snapshot(self):
         """
-        Create a snapshot of the catalog.
+        Create a snapshot of the seismicity model run.
 
         :param filter_cond: Callable applied on catalog events when creating
             the snapshot
         :type filter_cond: callable or None
 
-        :returns: Snapshot of the catalog
-        :rtype: :py:class:`SeismicCatalog`
+        :returns: Snapshot of the model run
+        :rtype: :py:class:`SeismicityModelRun`
         """
         def try_detached(attr_name, snap):
             try:
@@ -209,6 +209,34 @@ class ReservoirSeismicityPrediction(ORMBase):
         'ReservoirSeismicityPrediction',
         backref=backref('parent', remote_side=[id]),
         cascade="all, delete-orphan", lazy="joined")
+
+    def snapshot(self):
+        """
+        Create a snapshot of the seismicity model result.
+
+        :param filter_cond: Callable applied on results when creating
+            the snapshot
+        :type filter_cond: callable or None
+
+        :returns: Snapshot of the model run
+        :rtype: :py:class:`SeismicityModelRun`
+        """
+        def try_detached(attr_name, snap):
+            try:
+                setattr(snap, attr_name, getattr(self, attr_name))
+            except DetachedInstanceError:
+                pass
+            return snap
+
+        snap = type(self)()
+        for attr_name in ["x_min",
+                          "x_max",
+                          "y_min",
+                          "y_max",
+                          "z_min",
+                          "z_max"]:
+            snap = try_detached(attr_name, snap)
+        return snap
 
     @hybrid_property
     def result_times(self):
