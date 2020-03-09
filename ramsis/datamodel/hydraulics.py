@@ -217,7 +217,7 @@ class InjectionPlan(CreationInfoMixin, ORMBase):
 
 class HydraulicSample(DeleteMultiParentOrphanMixin(['injectionplan',
                                                     'hydraulics']),
-                      TimeQuantityMixin('datetime'),
+                      TimeQuantityMixin('datetime', index=True),
                       RealQuantityMixin('bottomtemperature', optional=True),
                       RealQuantityMixin('bottomflow', optional=True),
                       RealQuantityMixin('bottompressure', optional=True),

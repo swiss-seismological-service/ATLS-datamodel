@@ -2,7 +2,7 @@
 """
 Hazard related ORM facilities.
 """
-from sqlalchemy import Column, String, Integer, ForeignKey, DateTime, enum, \
+from sqlalchemy import Column, String, Integer, ForeignKey, DateTime, \
     Float
 import functools
 from sqlalchemy.orm import relationship, backref
@@ -63,7 +63,18 @@ class HazardModelRun(ModelRun):
                                  lazy="joined")
     oqinputdir = Column(String)
 
-    result = relationship('HazardResult',
+    hazardcurves = relationship('HazardCurve',
+                          uselist=True,
+                          back_populates='modelrun',
+                          cascade='all, delete-orphan')
+
+    hazardmaps = relationship('HazardMap',
+                          uselist=True,
+                          back_populates='modelrun',
+                          cascade='all, delete-orphan')
+
+    hazardpointvalues = relationship('HazardPointValue',
+                          uselist=True,
                           back_populates='modelrun',
                           cascade='all, delete-orphan')
 
@@ -108,53 +119,67 @@ class OQSeismicityModelFile(ModelRun):
     seismicitymodelfilename = Column(String)
 
 
-class IntensityMeasurementType(enum.Enum):
-    """
-    ORM representation for a :py:class:`HazardModelRun` result type.
-    """
-    PGA = 0
 
-
-@functools.total_ordering
-class HazardResult(ORMBase):
+class HazardCurve(ORMBase):
     """
-    ORM representation for a :py:class:`HazardModelRun` result.
+    ORM representation for a :py:class:`HazardCurve` result.
     """
     id = Column(Integer, primary_key=True)
-    hazardtype = Column(enum.Enum(IntensityMeasurementType))
-    samples = relationship('SeismicityPredictionBin',
-                           back_populates='result')
+    samples = relationship('HazardPointValue',
+                           back_populates='hazardcurve')
     modelrun_id = Column(Integer, ForeignKey('hazardmodelrun.id'))
     modelrun = relationship('HazardModelRun',
-                            back_populates='results')
+                            back_populates='hazardcurves')
     children = relationship(
         'HazardPointValue',
-        backref=backref('parent', remote_side=[id]),
+        uselist=True,
+        back_populates='hazardcurve',
         cascade="all, delete-orphan", lazy="joined")
 
+class HazardMap(ORMBase):
+    """
+    ORM representation for a :py:class:`HazardMap` result.
+    """
+    id = Column(Integer, primary_key=True)
+    samples = relationship('HazardPointValue',
+                           back_populates='hazardmap')
+    modelrun_id = Column(Integer, ForeignKey('hazardmodelrun.id'))
+    modelrun = relationship('HazardModelRun',
+                            back_populates='hazardmaps')
+    children = relationship(
+        'HazardPointValue',
+        uselist=True,
+        back_populates='hazardmap',
+        cascade="all, delete-orphan", lazy="joined")
 
-@functools.total_ordering
 class HazardPointValue(ORMBase):
     """
     ORM representation of a seismicity prediction sample.
     """
     id = Column(Integer, primary_key=True)
-    result_id = Column(Integer, ForeignKey('reservoirseismicityprediction.id'))
-    result = relationship('ReservoirSeismicityPrediction',
+    hazardcurve_id = Column(Integer, ForeignKey('hazardcurve.id'))
+    hazardcurve = relationship('HazardCurve',
                           back_populates='samples')
+    hazardmap_id = Column(Integer, ForeignKey('hazardmap.id'))
+    hazardmap = relationship('HazardMap',
+                          back_populates='samples')
+    modelrun_id = Column(Integer, ForeignKey('hazardmodelrun.id'))
+    modelrun = relationship('HazardModelRun',
+                          back_populates='hazardpointvalues')
     groundmotion = Column(Float)
     poe = Column(Float)
+    hazardintensitytype = Column(String)
     geopoint_id = Column(Integer, ForeignKey('geopoint.id'))
     geopoint = relationship('GeoPoint',
                             back_populates='hazardpointvalues',
-                            use_list=False,
+                            uselist=False,
                             lazy='joined')
+    spectralperiod = Column(Float)
 
 class GeoPoint(ORMBase):
     id = Column(Integer, primary_key=True)
-    x = Column(Float)
-    y = Column(Float)
-    z = Column(Float)
+    lat = Column(Float)
+    lon = Column(Float)
     hazardpointvalues = relationship('HazardPointValue',
                                      back_populates='geopoint',
-                                     use_list=True)
+                                     uselist=True)

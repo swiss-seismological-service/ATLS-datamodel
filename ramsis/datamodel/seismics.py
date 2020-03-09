@@ -32,7 +32,7 @@ class SeismicCatalog(DeleteMultiParentOrphanMixin(['project', 'forecast']),
     events = relationship('SeismicEvent',
                           back_populates='seismiccatalog',
                           cascade='all, delete-orphan',
-                          order_by='SeismicEvent.datetime_value')
+                          order_by='SeismicEvent.datetime_value', lazy='joined')
 
     def snapshot(self, filter_cond=None):
         """
