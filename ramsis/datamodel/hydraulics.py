@@ -164,7 +164,8 @@ class InjectionPlan(CreationInfoMixin, ORMBase):
                            back_populates='injectionplan',
                            single_parent=True,
                            cascade='all',
-                           lazy="joined")
+                           lazy="joined",
+                           order_by='HydraulicSample.datetime_value')
     # relation: WellSection
     wellsection_id = Column(Integer, ForeignKey('wellsection.id'))
     wellsection = relationship('WellSection', back_populates='injectionplan',
