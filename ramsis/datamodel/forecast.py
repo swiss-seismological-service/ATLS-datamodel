@@ -253,7 +253,7 @@ class ForecastStage(ORMBase):
 
     @hybrid_property
     def result_times(self):
-        result_times = [run.result_times for run in self.runs]
+        result_times = [run.result_times for run in self.runs if run.enabled]
         retval = list(set(itertools.chain(*result_times)))
         if not retval:
             raise ValueError("Seismicity run results contains no samples. "

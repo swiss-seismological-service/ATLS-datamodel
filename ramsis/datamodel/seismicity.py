@@ -85,8 +85,7 @@ class SeismicityModelRun(ModelRun):
     forecaststage_id = Column(Integer,
                               ForeignKey('seismicityforecaststage.id'))
     forecaststage = relationship('SeismicityForecastStage',
-                                 back_populates='runs',
-                                 lazy="joined")
+                                 back_populates='runs')
 
     result = relationship('ReservoirSeismicityPrediction',
                           back_populates='modelrun',

@@ -6,6 +6,7 @@ from sqlalchemy import Column, String, Integer, ForeignKey, DateTime, \
     Float
 import functools
 from sqlalchemy.orm import relationship, backref
+from sqlalchemy.schema import UniqueConstraint
 
 from ramsis.datamodel.base import ORMBase
 from ramsis.datamodel.model import Model, ModelRun, EModel
@@ -125,12 +126,10 @@ class HazardCurve(ORMBase):
     ORM representation for a :py:class:`HazardCurve` result.
     """
     id = Column(Integer, primary_key=True)
-    samples = relationship('HazardPointValue',
-                           back_populates='hazardcurve')
     modelrun_id = Column(Integer, ForeignKey('hazardmodelrun.id'))
     modelrun = relationship('HazardModelRun',
                             back_populates='hazardcurves')
-    children = relationship(
+    samples = relationship(
         'HazardPointValue',
         uselist=True,
         back_populates='hazardcurve',
@@ -141,12 +140,10 @@ class HazardMap(ORMBase):
     ORM representation for a :py:class:`HazardMap` result.
     """
     id = Column(Integer, primary_key=True)
-    samples = relationship('HazardPointValue',
-                           back_populates='hazardmap')
     modelrun_id = Column(Integer, ForeignKey('hazardmodelrun.id'))
     modelrun = relationship('HazardModelRun',
                             back_populates='hazardmaps')
-    children = relationship(
+    samples = relationship(
         'HazardPointValue',
         uselist=True,
         back_populates='hazardmap',
@@ -182,4 +179,5 @@ class GeoPoint(ORMBase):
     lon = Column(Float)
     hazardpointvalues = relationship('HazardPointValue',
                                      back_populates='geopoint',
+                                     cascade='all, delete-orphan',
                                      uselist=True)
