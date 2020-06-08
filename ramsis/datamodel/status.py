@@ -21,6 +21,8 @@ class EStatus(enum.Enum):
     ERROR = 2
     COMPLETE = 3
     DISPATCHED = 4
+    PREPARED = 5
+    ONHOLD = 6
 
 
 class Status(UniqueEpochMixin, ORMBase):
