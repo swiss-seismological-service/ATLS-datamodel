@@ -3,8 +3,11 @@
 Seismicity prediction related ORM facilities.
 """
 import functools
+import itertools
 
-from sqlalchemy import Column, String, Integer, Float, ForeignKey
+from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
+from sqlalchemy import (Column, String, Integer, Float,
+                        ForeignKey, Table, UniqueConstraint)
 from sqlalchemy.orm import relationship, backref, class_mapper
 from sqlalchemy.orm.exc import DetachedInstanceError
 
@@ -40,6 +43,8 @@ class SeismicityModel(Model):
 
     url = Column(String)
     sfmwid = Column(String)
+    # Template for model specific hazard input
+    seismicitymodeltemplate = Column(String)
 
     runs = relationship('SeismicityModelRun',
                         cascade='all, delete-orphan')
@@ -53,6 +58,16 @@ class SeismicityModel(Model):
                                           self.url)
 
 
+hazard_seismicity_association = Table(
+    'association', ORMBase.metadata,
+    Column('seismicitymodelrun_id', Integer,
+           ForeignKey('seismicitymodelrun.id')),
+    Column('hazardmodelrun_id', Integer,
+           ForeignKey('hazardmodelrun.id')),
+    UniqueConstraint('seismicitymodelrun_id', 'hazardmodelrun_id',
+                     name='UC_hazard_id_seismicity_id'))
+
+
 class SeismicityModelRun(ModelRun):
     """
     ORM representation of a seismicity forecast model run.
@@ -64,7 +79,8 @@ class SeismicityModelRun(ModelRun):
     # relation: SeismicityModel
     model_id = Column(Integer, ForeignKey('seismicitymodel.id'))
     model = relationship('SeismicityModel',
-                         back_populates='runs')
+                         back_populates='runs',
+                         lazy="joined")
     # relation: SeismicityForecastStage
     forecaststage_id = Column(Integer,
                               ForeignKey('seismicityforecaststage.id'))
@@ -75,9 +91,13 @@ class SeismicityModelRun(ModelRun):
                           back_populates='modelrun',
                           uselist=False,
                           cascade='all, delete-orphan')
-
+    weight = Column(Float)
+    hazardruns = relationship('HazardModelRun',
+                              back_populates='seismicitymodelruns',
+                              secondary=hazard_seismicity_association)
     __mapper_args__ = {
         'polymorphic_identity': EModel.SEISMICITY,
+        'inherit_condition': id == ModelRun.id,
     }
 
     def clone(self, with_results=False):
@@ -105,14 +125,14 @@ class SeismicityModelRun(ModelRun):
 
     def snapshot(self):
         """
-        Create a snapshot of the catalog.
+        Create a snapshot of the seismicity model run.
 
         :param filter_cond: Callable applied on catalog events when creating
             the snapshot
         :type filter_cond: callable or None
 
-        :returns: Snapshot of the catalog
-        :rtype: :py:class:`SeismicCatalog`
+        :returns: Snapshot of the model run
+        :rtype: :py:class:`SeismicityModelRun`
         """
         def try_detached(attr_name, snap):
             try:
@@ -132,6 +152,26 @@ class SeismicityModelRun(ModelRun):
                           "_type"]:
             snap = try_detached(attr_name, snap)
         return snap
+
+    @hybrid_property
+    def result_times(self):
+        try:
+            if self.result.samples:
+                return self.result.result_times
+        except DetachedInstanceError:
+            pass
+
+        try:
+            if self.result.children:
+                all_result_times = [child.result_times for child in
+                                    self.result.children]
+                retval = list(set(itertools.chain(*all_result_times)))
+            else:
+                raise ValueError("Seismicity result contains no samples. "
+                                 "SeismicityModelRun.id: {self.id}")
+        except DetachedInstanceError:
+            retval = []
+        return retval
 
 
 @functools.total_ordering
@@ -174,7 +214,50 @@ class ReservoirSeismicityPrediction(ORMBase):
     children = relationship(
         'ReservoirSeismicityPrediction',
         backref=backref('parent', remote_side=[id]),
-        cascade="all, delete-orphan")
+        cascade="all, delete-orphan", lazy="joined")
+
+    def snapshot(self):
+        """
+        Create a snapshot of the seismicity model result.
+
+        :param filter_cond: Callable applied on results when creating
+            the snapshot
+        :type filter_cond: callable or None
+
+        :returns: Snapshot of the model run
+        :rtype: :py:class:`SeismicityModelRun`
+        """
+        def try_detached(attr_name, snap):
+            try:
+                setattr(snap, attr_name, getattr(self, attr_name))
+            except DetachedInstanceError:
+                pass
+            return snap
+
+        snap = type(self)()
+        for attr_name in ["x_min",
+                          "x_max",
+                          "y_min",
+                          "y_max",
+                          "z_min",
+                          "z_max"]:
+            snap = try_detached(attr_name, snap)
+        return snap
+
+    @hybrid_property
+    def result_times(self):
+        if self.samples:
+            retval = [(s.starttime, s.endtime) for s in self.samples]
+        else:
+            retval = []
+        return retval
+
+    @hybrid_method
+    def matching_timeperiod(self, starttime, endtime):
+        for sample in self.samples:
+            if (sample.starttime == starttime and
+                    sample.endtime == endtime):
+                return sample
 
     def __iter__(self):
         # TODO(damb): Implement recursively
@@ -210,11 +293,11 @@ class ReservoirSeismicityPrediction(ORMBase):
 
 @functools.total_ordering
 class SeismicityPredictionBin(UniqueFiniteEpochMixin,
-                              RealQuantityMixin('numberevents'),
+                              RealQuantityMixin('numberevents', optional=True),
                               RealQuantityMixin('b'),
                               RealQuantityMixin('a'),
                               RealQuantityMixin('mc'),
-                              RealQuantityMixin('hydraulicvol'),
+                              RealQuantityMixin('hydraulicvol', optional=True),
                               ORMBase):
     """
     ORM representation of a seismicity prediction sample.

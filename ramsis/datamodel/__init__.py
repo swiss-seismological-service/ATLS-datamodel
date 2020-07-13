@@ -26,3 +26,5 @@ from ramsis.datamodel.settings import (  # noqa
 from ramsis.datamodel.status import Status, EStatus  # noqa
 from ramsis.datamodel.well import (  # noqa
     InjectionWell, WellSection)
+from ramsis.datamodel.hazard import ( # noqa
+    HazardModel, HazardModelRun)

@@ -180,7 +180,8 @@ UniqueFiniteEpochMixin = EpochMixin('Epoch', epoch_type='finite',
                                     column_prefix='')
 
 
-def QuantityMixin(name, quantity_type, column_prefix=None, optional=False):
+def QuantityMixin(name, quantity_type, column_prefix=None, optional=False,
+                  index=False):
     """
     Mixin factory for common :code:`Quantity` types from
     `QuakeML <https://quake.ethz.ch/quakeml/>`_.
@@ -235,7 +236,7 @@ def QuantityMixin(name, quantity_type, column_prefix=None, optional=False):
             @declared_attr
             def _value(cls):
                 return Column('%svalue' % column_prefix, sql_type,
-                              nullable=optional)
+                              nullable=optional, index=index)
 
             return _value
 

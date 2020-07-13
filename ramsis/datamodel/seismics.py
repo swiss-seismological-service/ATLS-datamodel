@@ -23,16 +23,18 @@ class SeismicCatalog(DeleteMultiParentOrphanMixin(['project', 'forecast']),
     """
     # relation: Project
     project_id = Column(Integer, ForeignKey('project.id'))
-    project = relationship('Project', back_populates='seismiccatalogs')
+    project = relationship('Project', back_populates='seismiccatalogs',
+                           lazy="joined")
     # relation: Forecast
     forecast_id = Column(Integer, ForeignKey('forecast.id'))
     forecast = relationship('Forecast',
-                            back_populates='seismiccatalog')
+                            back_populates='seismiccatalog', lazy="joined")
     # relation: SeismicEvent
     events = relationship('SeismicEvent',
                           back_populates='seismiccatalog',
                           cascade='all, delete-orphan',
-                          order_by='SeismicEvent.datetime_value')
+                          order_by='SeismicEvent.datetime_value',
+                          lazy='joined')
 
     def snapshot(self, filter_cond=None):
         """

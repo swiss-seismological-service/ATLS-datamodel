@@ -63,12 +63,11 @@ class ModelRun(ORMBase):
     status = relationship('Status',
                           back_populates='run',
                           uselist=False,
-                          cascade='all, delete-orphan')
+                          cascade='all, delete-orphan', lazy="joined")
 
     __mapper_args__ = {
         'polymorphic_identity': 'model_run',
-        'polymorphic_on': _type,
-    }
+        'polymorphic_on': _type}
 
     def clone(self, with_results=False):
         """

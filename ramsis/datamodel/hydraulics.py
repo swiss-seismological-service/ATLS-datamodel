@@ -26,11 +26,14 @@ class Hydraulics(CreationInfoMixin, ORMBase):
     samples = relationship('HydraulicSample',
                            back_populates='hydraulics',
                            single_parent=True,
-                           cascade='all')
+                           cascade='all',
+                           lazy="joined",
+                           order_by='HydraulicSample.datetime_value')
 
     # relation: WellSection
     wellsection_id = Column(Integer, ForeignKey('wellsection.id'))
-    wellsection = relationship('WellSection', back_populates='hydraulics')
+    wellsection = relationship('WellSection', back_populates='hydraulics',
+                               lazy="joined")
 
     def snapshot(self, filter_cond=None):
         """
@@ -160,10 +163,14 @@ class InjectionPlan(CreationInfoMixin, ORMBase):
     samples = relationship('HydraulicSample',
                            back_populates='injectionplan',
                            single_parent=True,
-                           cascade='all')
+                           cascade='all',
+                           lazy="joined",
+                           order_by='HydraulicSample.datetime_value')
     # relation: WellSection
     wellsection_id = Column(Integer, ForeignKey('wellsection.id'))
-    wellsection = relationship('WellSection', back_populates='injectionplan')
+    wellsection = relationship('WellSection', back_populates='injectionplan',
+                               lazy="joined",
+                               order_by='HydraulicSample.datetime_value')
 
     def __iter__(self):
         for s in self.samples:
@@ -211,7 +218,7 @@ class InjectionPlan(CreationInfoMixin, ORMBase):
 
 class HydraulicSample(DeleteMultiParentOrphanMixin(['injectionplan',
                                                     'hydraulics']),
-                      TimeQuantityMixin('datetime'),
+                      TimeQuantityMixin('datetime', index=True),
                       RealQuantityMixin('bottomtemperature', optional=True),
                       RealQuantityMixin('bottomflow', optional=True),
                       RealQuantityMixin('bottompressure', optional=True),
@@ -237,12 +244,14 @@ class HydraulicSample(DeleteMultiParentOrphanMixin(['injectionplan',
     hydraulics_id = Column(Integer,
                            ForeignKey('hydraulics.id'))
     hydraulics = relationship('Hydraulics',
-                              back_populates='samples')
+                              back_populates='samples',
+                              lazy="joined")
     # relation: InjectionPlan
     injectionplan_id = Column(Integer,
                               ForeignKey('injectionplan.id'))
     injectionplan = relationship('InjectionPlan',
-                                 back_populates='samples')
+                                 back_populates='samples',
+                                 lazy="joined")
 
     def copy(self, with_foreignkeys=False):
         """

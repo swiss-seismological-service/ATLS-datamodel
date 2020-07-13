@@ -44,15 +44,16 @@ class InjectionWell(DeleteMultiParentOrphanMixin(['project',
     project = relationship('Project', back_populates='wells')
     # relation: Forecast
     forecast_id = Column(Integer, ForeignKey('forecast.id'))
-    forecast = relationship('Forecast', back_populates='well')
+    forecast = relationship('Forecast', back_populates='well', lazy='joined')
     # relation: ForecastScenario
     scenario_id = Column(Integer, ForeignKey('forecastscenario.id'))
-    scenario = relationship('ForecastScenario', back_populates='well')
+    scenario = relationship('ForecastScenario', back_populates='well',
+                            lazy='joined')
 
     # relation: WellSection
     sections = relationship('WellSection',
                             back_populates='well',
-                            cascade='all, delete-orphan')
+                            cascade='all, delete-orphan', lazy="joined")
 
     @hybrid_property
     def x(self):
@@ -199,18 +200,21 @@ class WellSection(PublicIDMixin,
 
     # relation: InjectionWell
     well_id = Column(Integer, ForeignKey('injectionwell.id'))
-    well = relationship('InjectionWell', back_populates='sections')
+    well = relationship('InjectionWell', back_populates='sections',
+                        lazy="joined")
 
     # relation: Hydraulics
     hydraulics = relationship('Hydraulics',
                               back_populates='wellsection',
                               uselist=False,
-                              cascade='all, delete-orphan')
+                              cascade='all, delete-orphan',
+                              lazy='joined')
     # relation: InjectionPlan
     injectionplan = relationship('InjectionPlan',
                                  back_populates='wellsection',
                                  uselist=False,
-                                 cascade='all, delete-orphan')
+                                 cascade='all, delete-orphan',
+                                 lazy='joined')
 
     def snapshot(self, filter_cond=None):
         """
