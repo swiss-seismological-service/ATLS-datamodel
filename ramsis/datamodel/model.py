@@ -59,8 +59,6 @@ class ModelRun(ORMBase):
     config = Column(MutableDict.as_mutable(JSONEncodedDict))
     enabled = Column(Boolean, default=True)
     _type = Column(Enum(EModel))
-    #seismicity_model_run = relationship('SeismicityModelRun', uselist=False, back_populates='modelrun')
-    #hazard_model_run = relationship('HazardModelRun', uselist=False, back_populates='modelrun')
 
     status = relationship('Status',
                           back_populates='run',
@@ -69,8 +67,7 @@ class ModelRun(ORMBase):
 
     __mapper_args__ = {
         'polymorphic_identity': 'model_run',
-        'polymorphic_on': _type,
-    }
+        'polymorphic_on': _type}
 
     def clone(self, with_results=False):
         """

@@ -4,9 +4,7 @@ Hazard related ORM facilities.
 """
 from sqlalchemy import Column, String, Integer, ForeignKey, DateTime, \
     Float
-import functools
-from sqlalchemy.orm import relationship, backref
-from sqlalchemy.schema import UniqueConstraint
+from sqlalchemy.orm import relationship
 
 from ramsis.datamodel.base import ORMBase
 from ramsis.datamodel.model import Model, ModelRun, EModel
@@ -43,8 +41,9 @@ class HazardModelRun(ModelRun):
     ORM representation of a hazard forecast model run.
     """
     __tablename__ = 'hazardmodelrun'
-    id = Column(Integer, ForeignKey('modelrun.id'), primary_key=True)
 
+    id = Column(Integer, ForeignKey('modelrun.id'), primary_key=True)
+    runid = Column(Integer, unique=True, index=True)
     describedinterval_start = Column(DateTime)
     describedinterval_end = Column(DateTime)
     logictreefile = Column(String)
@@ -65,19 +64,18 @@ class HazardModelRun(ModelRun):
     oqinputdir = Column(String)
 
     hazardcurves = relationship('HazardCurve',
-                          uselist=True,
-                          back_populates='modelrun',
-                          cascade='all, delete-orphan')
+                                uselist=True,
+                                back_populates='modelrun',
+                                cascade='all, delete-orphan')
 
     hazardmaps = relationship('HazardMap',
-                          uselist=True,
-                          back_populates='modelrun',
-                          cascade='all, delete-orphan')
+                              uselist=True,
+                              back_populates='modelrun',
+                              cascade='all, delete-orphan')
 
     hazardpointvalues = relationship('HazardPointValue',
-                          uselist=True,
-                          back_populates='modelrun',
-                          cascade='all, delete-orphan')
+                                     uselist=True,
+                                     back_populates='modelrun')
 
     __mapper_args__ = {
         'polymorphic_identity': EModel.HAZARD,
@@ -120,7 +118,6 @@ class OQSeismicityModelFile(ModelRun):
     seismicitymodelfilename = Column(String)
 
 
-
 class HazardCurve(ORMBase):
     """
     ORM representation for a :py:class:`HazardCurve` result.
@@ -134,6 +131,7 @@ class HazardCurve(ORMBase):
         uselist=True,
         back_populates='hazardcurve',
         cascade="all, delete-orphan", lazy="joined")
+
 
 class HazardMap(ORMBase):
     """
@@ -149,6 +147,7 @@ class HazardMap(ORMBase):
         back_populates='hazardmap',
         cascade="all, delete-orphan", lazy="joined")
 
+
 class HazardPointValue(ORMBase):
     """
     ORM representation of a seismicity prediction sample.
@@ -156,13 +155,13 @@ class HazardPointValue(ORMBase):
     id = Column(Integer, primary_key=True)
     hazardcurve_id = Column(Integer, ForeignKey('hazardcurve.id'))
     hazardcurve = relationship('HazardCurve',
-                          back_populates='samples')
+                               back_populates='samples')
     hazardmap_id = Column(Integer, ForeignKey('hazardmap.id'))
     hazardmap = relationship('HazardMap',
-                          back_populates='samples')
+                             back_populates='samples')
     modelrun_id = Column(Integer, ForeignKey('hazardmodelrun.id'))
     modelrun = relationship('HazardModelRun',
-                          back_populates='hazardpointvalues')
+                            back_populates='hazardpointvalues')
     groundmotion = Column(Float)
     poe = Column(Float)
     hazardintensitytype = Column(String)
@@ -173,11 +172,13 @@ class HazardPointValue(ORMBase):
                             lazy='joined')
     spectralperiod = Column(Float)
 
+
 class GeoPoint(ORMBase):
     id = Column(Integer, primary_key=True)
     lat = Column(Float)
     lon = Column(Float)
     hazardpointvalues = relationship('HazardPointValue',
                                      back_populates='geopoint',
-                                     cascade='all, delete-orphan',
+                                     cascade='save-update',
+                                     lazy='joined',
                                      uselist=True)

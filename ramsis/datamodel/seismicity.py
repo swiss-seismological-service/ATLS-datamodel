@@ -155,15 +155,22 @@ class SeismicityModelRun(ModelRun):
 
     @hybrid_property
     def result_times(self):
-        if self.result.samples:
-            retval = self.result.result_times
-        elif self.result.children:
-            all_result_times = [child.result_times for child in
-                                self.result.children]
-            retval = list(set(itertools.chain(*all_result_times)))
-        else:
-            raise ValueError("Seismicity result contains no samples. "
-                             "SeismicityModelRun.id: {self.id}")
+        try:
+            if self.result.samples:
+                return self.result.result_times
+        except DetachedInstanceError:
+            pass
+
+        try:
+            if self.result.children:
+                all_result_times = [child.result_times for child in
+                                    self.result.children]
+                retval = list(set(itertools.chain(*all_result_times)))
+            else:
+                raise ValueError("Seismicity result contains no samples. "
+                                 "SeismicityModelRun.id: {self.id}")
+        except DetachedInstanceError:
+            retval = []
         return retval
 
 
@@ -241,8 +248,6 @@ class ReservoirSeismicityPrediction(ORMBase):
     def result_times(self):
         if self.samples:
             retval = [(s.starttime, s.endtime) for s in self.samples]
-            for s in self.samples:
-                print('samples in db, times: ', s.starttime, s.endtime)
         else:
             retval = []
         return retval
