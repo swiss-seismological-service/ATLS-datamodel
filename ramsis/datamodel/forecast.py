@@ -15,6 +15,7 @@ from ramsis.datamodel.base import (ORMBase, NameMixin, CreationInfoMixin,
 from ramsis.datamodel.type import JSONEncodedDict
 from ramsis.datamodel.utils import clone
 from ramsis.datamodel.hazard import HazardModel
+from ramsis.datamodel.status import Status
 
 
 class Forecast(CreationInfoMixin,
@@ -68,6 +69,7 @@ class Forecast(CreationInfoMixin,
             data while cloning, otherwise results are excluded.
         """
         new = clone(self, with_foreignkeys=False)
+        new.status = Status()
         if with_results:
             new.seismiccatalog = self.seismiccatalog
             new.well = self.well
@@ -157,7 +159,7 @@ class ForecastScenario(NameMixin, ORMBase):
         # period. The data is interpretated accordingly by the models
         # themselves.
         new.well = self.well
-
+        new.status = Status()
         for stage in self.stages:
             new.stages.append(stage.clone(with_results=with_results))
 
@@ -294,6 +296,7 @@ class SeismicityForecastStage(ForecastStage):
         """
         new = clone(self, with_foreignkeys=False)
 
+        new.status = Status()
         for run in self.runs:
             new.runs.append(run.clone(with_results=with_results))
 
@@ -321,8 +324,24 @@ class SeismicitySkillStage(ForecastStage):
         'polymorphic_identity': EStage.SEISMICITY_SKILL,
     }
 
+    def clone(self, with_results=False):
+        """
+        Clone a seismicity skill forecast stage.
+
+        :param bool with_results: If :code:`True`, append results and related
+            data while cloning, otherwise results are excluded.
+        """
+        new = clone(self, with_foreignkeys=False)
+
+        new.status = Status()
+        for run in self.runs:
+            new.runs.append(run.clone(with_results=with_results))
+
+        return new
+
     def reset(self):
-        pass
+        for run in self.runs:
+            run.status = None
 
 
 class HazardStage(ForecastStage):
@@ -345,8 +364,24 @@ class HazardStage(ForecastStage):
         'polymorphic_identity': EStage.HAZARD,
     }
 
+    def clone(self, with_results=False):
+        """
+        Clone a Hazard forecast stage.
+
+        :param bool with_results: If :code:`True`, append results and related
+            data while cloning, otherwise results are excluded.
+        """
+        new = clone(self, with_foreignkeys=False)
+
+        new.status = Status()
+        for run in self.runs:
+            new.runs.append(run.clone(with_results=with_results))
+
+        return new
+
     def reset(self):
-        pass
+        for run in self.runs:
+            run.status = None
 
 
 class RiskStage(ForecastStage):
@@ -361,6 +396,18 @@ class RiskStage(ForecastStage):
     __mapper_args__ = {
         'polymorphic_identity': EStage.RISK,
     }
+
+    def clone(self, with_results=False):
+        """
+        Clone a risk forecast stage.
+
+        :param bool with_results: If :code:`True`, append results and related
+            data while cloning, otherwise results are excluded.
+        """
+        new = clone(self, with_foreignkeys=False)
+        new.status = Status()
+
+        return new
 
     def reset(self):
         pass
