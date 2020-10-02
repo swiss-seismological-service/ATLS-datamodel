@@ -162,9 +162,9 @@ class SeismicityModelRun(ModelRun):
             pass
 
         try:
-            if self.result.children:
+            if self.result.subgeometries:
                 all_result_times = [child.result_times for child in
-                                    self.result.children]
+                                    self.result.subgeometries]
                 retval = list(set(itertools.chain(*all_result_times)))
             else:
                 raise ValueError("Seismicity result contains no samples. "
@@ -211,7 +211,7 @@ class ReservoirSeismicityPrediction(ORMBase):
     # reference: self (Adjacency List Relationships)
     parent_id = Column(Integer,
                        ForeignKey('reservoirseismicityprediction.id'))
-    children = relationship(
+    subgeometries = relationship(
         'ReservoirSeismicityPrediction',
         backref=backref('parent', remote_side=[id]),
         cascade="all, delete-orphan", lazy="joined")
@@ -261,7 +261,7 @@ class ReservoirSeismicityPrediction(ORMBase):
 
     def __iter__(self):
         # TODO(damb): Implement recursively
-        for c in self.children:
+        for c in self.subgeometries:
             yield c
 
     def __lt__(self, other):
