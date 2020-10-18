@@ -158,7 +158,8 @@ class ForecastScenario(NameMixin, ORMBase):
         # XXX(damb): The future borehole/hydraulics cover the entire forecast
         # period. The data is interpretated accordingly by the models
         # themselves.
-        new.well = self.well
+        if self.well:
+            new.well = self.well.snapshot()
         new.status = Status()
         for stage in self.stages:
             new.stages.append(stage.clone(with_results=with_results))
