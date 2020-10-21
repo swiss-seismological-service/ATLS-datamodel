@@ -38,7 +38,7 @@ _namespace_packages = ['ramsis']
 
 setup(
     name='ramsis.datamodel',
-    version='0.3rc0',
+    version='0.3rc1',
     author=' (SED, ETHZ),'.join(_authors),
     author_email=', '.join(_authors_email),
     description=('Real Time Risk Assessment and Mitigation for Induced'
