@@ -28,6 +28,7 @@ class Project(CreationInfoMixin, NameMixin, UniqueOpenEpochMixin, ORMBase):
     # relationships
     well = relationship('InjectionWell',
                         back_populates='project',
+                        uselist=False,
                         cascade='all, delete-orphan')
     forecasts = relationship('Forecast',
                              order_by='Forecast.starttime',
@@ -35,6 +36,7 @@ class Project(CreationInfoMixin, NameMixin, UniqueOpenEpochMixin, ORMBase):
                              cascade='all, delete-orphan')
     seismiccatalog = relationship('SeismicCatalog',
                                   back_populates='project',
+                                  uselist=False,
                                   cascade='all, delete-orphan')
     settings = relationship('ProjectSettings', uselist=False)
 
